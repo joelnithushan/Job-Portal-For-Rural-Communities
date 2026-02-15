@@ -1,0 +1,6 @@
+*.md
+node_modules/
+.env
+.DS_Store
+backend/node_modules/
+frontend/node_modules/
