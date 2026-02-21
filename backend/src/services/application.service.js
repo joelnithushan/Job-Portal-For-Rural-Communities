@@ -9,13 +9,13 @@ exports.applyToJob = async (jobId, seekerId) => {
     throw new Error("Job not found");
   }
 
-  // 2️⃣ Prevent duplicate apply
+
   const existing = await Application.findOne({ jobId, seekerId });
   if (existing) {
     throw new Error("You have already applied for this job");
   }
 
-  // 3️⃣ Create application
+
   const application = await Application.create({
     jobId,
     seekerId,
@@ -27,14 +27,14 @@ exports.applyToJob = async (jobId, seekerId) => {
 };
 
 
-// 🔹 Get My Applications (Job Seeker)
+
 exports.getMyApplications = async (seekerId) => {
   return await Application.find({ seekerId })
     .populate("jobId");
 };
 
 
-// 🔹 Withdraw Application (Job Seeker)
+
 exports.withdrawApplication = async (applicationId, seekerId) => {
 
   const application = await Application.findById(applicationId);
@@ -52,7 +52,7 @@ exports.withdrawApplication = async (applicationId, seekerId) => {
 };
 
 
-// 🔹 Update Application Status (Employer)
+
 exports.updateStatus = async (applicationId, employerId, status, note) => {
 
   const application = await Application.findById(applicationId);
@@ -76,14 +76,14 @@ exports.updateStatus = async (applicationId, employerId, status, note) => {
 };
 
 
-// 🔹 Admin - View All Applications
+
 exports.getAllApplications = async () => {
   return await Application.find()
     .populate("jobId seekerId");
 };
 
 
-// 🔹 Admin - Delete Application
+
 exports.deleteApplication = async (applicationId) => {
   await Application.findByIdAndDelete(applicationId);
   return true;

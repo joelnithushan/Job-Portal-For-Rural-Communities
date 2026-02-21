@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const config = require('./env');
 
-const DEFAULT_RETRY_INTERVAL = 5000; // ms
+const DEFAULT_RETRY_INTERVAL = 5000;
 
 async function tryConnect() {
     try {
@@ -14,11 +14,7 @@ async function tryConnect() {
     }
 }
 
-/**
- * Attempt an initial connection and, on failure, start background
- * reconnection attempts without exiting the Node process.
- * Returns `true` when connected, otherwise `false`.
- */
+
 const connectDB = async () => {
     const connected = await tryConnect();
 

@@ -6,10 +6,7 @@ const { seedAdmin } = require('./services/auth.service');
 
 let server;
 
-/**
- * Start HTTP server with basic retry on EADDRINUSE (tries subsequent ports).
- * Does not throw unhandled errors so nodemon won't mark the app as crashed.
- */
+
 const startServer = (port, attempts = 5) => {
     return new Promise((resolve, reject) => {
         const srv = http.createServer(app);
@@ -26,7 +23,7 @@ const startServer = (port, attempts = 5) => {
                     return;
                 }
                 console.error('No available ports found to bind server');
-                // reject but do not call process.exit here so nodemon keeps running
+
                 return reject(err);
             }
             reject(err);
@@ -55,7 +52,7 @@ const exitHandler = async (code = 0) => {
 
 const unexpectedErrorHandler = (error) => {
     console.error('Unexpected error', error);
-    // try graceful shutdown, then exit
+
     exitHandler(1);
 };
 
@@ -65,8 +62,7 @@ process.on('unhandledRejection', unexpectedErrorHandler);
 process.on('SIGINT', () => exitHandler(0));
 process.on('SIGTERM', () => exitHandler(0));
 
-// Connect to DB first, then seed and start server. If DB isn't connected
-// we still start the server (DB module will attempt background reconnects).
+
 connectDB()
     .then(async (connected) => {
         if (connected) {
