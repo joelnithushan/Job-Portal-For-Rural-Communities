@@ -10,6 +10,16 @@ const getAllUsers = async (req, res, next) => {
     }
 };
 
+const updateUserStatus = async (req, res, next) => {
+    try {
+        const user = await adminService.updateUserStatus(req.params.id, req.body.status);
+        successResponse(res, 'User status updated successfully', { user });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getAllUsers,
+    updateUserStatus,
 };
