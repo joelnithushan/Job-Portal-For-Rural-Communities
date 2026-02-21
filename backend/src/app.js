@@ -9,7 +9,6 @@ const errorHandler = require('./middlewares/error.middleware');
 const app = express();
 
 app.use(helmet());
-
 app.use(cors());
 app.options('*', cors());
 
@@ -20,8 +19,13 @@ if (config.env !== 'test') {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 🔹 Your applications route
+app.use("/applications", require("./routes/application.routes"));
+
+// 🔹 Other routes
 app.use('/', routes);
 
+// 🔹 Error handler must be LAST
 app.use(errorHandler);
 
 module.exports = app;
