@@ -19,7 +19,27 @@ const updateUserStatus = async (req, res, next) => {
     }
 };
 
+const getAllJobs = async (req, res, next) => {
+    try {
+        const jobs = await adminService.getAllJobs();
+        successResponse(res, 'Jobs retrieved successfully', { jobs });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const deleteJob = async (req, res, next) => {
+    try {
+        const job = await adminService.deleteJob(req.params.id);
+        successResponse(res, 'Job deleted successfully', { job });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getAllUsers,
     updateUserStatus,
+    getAllJobs,
+    deleteJob,
 };

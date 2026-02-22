@@ -19,7 +19,16 @@ const updateStatusSchema = {
     }),
 };
 
+const deleteJobSchema = {
+    params: Joi.object().keys({
+        id: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
+    }),
+};
+
 router.get('/users', adminController.getAllUsers);
 router.patch('/users/:id/status', validate(updateStatusSchema), adminController.updateUserStatus);
+
+router.get('/jobs', adminController.getAllJobs);
+router.delete('/jobs/:id', validate(deleteJobSchema), adminController.deleteJob);
 
 module.exports = router;
