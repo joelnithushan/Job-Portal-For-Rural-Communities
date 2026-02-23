@@ -19,7 +19,17 @@ const getMyCompany = async (req, res, next) => {
     }
 };
 
+const updateMyCompany = async (req, res, next) => {
+    try {
+        const company = await companyService.updateCompany(req.user._id, req.body);
+        successResponse(res, 'Company profile updated successfully', { company });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createCompany,
     getMyCompany,
+    updateMyCompany,
 };

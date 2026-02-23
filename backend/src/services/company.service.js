@@ -17,7 +17,18 @@ const getCompanyByUserId = async (userId) => {
     return company;
 };
 
+const updateCompany = async (userId, data) => {
+    const company = await Company.findOne({ employerUserId: userId });
+    if (!company) {
+        throw { statusCode: 404, message: 'Company profile not found' };
+    }
+    Object.assign(company, data);
+    await company.save();
+    return company;
+};
+
 module.exports = {
     createCompany,
     getCompanyByUserId,
+    updateCompany,
 };

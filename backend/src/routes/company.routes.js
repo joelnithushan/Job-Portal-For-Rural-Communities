@@ -18,7 +18,19 @@ const createCompanySchema = {
     }),
 };
 
+const updateCompanySchema = {
+    body: Joi.object().keys({
+        businessName: Joi.string(),
+        description: Joi.string().allow(''),
+        district: Joi.string(),
+        town: Joi.string().allow(''),
+        contactPhone: Joi.string(),
+        contactWhatsApp: Joi.string().allow(''),
+    }),
+};
+
 router.post('/', auth, requireRole('EMPLOYER'), validate(createCompanySchema), companyController.createCompany);
 router.get('/me', auth, requireRole('EMPLOYER'), companyController.getMyCompany);
+router.patch('/me', auth, requireRole('EMPLOYER'), validate(updateCompanySchema), companyController.updateMyCompany);
 
 module.exports = router;
