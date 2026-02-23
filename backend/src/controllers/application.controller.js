@@ -23,3 +23,30 @@ exports.apply = async (req, res, next) => {
     next(err);
   }
 };
+
+// GET /applications/me — seeker's own applications
+exports.getMyApplications = async (req, res, next) => {
+  try {
+    const applications = await service.getMyApplications(req.user.id);
+    return successResponse(res, "Applications fetched successfully", { applications });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /applications/job/:jobId — employer views applicants for their job
+exports.getApplicantsByJob = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const applications = await service.getApplicantsByJob(jobId, req.user.id);
+    return successResponse(res, "Applicants fetched successfully", { applications });
+  } catch (err) {
+    if (err.message === "Job not found") {
+      return errorResponse(res, err.message, 404);
+    }
+    if (err.message === "Not authorized to view applicants for this job") {
+      return errorResponse(res, err.message, 403);
+    }
+    next(err);
+  }
+};

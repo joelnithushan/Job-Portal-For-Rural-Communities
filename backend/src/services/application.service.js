@@ -84,6 +84,23 @@ exports.getAllApplications = async () => {
 
 
 
+// get all applicants for a specific job (employer only)
+exports.getApplicantsByJob = async (jobId, employerId) => {
+  const job = await Job.findById(jobId);
+  if (!job) {
+    throw new Error("Job not found");
+  }
+
+  if (job.employerId.toString() !== employerId) {
+    throw new Error("Not authorized to view applicants for this job");
+  }
+
+  return await Application.find({ jobId })
+    .populate("seekerId", "name email phone")
+    .populate("jobId", "title");
+};
+
+
 exports.deleteApplication = async (applicationId) => {
   await Application.findByIdAndDelete(applicationId);
   return true;

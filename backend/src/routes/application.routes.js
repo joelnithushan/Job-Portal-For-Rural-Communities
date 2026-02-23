@@ -14,7 +14,7 @@ const applySchema = {
       .pattern(/^[0-9a-fA-F]{24}$/)
       .required()
       .messages({
-        "string.pattern.base": "jobId must be a valid ObjectId",
+        "string.pattern.base": "jobId must be a vaid ObjectId",
       }),
   }),
 };
@@ -26,6 +26,22 @@ router.post(
   requireRole("JOB_SEEKER"),
   validate(applySchema),
   controller.apply
+);
+
+// GET /applications/me — seeker's own applications
+router.get(
+  "/me",
+  auth,
+  requireRole("JOB_SEEKER"),
+  controller.getMyApplications
+);
+
+// GET /applications/job/:jobId — employer views applicants for their job
+router.get(
+  "/job/:jobId",
+  auth,
+  requireRole("EMPLOYER"),
+  controller.getApplicantsByJob
 );
 
 module.exports = router;
