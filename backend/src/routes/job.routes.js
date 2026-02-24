@@ -21,6 +21,17 @@ const createJobSchema = {
     }),
 };
 
+const getJobsSchema = {
+    query: Joi.object().keys({
+        district: Joi.string(),
+        category: Joi.string(),
+        jobType: Joi.string().valid('FULL_TIME', 'PART_TIME', 'CONTRACT'),
+        page: Joi.number().integer().min(1),
+        limit: Joi.number().integer().min(1).max(100),
+    }),
+};
+
+router.get('/', validate(getJobsSchema), jobController.getJobs);
 router.post('/', auth, requireRole('EMPLOYER'), validate(createJobSchema), jobController.createJob);
 
 module.exports = router;
