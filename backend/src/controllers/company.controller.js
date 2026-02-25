@@ -28,8 +28,18 @@ const updateMyCompany = async (req, res, next) => {
     }
 };
 
+const getCompanyById = async (req, res, next) => {
+    try {
+        const company = await companyService.getCompanyById(req.params.id);
+        successResponse(res, 'Company profile retrieved', { company });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createCompany,
     getMyCompany,
     updateMyCompany,
+    getCompanyById,
 };

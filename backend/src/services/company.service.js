@@ -27,8 +27,19 @@ const updateCompany = async (userId, data) => {
     return company;
 };
 
+const getCompanyById = async (companyId) => {
+    const company = await Company.findById(companyId).select(
+        '-employerUserId -verificationStatus -isSuspended -__v'
+    );
+    if (!company) {
+        throw { statusCode: 404, message: 'Company not found' };
+    }
+    return company;
+};
+
 module.exports = {
     createCompany,
     getCompanyByUserId,
+    getCompanyById,
     updateCompany,
 };

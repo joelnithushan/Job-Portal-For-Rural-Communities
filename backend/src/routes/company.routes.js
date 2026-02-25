@@ -32,5 +32,6 @@ const updateCompanySchema = {
 router.post('/', auth, requireRole('EMPLOYER'), validate(createCompanySchema), companyController.createCompany);
 router.get('/me', auth, requireRole('EMPLOYER'), companyController.getMyCompany);
 router.patch('/me', auth, requireRole('EMPLOYER'), validate(updateCompanySchema), companyController.updateMyCompany);
+router.get('/:id', companyController.getCompanyById);
 
 module.exports = router;
