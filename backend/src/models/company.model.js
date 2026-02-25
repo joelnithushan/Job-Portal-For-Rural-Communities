@@ -36,6 +36,7 @@ const companySchema = mongoose.Schema(
             type: String,
             enum: ['PENDING', 'VERIFIED', 'REJECTED'],
             default: 'PENDING',
+            trim: true,
         },
         isSuspended: {
             type: Boolean,
