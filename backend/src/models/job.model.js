@@ -18,15 +18,19 @@ const jobSchema = mongoose.Schema(
         },
         town: {
             type: String,
+            required: true,
             trim: true,
         },
         category: {
             type: String,
+            required: true,
             trim: true,
         },
         jobType: {
             type: String,
             enum: ['FULL_TIME', 'PART_TIME', 'CONTRACT'],
+            required: true,
+            trim: true,
         },
         salaryMin: {
             type: Number,
@@ -37,9 +41,10 @@ const jobSchema = mongoose.Schema(
         contactPhone: {
             type: String,
             required: true,
+            trim: true,
         },
         employerId: {
-            type: mongoose.SchemaTypes.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
         },
@@ -53,6 +58,13 @@ const jobSchema = mongoose.Schema(
         timestamps: true,
     }
 );
+
+jobSchema.methods.toJSON = function () {
+    const job = this;
+    const jobObject = job.toObject();
+    delete jobObject.__v;
+    return jobObject;
+};
 
 const Job = mongoose.model('Job', jobSchema);
 
