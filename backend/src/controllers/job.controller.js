@@ -1,5 +1,5 @@
 const jobService = require('../services/job.service');
-const { successResponse } = require('../utils/response');
+const { successResponse, errorResponse } = require('../utils/response');
 
 const createJob = async (req, res, next) => {
     try {
@@ -30,7 +30,33 @@ const getJobs = async (req, res, next) => {
     }
 };
 
+const updateJob = async (req, res, next) => {
+    try {
+        const job = await jobService.updateJob(req.params.id, req.body, req.user._id);
+        successResponse(res, 'Job updated successfully', { job });
+    } catch (error) {
+        if (error.statusCode) {
+            return errorResponse(res, error.message, error.statusCode);
+        }
+        next(error);
+    }
+};
+
+const deleteJob = async (req, res, next) => {
+    try {
+        await jobService.deleteJob(req.params.id, req.user);
+        successResponse(res, 'Job deleted successfully');
+    } catch (error) {
+        if (error.statusCode) {
+            return errorResponse(res, error.message, error.statusCode);
+        }
+        next(error);
+    }
+};
+
 module.exports = {
     createJob,
     getJobs,
+    updateJob,
+    deleteJob,
 };
