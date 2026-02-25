@@ -28,6 +28,7 @@ const jobSchema = mongoose.Schema(
         },
         jobType: {
             type: String,
+            enum: ['FULL_TIME', 'PART_TIME', 'CONTRACT'],
             required: true,
             trim: true,
         },
@@ -39,6 +40,7 @@ const jobSchema = mongoose.Schema(
         },
         contactPhone: {
             type: String,
+            required: true,
             trim: true,
         },
         employerId: {
@@ -48,8 +50,8 @@ const jobSchema = mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['ACTIVE', 'CLOSED', 'PENDING'],
-            default: 'ACTIVE',
+            enum: ['OPEN', 'CLOSED'],
+            default: 'OPEN',
         },
     },
     {
