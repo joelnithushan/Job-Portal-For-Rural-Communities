@@ -9,7 +9,6 @@ const errorHandler = require('./middlewares/error.middleware');
 const app = express();
 
 app.use(helmet());
-
 app.use(cors());
 app.options('*', cors());
 
@@ -20,7 +19,12 @@ if (config.env !== 'test') {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+app.use("/applications", require("./routes/application.routes"));
+
+
 app.use('/', routes);
+
 
 app.use(errorHandler);
 
