@@ -7,7 +7,6 @@ const validate = require("../middlewares/validate.middleware");
 
 const router = express.Router();
 
-// validate that jobId is a valid mongo ObjectId
 const applySchema = {
   body: Joi.object().keys({
     jobId: Joi.string()
@@ -19,7 +18,6 @@ const applySchema = {
   }),
 };
 
-// POST /applications — submit a job application
 router.post(
   "/",
   auth,
@@ -28,7 +26,6 @@ router.post(
   controller.apply
 );
 
-// GET /applications/me — seeker's own applications
 router.get(
   "/me",
   auth,
@@ -36,12 +33,48 @@ router.get(
   controller.getMyApplications
 );
 
-// GET /applications/job/:jobId — employer views applicants for their job
 router.get(
   "/job/:jobId",
   auth,
   requireRole("EMPLOYER"),
   controller.getApplicantsByJob
+);
+
+const objectIdParam = {
+  params: Joi.object().keys({
+    id: Joi.string()
+      .pattern(/^[0-9a-fA-F]{24}$/)
+      .required()
+      .messages({
+        "string.pattern.base": "id must be a valid ObjectId",
+      }),
+  }),
+};
+
+const updateStatusSchema = {
+  params: objectIdParam.params,
+  body: Joi.object().keys({
+    status: Joi.string()
+      .valid("APPLIED", "REVIEWED", "ACCEPTED", "REJECTED")
+      .required(),
+    note: Joi.string().trim().optional(),
+  }),
+};
+
+router.patch(
+  "/:id/status",
+  auth,
+  requireRole("EMPLOYER"),
+  validate(updateStatusSchema),
+  controller.updateStatus
+);
+
+router.delete(
+  "/:id",
+  auth,
+  requireRole("JOB_SEEKER"),
+  validate(objectIdParam),
+  controller.withdrawApplication
 );
 
 module.exports = router;

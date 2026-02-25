@@ -1,7 +1,6 @@
 const service = require("../services/application.service");
 const { successResponse, errorResponse } = require("../utils/response");
 
-// POST /applications — only JOB_SEEKER can apply
 exports.apply = async (req, res, next) => {
   try {
     const { jobId } = req.body;
@@ -13,7 +12,6 @@ exports.apply = async (req, res, next) => {
     const application = await service.applyToJob(jobId, req.user.id);
     return successResponse(res, "Application submitted successfully", { application }, 201);
   } catch (err) {
-    // surface known service errors with proper status codes
     if (err.message === "Job not found") {
       return errorResponse(res, err.message, 404);
     }
@@ -24,7 +22,6 @@ exports.apply = async (req, res, next) => {
   }
 };
 
-// GET /applications/me — seeker's own applications
 exports.getMyApplications = async (req, res, next) => {
   try {
     const applications = await service.getMyApplications(req.user.id);
@@ -34,7 +31,6 @@ exports.getMyApplications = async (req, res, next) => {
   }
 };
 
-// GET /applications/job/:jobId — employer views applicants for their job
 exports.getApplicantsByJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
@@ -45,6 +41,41 @@ exports.getApplicantsByJob = async (req, res, next) => {
       return errorResponse(res, err.message, 404);
     }
     if (err.message === "Not authorized to view applicants for this job") {
+      return errorResponse(res, err.message, 403);
+    }
+    next(err);
+  }
+};
+
+exports.updateStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status, note } = req.body;
+
+    const application = await service.updateStatus(id, req.user.id, status, note);
+    return successResponse(res, "Application status updated", { application });
+  } catch (err) {
+    if (err.message === "Application not found") {
+      return errorResponse(res, err.message, 404);
+    }
+    if (err.message === "Not authorized to update this application") {
+      return errorResponse(res, err.message, 403);
+    }
+    next(err);
+  }
+};
+
+exports.withdrawApplication = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    await service.withdrawApplication(id, req.user.id);
+    return successResponse(res, "Application withdrawn successfully");
+  } catch (err) {
+    if (err.message === "Application not found") {
+      return errorResponse(res, err.message, 404);
+    }
+    if (err.message === "Not authorized to withdraw this application") {
       return errorResponse(res, err.message, 403);
     }
     next(err);

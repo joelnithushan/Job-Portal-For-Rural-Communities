@@ -84,7 +84,6 @@ exports.getAllApplications = async () => {
 
 
 
-// get all applicants for a specific job (employer only)
 exports.getApplicantsByJob = async (jobId, employerId) => {
   const job = await Job.findById(jobId);
   if (!job) {
