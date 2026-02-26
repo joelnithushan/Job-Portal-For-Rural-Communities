@@ -60,9 +60,26 @@ const deleteJob = async (jobId, user) => {
     await job.deleteOne();
 };
 
+const getNearbyJobs = async (lat, lng, radiusKm = 10) => {
+    const radiusInMeters = radiusKm * 1000;
+    const jobs = await Job.find({
+        location: {
+            $near: {
+                $geometry: {
+                    type: 'Point',
+                    coordinates: [lng, lat],
+                },
+                $maxDistance: radiusInMeters,
+            },
+        },
+    });
+    return jobs;
+};
+
 module.exports = {
     createJob,
     getJobs,
     updateJob,
     deleteJob,
+    getNearbyJobs,
 };

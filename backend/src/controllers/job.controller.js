@@ -54,9 +54,27 @@ const deleteJob = async (req, res, next) => {
     }
 };
 
+const getNearbyJobs = async (req, res, next) => {
+    try {
+        const { lat, lng, radiusKm } = req.query;
+        if (!lat || !lng) {
+            return errorResponse(res, 'lat and lng are required', 400);
+        }
+        const jobs = await jobService.getNearbyJobs(
+            parseFloat(lat),
+            parseFloat(lng),
+            parseFloat(radiusKm) || 10
+        );
+        successResponse(res, 'Nearby jobs retrieved successfully', { jobs });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createJob,
     getJobs,
     updateJob,
     deleteJob,
+    getNearbyJobs,
 };
