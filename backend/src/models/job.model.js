@@ -53,11 +53,22 @@ const jobSchema = mongoose.Schema(
             enum: ['OPEN', 'CLOSED'],
             default: 'OPEN',
         },
+        location: {
+            type: {
+                type: String,
+                enum: ['Point'],
+            },
+            coordinates: {
+                type: [Number],
+            },
+        },
     },
     {
         timestamps: true,
     }
 );
+
+jobSchema.index({ 'location': '2dsphere' });
 
 jobSchema.methods.toJSON = function () {
     const job = this;

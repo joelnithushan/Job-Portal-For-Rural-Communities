@@ -19,10 +19,6 @@ if (config.env !== 'test') {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-app.use("/applications", require("./routes/application.routes"));
-
-
 app.use('/', routes);
 
 

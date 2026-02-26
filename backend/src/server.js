@@ -68,6 +68,8 @@ connectDB()
         if (connected) {
             try {
                 await seedAdmin();
+                const Job = require('./models/job.model');
+                await Job.syncIndexes();
             } catch (err) {
                 console.error('seedAdmin error:', err);
             }

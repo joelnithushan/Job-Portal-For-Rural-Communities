@@ -13,6 +13,11 @@ const paramIdSchema = {
     }),
 };
 
+const locationSchema = Joi.object().keys({
+    type: Joi.string().valid('Point').default('Point'),
+    coordinates: Joi.array().items(Joi.number()).length(2).required(),
+});
+
 const createJobSchema = {
     body: Joi.object().keys({
         title: Joi.string().required(),
@@ -24,6 +29,7 @@ const createJobSchema = {
         jobType: Joi.string().valid('FULL_TIME', 'PART_TIME', 'CONTRACT'),
         salaryMin: Joi.number(),
         salaryMax: Joi.number(),
+        location: locationSchema,
     }),
 };
 
@@ -41,6 +47,7 @@ const updateJobSchema = {
         jobType: Joi.string().valid('FULL_TIME', 'PART_TIME', 'CONTRACT'),
         salaryMin: Joi.number(),
         salaryMax: Joi.number(),
+        location: locationSchema,
     }),
 };
 
@@ -54,7 +61,16 @@ const getJobsSchema = {
     }),
 };
 
+const nearbyJobsSchema = {
+    query: Joi.object().keys({
+        lat: Joi.number().required(),
+        lng: Joi.number().required(),
+        radiusKm: Joi.number().min(1).max(100),
+    }),
+};
+
 router.get('/', validate(getJobsSchema), jobController.getJobs);
+router.get('/nearby', validate(nearbyJobsSchema), jobController.getNearbyJobs);
 router.post('/', auth, requireRole('EMPLOYER'), validate(createJobSchema), jobController.createJob);
 router.patch('/:id', auth, requireRole('EMPLOYER'), validate(updateJobSchema), jobController.updateJob);
 router.delete('/:id', auth, requireRole('EMPLOYER', 'ADMIN'), validate(paramIdSchema), jobController.deleteJob);
