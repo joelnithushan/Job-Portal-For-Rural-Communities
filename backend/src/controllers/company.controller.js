@@ -37,9 +37,19 @@ const getCompanyById = async (req, res, next) => {
     }
 };
 
+const deleteMyCompany = async (req, res, next) => {
+    try {
+        await companyService.deleteCompany(req.user._id);
+        successResponse(res, 'Company profile deleted successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createCompany,
     getMyCompany,
     updateMyCompany,
     getCompanyById,
+    deleteMyCompany,
 };

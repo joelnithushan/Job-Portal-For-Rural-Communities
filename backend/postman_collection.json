@@ -710,6 +710,56 @@
                     ]
                 },
                 {
+                    "name": "Delete My Company",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "me"
+                            ]
+                        },
+                        "description": "Delete your company profile. Requires employer token. This action is permanent."
+                    },
+                    "response": [
+                        {
+                            "name": "200 — Deleted",
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"success\": true,\n  \"message\": \"Company profile deleted successfully\"\n}"
+                        },
+                        {
+                            "name": "404 — Not found",
+                            "status": "Not Found",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"success\": false,\n  \"message\": \"Company profile not found\"\n}"
+                        }
+                    ]
+                },
+                {
                     "name": "Get Company by ID",
                     "request": {
                         "method": "GET",
