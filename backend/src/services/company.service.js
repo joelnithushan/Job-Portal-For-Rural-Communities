@@ -37,9 +37,18 @@ const getCompanyById = async (companyId) => {
     return company;
 };
 
+const deleteCompany = async (userId) => {
+    const company = await Company.findOneAndDelete({ employerUserId: userId });
+    if (!company) {
+        throw { statusCode: 404, message: 'Company profile not found' };
+    }
+    return company;
+};
+
 module.exports = {
     createCompany,
     getCompanyByUserId,
     getCompanyById,
     updateCompany,
+    deleteCompany,
 };
