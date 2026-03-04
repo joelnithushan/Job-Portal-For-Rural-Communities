@@ -35,6 +35,14 @@ const userSchema = mongoose.Schema(
             enum: ['ACTIVE', 'SUSPENDED'],
             default: 'ACTIVE',
         },
+        passwordResetToken: {
+            type: String,
+            default: undefined,
+        },
+        passwordResetExpires: {
+            type: Date,
+            default: undefined,
+        },
     },
     {
         timestamps: true,

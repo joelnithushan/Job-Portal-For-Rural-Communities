@@ -23,8 +23,22 @@ const loginSchema = {
     }),
 };
 
+const forgotPasswordSchema = {
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+    }),
+};
+
+const resetPasswordSchema = {
+    body: Joi.object().keys({
+        password: Joi.string().required().min(8),
+    }),
+};
+
 router.post('/register', authLimiter, validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
 router.get('/me', auth, authController.me);
+router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
+router.post('/reset-password/:token', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
 
 module.exports = router;
