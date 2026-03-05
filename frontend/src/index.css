@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-green: #8B1A1A;
+  --color-brand-greenLight: #A52222;
+  --color-brand-terra: #8B1A1A;
+  --color-brand-terraLight: #A52222;
+  --color-brand-cream: #FFFFFF;
+  --color-brand-sand: #F7F7F7;
+  --color-brand-amber: #E2B325;
+  --color-brand-dark: #1A1A1A;
+  --color-brand-muted: #555555;
+  --color-brand-border: #E0E0E0;
+
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-brand-cream);
+    font-family: var(--font-body);
+    color: var(--color-brand-dark);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    color: var(--color-brand-dark);
+  }
+}
+
+@layer utilities {
+  .shadow-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  .shadow-card-hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+}
