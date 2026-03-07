@@ -6,6 +6,7 @@ const jobRoutes = require('./job.routes');
 const adminRoutes = require('./admin.routes');
 const applicationRoutes = require('./application.routes');
 const geoRoutes = require('./geo.routes');
+const profileRoutes = require('./profile.routes');
 
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.use('/jobs', jobRoutes);
 router.use('/applications', applicationRoutes);
 router.use('/admin', adminRoutes);
 router.use('/geo', geoRoutes);
+router.use('/profile', profileRoutes);
 
 module.exports = router;
