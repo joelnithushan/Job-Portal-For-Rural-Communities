@@ -43,6 +43,24 @@ const userSchema = mongoose.Schema(
             type: Date,
             default: undefined,
         },
+        profilePicture: {
+            type: String,
+            default: null,
+        },
+        phone: {
+            type: String,
+            default: null,
+            trim: true,
+        },
+        district: {
+            type: String,
+            default: null,
+        },
+        bio: {
+            type: String,
+            default: null,
+            maxlength: 500,
+        },
     },
     {
         timestamps: true,
