@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
     Briefcase, CheckCircle, Clock, XCircle, ChevronRight,
     Heart, FileText, Search, Bookmark, LayoutDashboard,
-    MapPin
+    MapPin, User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { applicationsAPI, jobsAPI } from '../../api/services';
