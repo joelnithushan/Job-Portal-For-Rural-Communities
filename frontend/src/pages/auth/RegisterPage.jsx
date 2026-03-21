@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Eye, EyeOff } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -20,7 +21,7 @@ const registerSchema = yup.object({
 });
 
 export const RegisterPage = () => {
-    const { register: registerUser } = useAuth();
+    const { register: registerUser, googleLogin } = useAuth();
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,6 +30,16 @@ export const RegisterPage = () => {
         resolver: yupResolver(registerSchema),
         defaultValues: { agreeToTerms: false }
     });
+
+    const onGoogleSuccess = async (credentialResponse) => {
+        try {
+            await googleLogin(credentialResponse.credential, 'JOB_SEEKER');
+            toast.success('Account created successfully!');
+            navigate('/dashboard', { replace: true });
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Google Signup failed');
+        }
+    };
 
     const onSubmit = async (data) => {
         setIsSubmitting(true);
@@ -122,6 +133,16 @@ export const RegisterPage = () => {
                     <div className="flex-1 h-px bg-gray-200" />
                     <span className="text-xs text-gray-400 uppercase tracking-wider">or</span>
                     <div className="flex-1 h-px bg-gray-200" />
+                </div>
+
+                <div className="flex justify-center mb-6">
+                    <GoogleLogin
+                        onSuccess={onGoogleSuccess}
+                        onError={() => {
+                            toast.error('Google Signup Failed');
+                        }}
+                        text="signup_with"
+                    />
                 </div>
 
                 <div className="text-center space-y-3">
