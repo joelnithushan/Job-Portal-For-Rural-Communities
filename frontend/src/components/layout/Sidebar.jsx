@@ -1,13 +1,27 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/formatters';
 import { LayoutDashboard, FileText, Heart, User, LogOut, PlusCircle, Briefcase, Users, Building, ClipboardList, Building2 } from 'lucide-react';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
 
 export const Sidebar = () => {
     const { user, logout } = useAuth();
     const location = useLocation();
     const role = user?.role || 'JOB_SEEKER';
+
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+    const handleLogout = () => {
+        setIsLogoutModalOpen(true);
+    };
+
+    const confirmLogout = () => {
+        setIsLogoutModalOpen(false);
+        logout();
+    };
 
     const navItems = {
         JOB_SEEKER: [
@@ -29,15 +43,46 @@ export const Sidebar = () => {
             { label: 'Users', path: '/admin/users', icon: Users },
             { label: 'Companies', path: '/admin/companies', icon: Building },
             { label: 'All Jobs', path: '/admin/jobs', icon: Briefcase },
-            { label: 'My Profile', path: '/profile', icon: User },
         ]
     };
 
     const currentNav = navItems[role] || navItems.JOB_SEEKER;
 
+    const logoutModal = (
+        <Modal 
+            isOpen={isLogoutModalOpen} 
+            onClose={() => setIsLogoutModalOpen(false)}
+            title="Confirm Sign Out"
+            size="sm"
+        >
+            <div className="flex flex-col py-1">
+                <p className="text-brand-dark mb-6 font-['DM_Sans'] text-sm">
+                    Are you sure you want to sign out? You will need to log back in to access your dashboard.
+                </p>
+                <div className="flex justify-end gap-3 w-full">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => setIsLogoutModalOpen(false)}
+                        className="rounded border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#8B1A1A]/10 font-['DM_Sans'] font-bold px-6 tracking-wide"
+                    >
+                        CANCEL
+                    </Button>
+                    <Button 
+                        variant="primary" 
+                        onClick={confirmLogout}
+                        className="rounded bg-[#8B1A1A] border-[#8B1A1A] text-[#E2B325] hover:bg-[#6e1515] hover:border-[#6e1515] font-['DM_Sans'] font-bold px-6 tracking-wide"
+                    >
+                        SIGN OUT
+                    </Button>
+                </div>
+            </div>
+        </Modal>
+    );
+
     // ─── ADMIN SIDEBAR ────────────────────────────────────────────
     if (role === 'ADMIN') {
         return (
+            <>
             <aside className="w-64 min-h-screen bg-[#8B1A1A] flex flex-col hidden lg:flex fixed top-0 left-0 z-40">
                 {/* Admin Top Section */}
                 <div className="bg-[#6e1515] p-6 flex flex-col items-center">
@@ -83,28 +128,25 @@ export const Sidebar = () => {
                     <div className="border-t border-white/10 my-3" />
 
                     <button
-                        onClick={logout}
+                        onClick={handleLogout}
                         className="mt-auto flex items-center gap-3 px-4 py-2.5 text-sm text-white/60 hover:text-white hover:bg-white/10 w-full text-left"
                     >
                         <LogOut size={16} />
                         <span>Sign Out</span>
                     </button>
 
-                    {/* Bottom help card */}
-                    <div className="m-4 p-4 bg-[#6e1515] border border-white/10 flex flex-col gap-2">
-                        <p className="text-white/70 text-xs">Need Help?</p>
-                        <button className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold uppercase tracking-wider px-3 py-1.5 w-full">
-                            SUPPORT
-                        </button>
-                    </div>
+
                 </nav>
             </aside>
+            {logoutModal}
+            </>
         );
     }
 
     // ─── EMPLOYER SIDEBAR ──────────────────────────────────────────
     if (role === 'EMPLOYER') {
         return (
+            <>
             <aside className="w-64 min-h-screen bg-[#8B1A1A] flex flex-col hidden lg:flex fixed top-0 left-0 z-40">
                 {/* Employer Top Section */}
                 <div className="bg-[#6e1515] p-6 flex flex-col items-center">
@@ -150,28 +192,24 @@ export const Sidebar = () => {
                     <div className="border-t border-white/10 my-3" />
 
                     <button
-                        onClick={logout}
+                        onClick={handleLogout}
                         className="mt-auto flex items-center gap-3 px-4 py-2.5 text-sm text-white/60 hover:text-white hover:bg-white/10 w-full text-left"
                     >
                         <LogOut size={16} />
                         <span>Sign Out</span>
                     </button>
 
-                    {/* Bottom help card */}
-                    <div className="bg-[#6e1515] border border-white/10 mx-3 mb-4 p-4">
-                        <p className="text-white text-sm font-semibold">Need Help?</p>
-                        <p className="text-white/60 text-xs mt-1">Our support team is ready to assist you.</p>
-                        <button className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold uppercase tracking-wider px-3 py-1.5 w-full mt-3">
-                            SUPPORT
-                        </button>
-                    </div>
+
                 </nav>
             </aside>
+            {logoutModal}
+            </>
         );
     }
 
     // ─── JOB SEEKER SIDEBAR (default) ──────────────────────────────
     return (
+        <>
         <aside className="fixed inset-y-0 left-0 w-64 bg-white/95 backdrop-blur-xl border-r border-brand-green/10 flex flex-col pt-20 z-40 hidden lg:flex">
 
             {/* Profile Snippet */}
@@ -218,7 +256,7 @@ export const Sidebar = () => {
                 <div className="my-4 border-t border-gray-100" />
 
                 <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors font-medium focus:outline-none"
                 >
                     <LogOut size={20} />
@@ -226,15 +264,10 @@ export const Sidebar = () => {
                 </button>
             </nav>
 
-            {/* Help Card */}
-            <div className="p-4 m-4 bg-brand-sand rounded-xl text-center">
-                <p className="text-sm font-semibold text-brand-dark mb-1">Need Help?</p>
-                <p className="text-xs text-brand-muted mb-3">Our support team is ready to assist you.</p>
-                <button className="w-full py-2 bg-white text-brand-green text-sm font-semibold rounded-lg shadow-sm hover:shadow transition-shadow">
-                    Contact Support
-                </button>
-            </div>
+
 
         </aside>
+        {logoutModal}
+        </>
     );
 };

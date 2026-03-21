@@ -6,6 +6,7 @@ export const authAPI = {
     getMe: () => api.get('/auth/me'),
     forgotPassword: (data) => api.post('/auth/forgot-password', data),
     resetPassword: (token, data) => api.post(`/auth/reset-password/${token}`, data),
+    googleLogin: (data) => api.post('/auth/google', data),
 };
 
 export const jobsAPI = {
@@ -43,6 +44,7 @@ export const adminAPI = {
     getAdminCompanies: () => api.get('/admin/companies'),
     verifyCompany: (id) => api.patch(`/admin/companies/${id}/verify`),
     suspendCompany: (id) => api.patch(`/admin/companies/${id}/suspend`),
+    getNotifications: () => api.get('/admin/notifications'),
 };
 
 export const profileAPI = {
