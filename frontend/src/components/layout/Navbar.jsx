@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X, Bell, User } from 'lucide-react';
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { getInitials } from '../../utils/formatters';
+import { adminAPI } from '../../api/services';
 
 const languages = [
     { code: 'en', label: 'EN', full: 'English' },
@@ -15,9 +16,26 @@ const languages = [
 
 export const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [adminNotifications, setAdminNotifications] = useState([]);
     const location = useLocation();
     const { user, isAuthenticated, logout } = useAuth();
     const { t, i18n } = useTranslation();
+
+    useEffect(() => {
+        if (isAuthenticated && user?.role === 'ADMIN') {
+            const fetchNotifications = async () => {
+                try {
+                    const res = await adminAPI.getNotifications();
+                    if (res?.success) {
+                        setAdminNotifications(res.data.notifications);
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch admin notifications', err);
+                }
+            };
+            fetchNotifications();
+        }
+    }, [isAuthenticated, user?.role]);
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -92,10 +110,47 @@ export const Navbar = () => {
                     ) : (
                         user?.role === 'ADMIN' ? (
                             <div className="flex items-center gap-3">
-                                <button className="relative p-2 text-gray-400 hover:text-brand-dark transition-colors">
-                                    <Bell size={18} />
-                                    <span className="absolute top-1 right-1 w-2 h-2 bg-brand-green rounded-full border-2 border-white" />
-                                </button>
+                                <div className="relative group">
+                                    <div className="relative p-2 text-gray-400 hover:text-brand-dark transition-colors cursor-pointer">
+                                        <Bell size={18} />
+                                        {adminNotifications.length > 0 && (
+                                            <span className="absolute top-1 right-1 w-2 h-2 bg-brand-green rounded-full border-2 border-white" />
+                                        )}
+                                    </div>
+
+                                    {/* Notifications Dropdown */}
+                                    <div className="absolute right-0 top-full mt-1 w-80 bg-white shadow-xl rounded-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right z-50">
+                                        <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                            <h3 className="font-semibold text-brand-dark text-sm">Notifications</h3>
+                                            {adminNotifications.length > 0 && (
+                                                <span className="bg-[#8B1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                    {adminNotifications.length}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="max-h-[300px] overflow-y-auto">
+                                            {adminNotifications.length === 0 ? (
+                                                <div className="p-4 text-center text-gray-500 text-sm">
+                                                    No new notifications
+                                                </div>
+                                            ) : (
+                                                adminNotifications.map(notification => (
+                                                    <Link 
+                                                        key={notification.id} 
+                                                        to={notification.link}
+                                                        className="block p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-b-0"
+                                                    >
+                                                        <p className="text-sm text-brand-dark font-medium mb-1">{notification.title}</p>
+                                                        <p className="text-xs text-brand-muted line-clamp-2">{notification.message}</p>
+                                                        <p className="text-[10px] text-gray-400 mt-2">
+                                                            {new Date(notification.createdAt).toLocaleDateString()}
+                                                        </p>
+                                                    </Link>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                                 <Link to="/profile">
                                     {user?.profilePicture ? (
                                         <img src={user.profilePicture} alt={user.name} className="h-9 w-9 object-cover rounded-full border-2 border-[#8B1A1A] cursor-pointer" />
