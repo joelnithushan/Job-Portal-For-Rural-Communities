@@ -377,6 +377,7 @@ export const AdminUsersPage = () => {
     const [roleFilter, setRoleFilter] = useState('ALL');
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [actionLoading, setActionLoading] = useState({});
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, userId: null, newStatus: null, userName: '' });
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -412,6 +413,7 @@ export const AdminUsersPage = () => {
             await adminAPI.updateUserStatus(userId, { status: newStatus });
             setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: newStatus } : u));
             toast.success(newStatus === 'SUSPENDED' ? 'User suspended.' : 'User activated.');
+            setConfirmModal({ isOpen: false, userId: null, newStatus: null, userName: '' });
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to update status.');
         } finally {
@@ -533,7 +535,7 @@ export const AdminUsersPage = () => {
                                             ) : (
                                                 user.status === 'ACTIVE' ? (
                                                     <button
-                                                        onClick={() => handleUserStatus(user._id, 'SUSPENDED')}
+                                                        onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'SUSPENDED', userName: user.name })}
                                                         disabled={actionLoading[user._id]}
                                                         className="px-3 py-1 text-xs uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50 disabled:opacity-50"
                                                     >
@@ -541,7 +543,7 @@ export const AdminUsersPage = () => {
                                                     </button>
                                                 ) : (
                                                     <button
-                                                        onClick={() => handleUserStatus(user._id, 'ACTIVE')}
+                                                        onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'ACTIVE', userName: user.name })}
                                                         disabled={actionLoading[user._id]}
                                                         className="px-3 py-1 text-xs uppercase tracking-wider border border-green-600 text-green-600 hover:bg-green-50 disabled:opacity-50"
                                                     >
@@ -573,6 +575,16 @@ export const AdminUsersPage = () => {
                     Suspended <span className="text-[#E2B325] font-bold ml-1">{suspendedCount}</span>
                 </span>
             </div>
+
+            <ConfirmModal 
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.newStatus === 'SUSPENDED' ? 'Suspend Account' : 'Activate Account'}
+                message={`Are you sure you want to ${confirmModal.newStatus === 'SUSPENDED' ? 'suspend' : 'activate'} ${confirmModal.userName}?`}
+                confirmText={confirmModal.newStatus === 'SUSPENDED' ? 'SUSPEND' : 'ACTIVATE'}
+                loading={confirmModal.userId ? actionLoading[confirmModal.userId] : false}
+                onCancel={() => setConfirmModal({ isOpen: false, userId: null, newStatus: null, userName: '' })}
+                onConfirm={() => handleUserStatus(confirmModal.userId, confirmModal.newStatus)}
+            />
         </div>
     );
 };
@@ -590,6 +602,7 @@ export const AdminCompaniesPage = () => {
     const [suspendFilter, setSuspendFilter] = useState('ALL');
     const [actionLoading, setActionLoading] = useState({});
     const [selectedCompany, setSelectedCompany] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, companyId: null, isCurrentlySuspended: false, companyName: '' });
 
     useEffect(() => {
         const fetchCompanies = async () => {
@@ -646,6 +659,7 @@ export const AdminCompaniesPage = () => {
             await adminAPI.suspendCompany(id);
             setCompanies(prev => prev.map(c => c._id === id ? { ...c, isSuspended: !c.isSuspended } : c));
             toast.success(isSuspended ? 'Company unsuspended.' : 'Company suspended.');
+            setConfirmModal({ isOpen: false, companyId: null, isCurrentlySuspended: false, companyName: '' });
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to update company.');
         } finally {
@@ -793,7 +807,7 @@ export const AdminCompaniesPage = () => {
                                                     </button>
                                                 )}
                                                 <button
-                                                    onClick={() => handleSuspendToggle(company._id, company.isSuspended)}
+                                                    onClick={() => setConfirmModal({ isOpen: true, companyId: company._id, isCurrentlySuspended: company.isSuspended, companyName: company.businessName })}
                                                     disabled={actionLoading[company._id]}
                                                     className={`text-xs px-2.5 py-1 uppercase tracking-wider disabled:opacity-50 ${company.isSuspended
                                                         ? 'bg-[#1e40af] text-white hover:bg-blue-800'
@@ -910,6 +924,16 @@ export const AdminCompaniesPage = () => {
                     </div>
                 </div>
             )}
+
+            <ConfirmModal 
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.isCurrentlySuspended ? 'Unsuspend Company' : 'Suspend Company'}
+                message={`Are you sure you want to ${confirmModal.isCurrentlySuspended ? 'unsuspend' : 'suspend'} ${confirmModal.companyName}?`}
+                confirmText={confirmModal.isCurrentlySuspended ? 'UNSUSPEND' : 'SUSPEND'}
+                loading={confirmModal.companyId ? actionLoading[confirmModal.companyId] : false}
+                onCancel={() => setConfirmModal({ isOpen: false, companyId: null, isCurrentlySuspended: false, companyName: '' })}
+                onConfirm={() => handleSuspendToggle(confirmModal.companyId, confirmModal.isCurrentlySuspended)}
+            />
         </div>
     );
 };
