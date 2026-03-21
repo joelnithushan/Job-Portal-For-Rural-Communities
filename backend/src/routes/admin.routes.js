@@ -25,6 +25,8 @@ const objectIdParamsSchema = {
     }),
 };
 
+router.get('/notifications', adminController.getAdminNotifications);
+
 router.get('/users', adminController.getAllUsers);
 router.patch('/users/:id/status', validate(updateStatusSchema), adminController.updateUserStatus);
 

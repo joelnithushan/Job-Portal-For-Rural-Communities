@@ -69,6 +69,34 @@ const suspendCompany = async (companyId) => {
     return company;
 };
 
+const getAdminNotifications = async () => {
+    const notifications = [];
+
+    // 1. Pending Companies
+    const pendingCompanies = await Company.find({ verificationStatus: 'PENDING' })
+        .sort({ createdAt: -1 })
+        .limit(10);
+        
+    pendingCompanies.forEach(company => {
+        notifications.push({
+            id: `company_${company._id}`,
+            type: 'COMPANY_VERIFICATION',
+            title: 'Pending Verification',
+            message: `Company "${company.businessName}" is waiting for verification.`,
+            isRead: false,
+            createdAt: company.createdAt,
+            link: '/admin/companies'
+        });
+    });
+
+    // We can add more aggregations here later (e.g., reported users, pending jobs)
+
+    // Sort all aggregated notifications by date descending
+    notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    return notifications;
+};
+
 module.exports = {
     getAllUsers,
     updateUserStatus,
@@ -78,4 +106,5 @@ module.exports = {
     deleteApplication,
     verifyCompany,
     suspendCompany,
+    getAdminNotifications,
 };
