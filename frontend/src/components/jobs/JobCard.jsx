@@ -72,7 +72,7 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
 
                 <div className="flex items-center gap-4 mt-1 text-sm">
                     <div className="font-semibold text-amber-600">
-                        {formatSalary(job.salary?.min, job.salary?.max)}
+                        {formatSalary(job.salaryMin, job.salaryMax)}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-brand-muted">
                         <Clock size={12} />

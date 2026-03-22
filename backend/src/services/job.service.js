@@ -1,6 +1,31 @@
 const Job = require('../models/job.model');
+const geoService = require('./geo.service');
 
 const createJob = async (jobData) => {
+    if (jobData.district && (!jobData.location || !jobData.location.coordinates)) {
+        try {
+            const query = jobData.town ? `${jobData.town}, ${jobData.district}, Sri Lanka` : `${jobData.district}, Sri Lanka`;
+            const coords = await geoService.geocodeDistrict(query);
+            jobData.location = {
+                type: 'Point',
+                coordinates: [coords.lng, coords.lat],
+            };
+        } catch (error) {
+            console.error('Failed to geocode job location:', error.message);
+            // Fallback to district if town fails
+            if (jobData.town) {
+                try {
+                    const fallbackCoords = await geoService.geocodeDistrict(`${jobData.district}, Sri Lanka`);
+                    jobData.location = {
+                        type: 'Point',
+                        coordinates: [fallbackCoords.lng, fallbackCoords.lat],
+                    };
+                } catch (fallbackError) {
+                    console.error('Fallback geocode failed:', fallbackError.message);
+                }
+            }
+        }
+    }
     const job = await Job.create(jobData);
     return job;
 };
@@ -13,7 +38,11 @@ const getJobs = async ({ district, category, jobType, page = 1, limit = 10 }) =>
 
     const skip = (page - 1) * limit;
     const [jobs, total] = await Promise.all([
-        Job.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+        Job.find(filter)
+            .populate('employerId', 'name email profilePicture')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
         Job.countDocuments(filter),
     ]);
 
@@ -24,6 +53,16 @@ const getJobs = async ({ district, category, jobType, page = 1, limit = 10 }) =>
         limit,
         totalPages: Math.ceil(total / limit),
     };
+};
+
+const getJobById = async (jobId) => {
+    const job = await Job.findById(jobId).populate('employerId', 'name email profilePicture phone');
+    if (!job) {
+        const error = new Error('Job not found');
+        error.statusCode = 404;
+        throw error;
+    }
+    return job;
 };
 
 const updateJob = async (jobId, updateData, userId) => {
@@ -38,6 +77,33 @@ const updateJob = async (jobId, updateData, userId) => {
         error.statusCode = 403;
         throw error;
     }
+
+    if ((updateData.district || updateData.town) && !updateData.location) {
+        const queryDistrict = updateData.district || job.district;
+        const queryTown = updateData.town !== undefined ? updateData.town : job.town;
+        const query = queryTown ? `${queryTown}, ${queryDistrict}, Sri Lanka` : `${queryDistrict}, Sri Lanka`;
+        try {
+            const coords = await geoService.geocodeDistrict(query);
+            updateData.location = {
+                type: 'Point',
+                coordinates: [coords.lng, coords.lat],
+            };
+        } catch (error) {
+            console.error('Failed to geocode updated job location:', error.message);
+            if (queryTown) {
+                try {
+                    const fallbackCoords = await geoService.geocodeDistrict(`${queryDistrict}, Sri Lanka`);
+                    updateData.location = {
+                        type: 'Point',
+                        coordinates: [fallbackCoords.lng, fallbackCoords.lat],
+                    };
+                } catch (fallbackError) {
+                    console.error('Fallback geocode failed:', fallbackError.message);
+                }
+            }
+        }
+    }
+
     Object.assign(job, updateData);
     await job.save();
     return job;
@@ -72,13 +138,14 @@ const getNearbyJobs = async (lat, lng, radiusKm = 10) => {
                 $maxDistance: radiusInMeters,
             },
         },
-    });
+    }).populate('employerId', 'name email profilePicture');
     return jobs;
 };
 
 module.exports = {
     createJob,
     getJobs,
+    getJobById,
     updateJob,
     deleteJob,
     getNearbyJobs,

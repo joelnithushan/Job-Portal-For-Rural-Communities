@@ -38,5 +38,6 @@ router.delete('/applications/:id', validate(objectIdParamsSchema), adminControll
 
 router.patch('/companies/:id/verify', validate(objectIdParamsSchema), adminController.verifyCompany);
 router.patch('/companies/:id/suspend', validate(objectIdParamsSchema), adminController.suspendCompany);
+router.get('/companies', adminController.getAllCompanies);
 
 module.exports = router;

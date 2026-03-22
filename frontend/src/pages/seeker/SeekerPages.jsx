@@ -150,20 +150,7 @@ export const SeekerDashboard = () => {
 
     return (
         <>
-            {/* Welcome Banner */}
-            <div className="bg-[#8B1A1A] px-8 py-6 mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">
-                        {t('welcome_back')}, {user?.name?.split(' ')[0] || 'User'} 👋
-                    </h1>
-                    <p className="text-white/70 text-sm mt-1">
-                        {t('you_have')} <span className="text-[#E2B325] font-bold">{stats.total}</span> {t('applications')}
-                    </p>
-                </div>
-                <div className="bg-white/10 border border-white/20 px-4 py-2 text-right hidden sm:block">
-                    <p className="text-[#E2B325] text-xs uppercase tracking-widest">{dateString}</p>
-                </div>
-            </div>
+            {/* Welcome Banner Removed */}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -336,16 +323,7 @@ export const MyApplicationsPage = () => {
 
     return (
         <>
-            {/* Page Header */}
-            <div className="bg-[#8B1A1A] px-8 py-5 mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">{t('my_applications')}</h1>
-                    <p className="text-white/60 text-sm mt-0.5">{t('my_applications_sub')}</p>
-                </div>
-                <div className="bg-white/10 border border-white/20 px-4 py-2">
-                    <p className="text-[#E2B325] text-sm font-bold">{applications.length}</p>
-                </div>
-            </div>
+            {/* Page Header Removed */}
 
             {/* Filter Bar */}
             <div className="bg-white border border-gray-200 border-t-4 border-t-[#E2B325] p-4 mb-4 flex flex-wrap gap-3 items-center">
@@ -520,16 +498,7 @@ export const SavedJobsPage = () => {
 
     return (
         <>
-            {/* Page Header */}
-            <div className="bg-[#8B1A1A] px-8 py-5 mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">{t('saved_jobs_title')}</h1>
-                    <p className="text-white/60 text-sm mt-0.5">{t('saved_jobs_sub')}</p>
-                </div>
-                <div className="bg-white/10 border border-white/20 px-4 py-2">
-                    <p className="text-[#E2B325] text-sm font-bold">{savedJobs.length}</p>
-                </div>
-            </div>
+            {/* Page Header Removed */}
 
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-3">

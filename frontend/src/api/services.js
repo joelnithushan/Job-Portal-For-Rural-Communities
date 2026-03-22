@@ -20,6 +20,9 @@ export const jobsAPI = {
 
 export const applicationsAPI = {
     applyToJob: (data) => api.post('/applications', data),
+    uploadCV: (formData) => api.post('/applications/upload-cv', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    }),
     getMyApplications: () => api.get('/applications/me'),
     getJobApplications: (jobId) => api.get(`/applications/job/${jobId}`),
     updateAppStatus: (id, data) => api.patch(`/applications/${id}/status`, data),
@@ -54,4 +57,10 @@ export const profileAPI = {
         headers: { 'Content-Type': 'multipart/form-data' },
     }),
     deleteProfilePicture: () => api.delete('/profile/me/picture'),
+};
+
+export const notificationsAPI = {
+    getMyNotifications: () => api.get('/notifications/me'),
+    markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+    markAllAsRead: () => api.patch('/notifications/read-all'),
 };

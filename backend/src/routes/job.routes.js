@@ -30,6 +30,7 @@ const createJobSchema = {
         salaryMin: Joi.number(),
         salaryMax: Joi.number(),
         location: locationSchema,
+        cvRequired: Joi.boolean().default(false),
     }),
 };
 
@@ -48,6 +49,7 @@ const updateJobSchema = {
         salaryMin: Joi.number(),
         salaryMax: Joi.number(),
         location: locationSchema,
+        cvRequired: Joi.boolean(),
     }),
 };
 
@@ -71,6 +73,7 @@ const nearbyJobsSchema = {
 
 router.get('/', validate(getJobsSchema), jobController.getJobs);
 router.get('/nearby', validate(nearbyJobsSchema), jobController.getNearbyJobs);
+router.get('/:id', validate(paramIdSchema), jobController.getJobById);
 router.post('/', auth, requireRole('EMPLOYER'), validate(createJobSchema), jobController.createJob);
 router.patch('/:id', auth, requireRole('EMPLOYER'), validate(updateJobSchema), jobController.updateJob);
 router.delete('/:id', auth, requireRole('EMPLOYER', 'ADMIN'), validate(paramIdSchema), jobController.deleteJob);

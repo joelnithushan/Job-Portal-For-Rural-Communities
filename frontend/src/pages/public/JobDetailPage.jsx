@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
     MapPin, Clock, Briefcase, Share2, Heart,
-    CheckCircle, ChevronRight, Check, AlertCircle
+    CheckCircle, ChevronRight, Check, AlertCircle, FileText, UploadCloud, X
 } from 'lucide-react';
 import { jobsAPI, applicationsAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
@@ -25,6 +25,8 @@ export const JobDetailPage = () => {
     const [isSaved, setIsSaved] = useState(false);
     const [isApplying, setIsApplying] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
+    const [showApplyModal, setShowApplyModal] = useState(false);
+    const [cvFile, setCvFile] = useState(null);
 
     useEffect(() => {
         const fetchJob = async () => {
@@ -53,7 +55,7 @@ export const JobDetailPage = () => {
         fetchJob();
     }, [id, isAuthenticated, user]);
 
-    const handleApply = async () => {
+    const handleApplyClick = () => {
         if (!isAuthenticated) {
             toast.error('Please sign in to apply for this job.');
             return;
@@ -63,11 +65,34 @@ export const JobDetailPage = () => {
             return;
         }
 
+        if (!user?.nic || !user?.phone || !user?.district) {
+            toast.error('Incomplete Profile! Please complete your profile (NIC, Phone, District) in Profile settings first.');
+            return;
+        }
+
+        setShowApplyModal(true);
+    };
+
+    const submitApplication = async () => {
+        if (job.cvRequired && !cvFile) {
+            toast.error('A CV is required to apply for this job.');
+            return;
+        }
+
         setIsApplying(true);
         try {
-            await applicationsAPI.applyForJob(id, { coverLetter: '' }); // Simplified
+            let cvUrlStr = null;
+            if (cvFile) {
+                const formData = new FormData();
+                formData.append('cv', cvFile);
+                const uploadRes = await applicationsAPI.uploadCV(formData);
+                cvUrlStr = uploadRes.data?.data?.cvUrl || uploadRes.data?.cvUrl || uploadRes.data?.data?.profilePicture; // fallback if needed
+            }
+
+            await applicationsAPI.applyToJob({ jobId: id, cvUrl: cvUrlStr });
             toast.success('Successfully applied for this job!');
             setHasApplied(true);
+            setShowApplyModal(false);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to apply. Please try again.');
         } finally {
@@ -195,7 +220,7 @@ export const JobDetailPage = () => {
                                 <div>
                                     <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Offered Salary</p>
                                     <p className="text-2xl font-bold text-amber-600">
-                                        {formatSalary(job.salary?.min, job.salary?.max)}
+                                        {formatSalary(job.salaryMin, job.salaryMax)}
                                     </p>
                                 </div>
 
@@ -222,8 +247,7 @@ export const JobDetailPage = () => {
                                             variant="primary"
                                             size="lg"
                                             className="flex-1 sm:w-48 shadow-md"
-                                            onClick={handleApply}
-                                            loading={isApplying}
+                                            onClick={handleApplyClick}
                                             disabled={hasApplied}
                                         >
                                             {hasApplied ? (
@@ -345,6 +369,61 @@ export const JobDetailPage = () => {
                 </div>
 
             </div>
+
+            {/* Application Modal */}
+            {showApplyModal && (
+                <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full relative">
+                        <button 
+                            onClick={() => setShowApplyModal(false)}
+                            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+                        >
+                            <X size={20} />
+                        </button>
+                        
+                        <h3 className="text-xl font-heading font-bold text-brand-dark mb-2">Submit Application</h3>
+                        <p className="text-brand-muted text-sm mb-6">Review your application before submitting to {company?.name}.</p>
+
+                        <div className="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-6">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <FileText size={16} className="text-[#8B1A1A]" /> 
+                                CV Attachment {job.cvRequired && <span className="text-[#8B1A1A] text-xs">*Required</span>}
+                            </h4>
+                            <div className="flex flex-col gap-3">
+                                <input 
+                                    type="file" 
+                                    id="cvUpload" 
+                                    className="hidden" 
+                                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                    onChange={(e) => setCvFile(e.target.files[0])}
+                                />
+                                {cvFile ? (
+                                    <div className="flex items-center justify-between bg-white border border-[#E2B325] p-3 rounded-md">
+                                        <span className="text-sm font-medium text-gray-800 truncate">{cvFile.name}</span>
+                                        <button onClick={() => setCvFile(null)} className="text-red-500 hover:text-red-700">
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <label htmlFor="cvUpload" className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-white hover:bg-gray-50">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <UploadCloud size={24} className="text-gray-400 mb-2" />
+                                            <p className="text-sm text-gray-500"><span className="font-semibold text-brand-tera cursor-pointer">Click to upload</span> your CV.</p>
+                                        </div>
+                                    </label>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 justify-end items-center">
+                            <Button variant="outline" onClick={() => setShowApplyModal(false)}>Cancel</Button>
+                            <Button variant="primary" loading={isApplying} onClick={submitApplication}>
+                                Confirm Application
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

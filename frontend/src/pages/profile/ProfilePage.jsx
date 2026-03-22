@@ -7,7 +7,7 @@ import { profileAPI } from '../../api/services';
 import toast from 'react-hot-toast';
 import {
     Camera, Trash2, User, Phone, MapPin, FileText,
-    Mail, Shield, Calendar, Edit3, Save, X, CheckCircle
+    Mail, Shield, Calendar, Edit3, Save, X, CheckCircle, CreditCard
 } from 'lucide-react';
 
 const DISTRICTS = [
@@ -22,6 +22,7 @@ const profileSchema = yup.object({
     name: yup.string().required('Name is required').min(2, 'Name must be at least 2 characters').max(60, 'Name must be at most 60 characters').trim(),
     phone: yup.string().nullable().transform(v => v === '' ? null : v).matches(/^[0-9+\-\s()]{7,20}$/, { message: 'Enter a valid phone number (7–20 digits)', excludeEmptyString: true }),
     district: yup.string().nullable().transform(v => v === '' ? null : v),
+    nic: yup.string().nullable().transform(v => v === '' ? null : v).matches(/^(?:\d{9}[vVxX]|\d{12})$/, { message: 'Enter a valid Sri Lankan NIC', excludeEmptyString: true }),
     bio: yup.string().nullable().transform(v => v === '' ? null : v).max(500, 'Bio cannot exceed 500 characters'),
 });
 
@@ -53,6 +54,7 @@ export const ProfilePage = () => {
         defaultValues: {
             name: user?.name || '',
             phone: user?.phone || '',
+            nic: user?.nic || '',
             district: user?.district || '',
             bio: user?.bio || '',
         },
@@ -125,6 +127,7 @@ export const ProfilePage = () => {
             reset({
                 name: updated.name || '',
                 phone: updated.phone || '',
+                nic: updated.nic || '',
                 district: updated.district || '',
                 bio: updated.bio || '',
             });
@@ -141,6 +144,7 @@ export const ProfilePage = () => {
         reset({
             name: user?.name || '',
             phone: user?.phone || '',
+            nic: user?.nic || '',
             district: user?.district || '',
             bio: user?.bio || '',
         });
@@ -157,23 +161,17 @@ export const ProfilePage = () => {
 
     return (
         <>
-            {/* Page Header */}
-            <div className="bg-[#8B1A1A] px-8 py-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">My Profile</h1>
-                    <p className="text-white/60 text-sm mt-0.5">Manage your personal information</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    {!isEditing ? (
-                        <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420]">
-                            <Edit3 className="h-4 w-4" /> EDIT PROFILE
-                        </button>
-                    ) : (
-                        <button onClick={handleCancelEdit} className="flex items-center gap-2 border border-white/40 text-white text-sm uppercase tracking-wider px-4 py-2.5 hover:bg-white/10">
-                            <X className="h-4 w-4" /> CANCEL
-                        </button>
-                    )}
-                </div>
+            {/* Action Buttons */}
+            <div className="mb-6 flex justify-end gap-3">
+                {!isEditing ? (
+                    <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420]">
+                        <Edit3 className="h-4 w-4" /> EDIT PROFILE
+                    </button>
+                ) : (
+                    <button onClick={handleCancelEdit} className="flex items-center gap-2 border border-gray-300 text-gray-600 bg-white text-sm uppercase tracking-wider px-4 py-2.5 hover:bg-gray-50 shadow-sm">
+                        <X className="h-4 w-4" /> CANCEL
+                    </button>
+                )}
             </div>
 
             {/* Main Content: 2 column grid */}
@@ -265,6 +263,7 @@ export const ProfilePage = () => {
                                     {[
                                         { icon: User, label: 'Full Name', value: user?.name },
                                         { icon: Phone, label: 'Phone', value: user?.phone },
+                                        { icon: CreditCard, label: 'National ID (NIC)', value: user?.nic },
                                         { icon: MapPin, label: 'District', value: user?.district },
                                     ].map(field => (
                                         <div key={field.label} className="flex flex-col py-4 border-b border-gray-100">
@@ -304,6 +303,16 @@ export const ProfilePage = () => {
                                             <input {...register('phone')} type="tel" placeholder="+94 71 234 5678" className={inputCls(errors.phone)} />
                                         </div>
                                         {errors.phone && <p className="text-xs text-[#8B1A1A] mt-0.5">{errors.phone.message}</p>}
+                                    </div>
+
+                                    {/* NIC */}
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-xs font-semibold uppercase tracking-wider text-gray-600">National ID (NIC)</label>
+                                        <div className="relative">
+                                            <CreditCard className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                            <input {...register('nic')} type="text" placeholder="e.g. 199912345678 or 987654321V" className={inputCls(errors.nic)} />
+                                        </div>
+                                        {errors.nic && <p className="text-xs text-[#8B1A1A] mt-0.5">{errors.nic.message}</p>}
                                     </div>
 
                                     {/* District */}

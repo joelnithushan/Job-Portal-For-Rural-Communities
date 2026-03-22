@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { adminAPI } from '../../api/services';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
 
 
 // ─── SHARED HELPERS ────────────────────────────────────────────
@@ -79,12 +80,12 @@ const SectionCard = ({ children, className = '', title, subtitle }) => (
 );
 
 const PageHeading = ({ title, subtitle, right }) => (
-    <div className="bg-[#8B1A1A] px-8 py-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-            <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">{title}</h1>
-            {subtitle && <p className="text-white/60 text-sm mt-0.5">{subtitle}</p>}
+            {title && <h1 className="text-2xl font-bold text-[#1A1A1A] font-['Playfair_Display']">{title}</h1>}
+            {subtitle && <p className="text-sm text-gray-400 uppercase tracking-widest mt-1">{subtitle}</p>}
         </div>
-        {right && <div className="bg-white/10 border border-white/20 px-4 py-2">{right}</div>}
+        {right && <div>{right}</div>}
     </div>
 );
 
@@ -278,9 +279,13 @@ export const AdminDashboard = () => {
                         <div className="divide-y divide-gray-100">
                             {recentUsers.map(u => (
                                 <div key={u._id} className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0">
-                                    <div className="w-9 h-9 bg-[#8B1A1A] text-white flex items-center justify-center text-xs font-bold rounded-full shrink-0">
-                                        {getInitials(u.name)}
-                                    </div>
+                                    {u.profilePicture ? (
+                                        <img src={u.profilePicture} alt={u.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+                                    ) : (
+                                        <div className="w-9 h-9 bg-[#8B1A1A] text-white flex items-center justify-center text-xs font-bold rounded-full shrink-0">
+                                            {getInitials(u.name)}
+                                        </div>
+                                    )}
                                     <div>
                                         <p className="font-semibold text-[#1A1A1A] text-sm">{u.name}</p>
                                         <p className="text-xs text-gray-400">{u.email}</p>
@@ -378,6 +383,7 @@ export const AdminUsersPage = () => {
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [actionLoading, setActionLoading] = useState({});
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, userId: null, newStatus: null, userName: '' });
+    const [viewUserModal, setViewUserModal] = useState({ isOpen: false, user: null });
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -437,15 +443,6 @@ export const AdminUsersPage = () => {
             <PageHeading
                 title="User Management"
                 subtitle={`${users.length} total users`}
-                right={
-                    <p className="text-white text-xs uppercase tracking-wider">
-                        Employers: <span className="text-[#E2B325] font-bold">{totalEmployers}</span>
-                        &nbsp;|&nbsp;
-                        Seekers: <span className="text-[#E2B325] font-bold">{totalSeekers}</span>
-                        &nbsp;|&nbsp;
-                        Suspended: <span className="text-[#E2B325] font-bold">{suspendedCount}</span>
-                    </p>
-                }
             />
 
             {/* Filter Bar */}
@@ -515,9 +512,13 @@ export const AdminUsersPage = () => {
                                         <td className="py-3 px-4 text-gray-400 text-xs font-mono border-b border-gray-100 align-middle">{i + 1}</td>
                                         <td className="py-3 px-4 border-b border-gray-100 align-middle">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-[#8B1A1A] text-white flex items-center justify-center text-xs font-bold rounded-full shrink-0">
-                                                    {getInitials(user.name)}
-                                                </div>
+                                                {user.profilePicture ? (
+                                                    <img src={user.profilePicture} alt={user.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                                                ) : (
+                                                    <div className="w-8 h-8 bg-[#8B1A1A] text-white flex items-center justify-center text-xs font-bold rounded-full shrink-0">
+                                                        {getInitials(user.name)}
+                                                    </div>
+                                                )}
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-semibold text-[#1A1A1A]">{user.name}</span>
                                                     <span className="text-xs text-gray-400">{user.email}</span>
@@ -528,29 +529,37 @@ export const AdminUsersPage = () => {
                                         <td className="py-3 px-4 border-b border-gray-100 align-middle"><StatusBadge status={user.status} /></td>
                                         <td className="py-3 px-4 text-gray-500 text-xs font-mono hidden md:table-cell border-b border-gray-100 align-middle">{fmtDate(user.createdAt)}</td>
                                         <td className="py-3 px-4 text-right border-b border-gray-100 align-middle">
-                                            {user.role === 'ADMIN' ? (
-                                                <span className="text-gray-300 text-xs flex items-center justify-end gap-1 font-bold uppercase tracking-wider">
-                                                    <Lock size={12} /> Protected
-                                                </span>
-                                            ) : (
-                                                user.status === 'ACTIVE' ? (
-                                                    <button
-                                                        onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'SUSPENDED', userName: user.name })}
-                                                        disabled={actionLoading[user._id]}
-                                                        className="px-3 py-1 text-xs uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50 disabled:opacity-50"
-                                                    >
-                                                        {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-red-500 border-t-transparent rounded-full" /> : 'SUSPEND'}
-                                                    </button>
+                                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                                <button
+                                                    onClick={() => setViewUserModal({ isOpen: true, user })}
+                                                    className="px-3 py-1 text-xs uppercase tracking-wider border border-gray-300 text-gray-600 hover:bg-gray-50"
+                                                >
+                                                    VIEW
+                                                </button>
+                                                {user.role === 'ADMIN' ? (
+                                                    <span className="text-gray-300 text-xs flex items-center justify-end gap-1 font-bold uppercase tracking-wider ml-1">
+                                                        <Lock size={12} /> Protected
+                                                    </span>
                                                 ) : (
-                                                    <button
-                                                        onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'ACTIVE', userName: user.name })}
-                                                        disabled={actionLoading[user._id]}
-                                                        className="px-3 py-1 text-xs uppercase tracking-wider border border-green-600 text-green-600 hover:bg-green-50 disabled:opacity-50"
-                                                    >
-                                                        {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-green-600 border-t-transparent rounded-full" /> : 'ACTIVATE'}
-                                                    </button>
-                                                )
-                                            )}
+                                                    user.status === 'ACTIVE' ? (
+                                                        <button
+                                                            onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'SUSPENDED', userName: user.name })}
+                                                            disabled={actionLoading[user._id]}
+                                                            className="px-3 py-1 text-xs uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50 disabled:opacity-50"
+                                                        >
+                                                            {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-red-500 border-t-transparent rounded-full" /> : 'SUSPEND'}
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'ACTIVE', userName: user.name })}
+                                                            disabled={actionLoading[user._id]}
+                                                            className="px-3 py-1 text-xs uppercase tracking-wider border border-green-600 text-green-600 hover:bg-green-50 disabled:opacity-50"
+                                                        >
+                                                            {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-green-600 border-t-transparent rounded-full" /> : 'ACTIVATE'}
+                                                        </button>
+                                                    )
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -585,6 +594,57 @@ export const AdminUsersPage = () => {
                 onCancel={() => setConfirmModal({ isOpen: false, userId: null, newStatus: null, userName: '' })}
                 onConfirm={() => handleUserStatus(confirmModal.userId, confirmModal.newStatus)}
             />
+
+            <Modal
+                isOpen={viewUserModal.isOpen}
+                onClose={() => setViewUserModal({ isOpen: false, user: null })}
+                title="User Profile Details"
+                size="md"
+            >
+                {viewUserModal.user && (
+                    <div className="flex flex-col py-2">
+                        <div className="flex items-start gap-4 mb-6">
+                            {viewUserModal.user.profilePicture ? (
+                                <img src={viewUserModal.user.profilePicture} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200" />
+                            ) : (
+                                <div className="w-16 h-16 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center text-xl font-bold">
+                                    {getInitials(viewUserModal.user.name)}
+                                </div>
+                            )}
+                            <div>
+                                <h3 className="text-lg font-bold text-[#1A1A1A]">{viewUserModal.user.name}</h3>
+                                <p className="text-sm text-gray-500 mb-2">{viewUserModal.user.email}</p>
+                                <div className="flex gap-2">
+                                    <RoleBadge role={viewUserModal.user.role} />
+                                    <StatusBadge status={viewUserModal.user.status} />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="border-t border-gray-100 pt-4 space-y-3">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Joined Date</span>
+                                <span className="font-medium text-[#1A1A1A]">{fmtDate(viewUserModal.user.createdAt)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">User ID</span>
+                                <span className="font-mono text-xs text-gray-400">{viewUserModal.user._id}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Authentication</span>
+                                <span className="font-medium text-[#1A1A1A]">
+                                    {viewUserModal.user.googleId ? 'Google Account' : 'Email / Password'}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="mt-8 flex justify-end">
+                            <Button variant="outline" onClick={() => setViewUserModal({ isOpen: false, user: null })}>
+                                CLOSE
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 };
@@ -674,15 +734,6 @@ export const AdminCompaniesPage = () => {
             <PageHeading
                 title="Company Management"
                 subtitle={`${companies.length} companies registered`}
-                right={
-                    <p className="text-white text-xs uppercase tracking-wider">
-                        Pending: <span className="text-[#E2B325] font-bold">{pendingCount}</span>
-                        &nbsp;|&nbsp;
-                        Verified: <span className="text-[#E2B325] font-bold">{verifiedCount}</span>
-                        &nbsp;|&nbsp;
-                        Suspended: <span className="text-[#E2B325] font-bold">{suspendedCount}</span>
-                    </p>
-                }
             />
 
             {/* Pending Alert */}
@@ -1024,15 +1075,6 @@ export const AdminJobsPage = () => {
             <PageHeading
                 title="Job Management"
                 subtitle={`${jobs.length} total jobs`}
-                right={
-                    <div className="bg-white/10 border border-white/20 px-4 py-2">
-                        <p className="text-white text-xs uppercase tracking-wider">
-                            Open: <span className="text-[#E2B325] font-bold">{openCount}</span>
-                            &nbsp;|&nbsp;
-                            Closed: <span className="text-[#E2B325] font-bold">{closedCount}</span>
-                        </p>
-                    </div>
-                }
             />
 
             {/* Filter Bar */}
