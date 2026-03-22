@@ -11,7 +11,7 @@ import { HomePage } from '../pages/public/HomePage';
 import { JobsPage } from '../pages/public/JobsPage';
 import { JobDetailPage, CompaniesPage } from '../pages/public/PublicPages';
 import { LoginPage, RegisterPage, RegisterEmployerPage, ForgotPasswordPage, ResetPasswordPage } from '../pages/auth/AuthPages';
-import { SeekerDashboard, MyApplicationsPage, SavedJobsPage, SeekerTabNav } from '../pages/seeker/SeekerPages';
+import { SeekerDashboard, MyApplicationsPage, SavedJobsPage } from '../pages/seeker/SeekerPages';
 import { EmployerDashboard, PostJobPage, MyJobsPage, JobApplicationsPage, CompanyProfilePage } from '../pages/employer/EmployerPages';
 import { AdminDashboard, AdminUsersPage, AdminCompaniesPage, AdminJobsPage } from '../pages/admin/AdminPages';
 import { ProfilePage } from '../pages/profile/ProfilePage';
@@ -80,7 +80,6 @@ export const AppRouter = () => {
                     <RoleRoute roles={['JOB_SEEKER']}>
                         <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
                             <Navbar />
-                            <SeekerTabNav />
                             <main className="max-w-6xl mx-auto px-6 py-8 w-full flex-1"><SeekerDashboard /></main>
                         </div>
                     </RoleRoute>
@@ -89,7 +88,6 @@ export const AppRouter = () => {
                     <RoleRoute roles={['JOB_SEEKER']}>
                         <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
                             <Navbar />
-                            <SeekerTabNav />
                             <main className="max-w-6xl mx-auto px-6 py-8 w-full flex-1"><MyApplicationsPage /></main>
                         </div>
                     </RoleRoute>
@@ -98,7 +96,6 @@ export const AppRouter = () => {
                     <RoleRoute roles={['JOB_SEEKER']}>
                         <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
                             <Navbar />
-                            <SeekerTabNav />
                             <main className="max-w-6xl mx-auto px-6 py-8 w-full flex-1"><SavedJobsPage /></main>
                         </div>
                     </RoleRoute>
@@ -110,7 +107,6 @@ export const AppRouter = () => {
                         {user?.role === 'JOB_SEEKER' ? (
                             <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
                                 <Navbar />
-                                <SeekerTabNav />
                                 <main className="max-w-6xl mx-auto px-6 py-8 w-full flex-1"><ProfilePage /></main>
                             </div>
                         ) : (

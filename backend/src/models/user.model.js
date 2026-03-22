@@ -26,7 +26,6 @@ const userSchema = mongoose.Schema(
         },
         googleId: {
             type: String,
-            default: null,
             unique: true,
             sparse: true,
         },
@@ -64,6 +63,11 @@ const userSchema = mongoose.Schema(
         district: {
             type: String,
             default: null,
+        },
+        nic: {
+            type: String,
+            default: null,
+            trim: true,
         },
         bio: {
             type: String,

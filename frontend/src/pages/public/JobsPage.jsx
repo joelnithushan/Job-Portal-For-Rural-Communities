@@ -35,11 +35,17 @@ export const JobsPage = () => {
         setLoading(true);
         try {
             let response;
-            if (filters.nearMe && window.lastKnownCoords) {
+            if (filters.nearMe) {
+                if (!filters.coords) {
+                    setJobs([]);
+                    setTotal(0);
+                    setLoading(false);
+                    return; // Wait for JobFilters to supply coords
+                }
                 response = await jobsAPI.getNearbyJobs({
-                    lat: window.lastKnownCoords.lat,
-                    lng: window.lastKnownCoords.lng,
-                    radiusKm: filters.radius,
+                    lat: filters.coords.lat,
+                    lng: filters.coords.lng,
+                    radiusKm: filters.radius || 5,
                 });
             } else {
                 // Only send params the backend accepts
@@ -100,12 +106,6 @@ export const JobsPage = () => {
     return (
         <div className="min-h-screen bg-brand-cream/40 py-8 lg:py-12">
             <div className="max-w-7xl mx-auto px-4">
-
-                {/* Page Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl md:text-5xl font-heading font-bold text-brand-green mb-4">Find Your Next Job</h1>
-                    <p className="text-brand-muted max-w-2xl text-lg">Browse local opportunities in your district and apply instantly.</p>
-                </div>
 
                 <div className="flex flex-col lg:flex-row gap-8">
 

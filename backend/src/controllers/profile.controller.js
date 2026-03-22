@@ -27,7 +27,7 @@ const getProfile = async (req, res) => {
 // PATCH /profile/me
 const updateProfile = async (req, res) => {
     try {
-        const { name, phone, district, bio } = req.body;
+        const { name, phone, district, bio, nic } = req.body;
         const errors = [];
 
         // Validation
@@ -39,6 +39,11 @@ const updateProfile = async (req, res) => {
         if (phone !== undefined && phone !== null && phone !== '') {
             if (!/^[0-9+\-\s()]{7,20}$/.test(phone)) {
                 errors.push('Enter a valid phone number (7–20 digits).');
+            }
+        }
+        if (nic !== undefined && nic !== null && nic !== '') {
+            if (!/^(?:\d{9}[vVxX]|\d{12})$/.test(String(nic).trim())) {
+                errors.push('Enter a valid Sri Lankan NIC.');
             }
         }
         if (district !== undefined && district !== null && district !== '') {
@@ -62,6 +67,7 @@ const updateProfile = async (req, res) => {
         if (phone !== undefined) updates.phone = phone ? String(phone).trim() : null;
         if (district !== undefined) updates.district = district || null;
         if (bio !== undefined) updates.bio = bio ? String(bio).trim() : null;
+        if (nic !== undefined) updates.nic = nic ? String(nic).trim() : null;
 
         const user = await User.findByIdAndUpdate(
             req.user._id,

@@ -67,14 +67,8 @@ const SectionCard = ({ children, className = '', title, rightSlot }) => (
     </div>
 );
 
-const PageHeader = ({ title, subtitle, rightSlot }) => (
-    <div className="bg-[#8B1A1A] px-8 py-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">{title}</h1>
-            {subtitle && <p className="text-white/60 text-sm mt-0.5">{subtitle}</p>}
-        </div>
-        {rightSlot && <div>{rightSlot}</div>}
-    </div>
+const PageHeader = ({ rightSlot }) => (
+    rightSlot ? <div className="mb-6 flex justify-end">{rightSlot}</div> : <div className="mb-6" />
 );
 
 const StatCard = ({ label, value, icon: Icon, accentColor }) => (
@@ -284,6 +278,7 @@ const postJobSchema = yup.object({
     contactPhone: yup.string().required('Contact phone is required'),
     salaryMin: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
     salaryMax: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+    cvRequired: yup.boolean(),
 });
 
 export const PostJobPage = () => {
@@ -308,6 +303,7 @@ export const PostJobPage = () => {
                 contactPhone: data.contactPhone,
                 ...(data.salaryMin && { salaryMin: data.salaryMin }),
                 ...(data.salaryMax && { salaryMax: data.salaryMax }),
+                cvRequired: data.cvRequired || false,
             };
             await jobsAPI.createJob(payload);
             toast.success('Job posted successfully!');
@@ -390,6 +386,14 @@ export const PostJobPage = () => {
                     </FieldWrap>
 
                     <p className="text-xs text-gray-400 md:col-span-2 -mt-3">Leave blank if salary is negotiable</p>
+
+                    <div className="md:col-span-2 flex items-center gap-3 bg-[#FAF7F2] p-4 border border-gray-200">
+                        <input type="checkbox" id="cvRequired" {...register('cvRequired')} className="h-4 w-4 text-[#8B1A1A] focus:ring-[#8B1A1A] border-gray-300 rounded cursor-pointer" />
+                        <label htmlFor="cvRequired" className="text-sm font-semibold text-[#1A1A1A] cursor-pointer inline-flex flex-col">
+                            Require CV for this job
+                            <span className="text-xs text-gray-500 font-normal mt-0.5">Job seekers will be forced to upload a PDF/DOC document when applying.</span>
+                        </label>
+                    </div>
 
                     <FieldWrap label="Job Description" required error={errors.description?.message} className="md:col-span-2">
                         <textarea className={`${inputCls(errors.description)} min-h-[120px] resize-y`} placeholder="Describe the role, responsibilities, and requirements..." {...register('description')} />
@@ -640,8 +644,8 @@ export const JobApplicationsPage = () => {
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="bg-[#8B1A1A]">
-                                    {['#', 'APPLICANT', 'APPLIED DATE', 'STATUS', 'NOTE', 'ACTIONS'].map((h, i) => (
-                                        <th key={h} className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap ${i < 5 ? 'border-r border-[#6e1515]' : ''} text-left`}>{h}</th>
+                                    {['#', 'APPLICANT', 'APPLIED DATE', 'CV', 'STATUS', 'NOTE', 'ACTIONS'].map((h, i) => (
+                                        <th key={h} className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap ${i < 6 ? 'border-r border-[#6e1515]' : ''} text-left`}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -661,6 +665,17 @@ export const JobApplicationsPage = () => {
                                             </div>
                                         </td>
                                         <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100">{fmtDate(app.createdAt)}</td>
+                                        <td className="py-3 px-4 border-b border-gray-100 text-center">
+                                            {app.cvUrl ? (
+                                                <a href={app.cvUrl} target="_blank" rel="noopener noreferrer" 
+                                                   className="text-[#8B1A1A] hover:text-[#E2B325] inline-flex flex-col items-center group cursor-pointer" title="View CV">
+                                                    <FileText className="h-5 w-5 mb-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                                    <span className="text-[10px] uppercase font-bold tracking-widest hidden group-hover:block">CV</span>
+                                                </a>
+                                            ) : (
+                                                <span className="text-gray-300 text-xs">—</span>
+                                            )}
+                                        </td>
                                         <td className="py-3 px-4 border-b border-gray-100"><StatusBadge status={app.status} /></td>
                                         <td className="py-3 px-4 border-b border-gray-100">
                                             {app.note ? <span className="text-xs text-gray-500 italic truncate max-w-[150px] block">{app.note}</span> : <span className="text-gray-200 text-xs">—</span>}
@@ -851,7 +866,12 @@ export const CompanyProfilePage = () => {
                         </FieldWrap>
                         <FieldWrap label="WhatsApp"><input className={inputCls()} placeholder="077 123 4567" {...register('contactWhatsApp')} /></FieldWrap>
                         <div className="md:col-span-2 border-t border-gray-200 pt-5 flex items-center justify-between mt-2">
-                            <span className="text-xs text-gray-400">* Required fields</span>
+                            <div className="flex flex-col gap-1">
+                                <span className="text-xs text-gray-400">* Required fields</span>
+                                <span className="text-xs text-gray-500 mt-1">
+                                    Looking to add your Company Logo? Upload it on your <Link to="/profile" className="text-[#8B1A1A] underline font-semibold hover:text-[#6e1515]">User Profile</Link>
+                                </span>
+                            </div>
                             <div className="flex gap-3">
                                 {company && <button type="button" onClick={() => { setEditing(false); reset(company); }} className="border border-gray-300 text-gray-600 text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-gray-50">CANCEL</button>}
                                 <button type="submit" disabled={submitting} className="bg-[#8B1A1A] text-white text-sm uppercase tracking-wider px-6 py-2.5 hover:bg-[#6e1515] disabled:opacity-50">

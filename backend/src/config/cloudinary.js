@@ -31,4 +31,31 @@ const upload = multer({
     },
 });
 
-module.exports = { cloudinary, upload };
+const cvStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: 'ruralwork/cvs',
+        allowed_formats: ['pdf', 'doc', 'docx'],
+        resource_type: 'raw',
+        public_id: (req, file) => `cv_${req.user._id}_${Date.now()}`,
+    },
+});
+
+const uploadCV = multer({
+    storage: cvStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+    fileFilter: (req, file, cb) => {
+        const allowed = [
+            'application/pdf', 
+            'application/msword', 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        if (allowed.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only PDF and Word documents are allowed.'), false);
+        }
+    },
+});
+
+module.exports = { cloudinary, upload, uploadCV };

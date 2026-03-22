@@ -4,6 +4,7 @@ const controller = require("../controllers/application.controller");
 const auth = require("../middlewares/auth.middleware");
 const requireRole = require("../middlewares/role.middleware");
 const validate = require("../middlewares/validate.middleware");
+const { uploadCV } = require("../config/cloudinary");
 
 const router = express.Router();
 
@@ -15,8 +16,17 @@ const applySchema = {
       .messages({
         "string.pattern.base": "jobId must be a vaid ObjectId",
       }),
+    cvUrl: Joi.string().uri().optional(),
   }),
 };
+
+router.post(
+  "/upload-cv",
+  auth,
+  requireRole("JOB_SEEKER"),
+  uploadCV.single("cv"),
+  controller.uploadCV
+);
 
 router.post(
   "/",
