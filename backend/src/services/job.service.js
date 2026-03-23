@@ -30,17 +30,38 @@ const createJob = async (jobData) => {
     return job;
 };
 
-const getJobs = async ({ district, category, jobType, page = 1, limit = 10 }) => {
+const getJobs = async ({ district, category, jobType, search, sort, salaryMin, salaryMax, page = 1, limit = 10 }) => {
     const filter = {};
     if (district) filter.district = district;
     if (category) filter.category = category;
     if (jobType) filter.jobType = jobType;
 
+    // Text search on title (case-insensitive regex)
+    if (search) {
+        filter.title = { $regex: search, $options: 'i' };
+    }
+
+    // Salary range filtering
+    if (salaryMin) {
+        filter.salaryMax = { ...(filter.salaryMax || {}), $gte: Number(salaryMin) };
+    }
+    if (salaryMax) {
+        filter.salaryMin = { ...(filter.salaryMin || {}), $lte: Number(salaryMax) };
+    }
+
+    // Dynamic sorting
+    let sortOption = { createdAt: -1 }; // default: newest first
+    if (sort === 'salaryDesc') {
+        sortOption = { salaryMax: -1, createdAt: -1 };
+    } else if (sort === 'salaryAsc') {
+        sortOption = { salaryMin: 1, createdAt: -1 };
+    }
+
     const skip = (page - 1) * limit;
     const [jobs, total] = await Promise.all([
         Job.find(filter)
             .populate('employerId', 'name email profilePicture')
-            .sort({ createdAt: -1 })
+            .sort(sortOption)
             .skip(skip)
             .limit(limit),
         Job.countDocuments(filter),
@@ -142,6 +163,26 @@ const getNearbyJobs = async (lat, lng, radiusKm = 10) => {
     return jobs;
 };
 
+const getJobsByEmployer = async (employerId, page = 1, limit = 100) => {
+    const skip = (page - 1) * limit;
+    const [jobs, total] = await Promise.all([
+        Job.find({ employerId })
+            .populate('employerId', 'name email profilePicture')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+        Job.countDocuments({ employerId }),
+    ]);
+
+    return {
+        jobs,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+    };
+};
+
 module.exports = {
     createJob,
     getJobs,
@@ -149,4 +190,5 @@ module.exports = {
     updateJob,
     deleteJob,
     getNearbyJobs,
+    getJobsByEmployer,
 };

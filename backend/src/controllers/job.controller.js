@@ -16,11 +16,15 @@ const createJob = async (req, res, next) => {
 
 const getJobs = async (req, res, next) => {
     try {
-        const { district, category, jobType, page, limit } = req.query;
+        const { district, category, jobType, search, sort, salaryMin, salaryMax, page, limit } = req.query;
         const result = await jobService.getJobs({
             district,
             category,
             jobType,
+            search,
+            sort,
+            salaryMin: salaryMin ? parseInt(salaryMin, 10) : undefined,
+            salaryMax: salaryMax ? parseInt(salaryMax, 10) : undefined,
             page: parseInt(page, 10) || 1,
             limit: parseInt(limit, 10) || 10,
         });
@@ -83,6 +87,20 @@ const getNearbyJobs = async (req, res, next) => {
     }
 };
 
+const getMyJobs = async (req, res, next) => {
+    try {
+        const { page, limit } = req.query;
+        const result = await jobService.getJobsByEmployer(
+            req.user._id,
+            parseInt(page, 10) || 1,
+            parseInt(limit, 10) || 100
+        );
+        successResponse(res, 'My jobs retrieved successfully', result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createJob,
     getJobs,
@@ -90,4 +108,5 @@ module.exports = {
     updateJob,
     deleteJob,
     getNearbyJobs,
+    getMyJobs,
 };

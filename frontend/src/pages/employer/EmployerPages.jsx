@@ -134,10 +134,8 @@ export const EmployerDashboard = () => {
                     setCompany(compRes.data?.company || compRes.data || null);
                 } catch { /* No company yet */ }
                 try {
-                    const jobsRes = await jobsAPI.getJobs({ limit: 100 });
-                    const allJobs = jobsRes.data?.jobs || jobsRes.data || [];
-                    const mine = allJobs.filter(j => (j.employerId?._id || j.employerId) === user?._id);
-                    setMyJobs(mine);
+                    const jobsRes = await jobsAPI.getMyJobs();
+                    setMyJobs(jobsRes.data?.jobs || jobsRes.data || []);
                 } catch { /* ignore */ }
             } finally {
                 setLoading(false);
@@ -432,9 +430,8 @@ export const MyJobsPage = () => {
 
     const fetchJobs = async () => {
         try {
-            const res = await jobsAPI.getJobs({ limit: 100 });
-            const allJobs = res.data?.jobs || res.data || [];
-            setJobs(allJobs.filter(j => (j.employerId?._id || j.employerId) === user?._id));
+            const res = await jobsAPI.getMyJobs();
+            setJobs(res.data?.jobs || res.data || []);
         } catch (error) {
             toast.error('Failed to load jobs');
         } finally {
