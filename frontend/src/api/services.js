@@ -12,6 +12,7 @@ export const authAPI = {
 export const jobsAPI = {
     getJobs: (params) => api.get('/jobs', { params }),
     getNearbyJobs: (params) => api.get('/jobs/nearby', { params }),
+    getMyJobs: (params) => api.get('/jobs/mine', { params }),
     getJobById: (id) => api.get(`/jobs/${id}`),
     createJob: (data) => api.post('/jobs', data),
     updateJob: (id, data) => api.patch(`/jobs/${id}`, data),

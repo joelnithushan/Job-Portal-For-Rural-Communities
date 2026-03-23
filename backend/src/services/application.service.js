@@ -11,6 +11,10 @@ exports.applyToJob = async (jobId, seekerId, cvUrl) => {
     throw new Error("Job not found");
   }
 
+  if (job.status !== 'OPEN') {
+    throw new Error("This job is no longer accepting applications");
+  }
+
   if (job.cvRequired && !cvUrl) {
     throw new Error("A CV is required to apply for this job");
   }

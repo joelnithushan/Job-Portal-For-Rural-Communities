@@ -50,7 +50,7 @@ export const HomePage = () => {
                             EXPLORE JOBS
                         </button>
                     </Link>
-                    <Link to="/register">
+                    <Link to="/register/employer">
                         <button className="px-10 py-3.5 bg-transparent text-white text-xs tracking-[0.2em] font-medium border border-white hover:bg-white hover:text-brand-dark transition-colors">
                             POST A JOB
                         </button>
@@ -194,7 +194,7 @@ export const HomePage = () => {
                     <p className="text-white/60 text-base mb-10 max-w-lg mx-auto leading-relaxed">
                         Post job openings, manage applications, and connect with verified local talent. Supporting the rural workforce.
                     </p>
-                    <Link to="/register">
+                    <Link to="/register/employer">
                         <Button variant="secondary" size="lg">
                             START HIRING TODAY
                         </Button>

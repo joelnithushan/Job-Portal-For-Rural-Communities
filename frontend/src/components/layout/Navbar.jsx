@@ -146,7 +146,7 @@ export const Navbar = () => {
                             <Link to="/login" className="text-xs tracking-widest font-medium text-gray-500 hover:text-brand-dark transition-colors px-3 py-2">
                                 SIGN IN
                             </Link>
-                            <Link to="/register">
+                            <Link to="/register/employer">
                                 <Button variant="primary" size="sm">POST A JOB</Button>
                             </Link>
                         </>
