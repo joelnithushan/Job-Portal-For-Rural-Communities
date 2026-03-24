@@ -191,6 +191,7 @@ export const CompaniesPage = () => {
                             _id: emp._id,
                             businessName: emp.name || 'Unknown Company',
                             district: job.district,
+                            logo: emp.profilePicture,
                             jobCount: 1
                         };
                     } else if (emp && emp._id && companyMap[emp._id]) {
@@ -222,8 +223,6 @@ export const CompaniesPage = () => {
     return (
         <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
             <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-heading font-bold text-brand-dark mb-4">Companies</h1>
-                <p className="text-gray-500 mb-6">Discover employers hiring across Sri Lanka.</p>
 
                 {/* Search */}
                 <div className="relative max-w-md">
@@ -249,9 +248,13 @@ export const CompaniesPage = () => {
                     {filtered.map(company => (
                         <div key={company._id} className="bg-white border border-gray-100 p-6 hover:shadow-md transition-shadow">
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="w-12 h-12 bg-brand-green/10 flex items-center justify-center text-brand-green font-bold text-lg">
-                                    {(company.businessName || company.name || 'C').charAt(0)}
-                                </div>
+                                {company.logo ? (
+                                    <img src={company.logo} alt={company.businessName || company.name} className="w-12 h-12 object-cover rounded shadow-sm border border-gray-100" />
+                                ) : (
+                                    <div className="w-12 h-12 bg-brand-green/10 flex items-center justify-center text-brand-green font-bold text-lg rounded">
+                                        {(company.businessName || company.name || 'C').charAt(0)}
+                                    </div>
+                                )}
                                 <div>
                                     <h3 className="font-semibold text-brand-dark">{company.businessName || company.name}</h3>
                                     {company.district && (

@@ -53,6 +53,10 @@ const jobSchema = mongoose.Schema(
             enum: ['OPEN', 'CLOSED'],
             default: 'OPEN',
         },
+        cvRequired: {
+            type: Boolean,
+            default: false,
+        },
         location: {
             type: {
                 type: String,
