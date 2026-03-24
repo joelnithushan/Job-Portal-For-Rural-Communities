@@ -214,9 +214,13 @@ export const Sidebar = () => {
 
             {/* Profile Snippet */}
             <div className="p-6 text-center border-b border-gray-100 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-brand-green flex items-center justify-center text-white text-2xl font-heading font-bold mb-3 border-4 border-brand-sand">
-                    {getInitials(user?.name)}
-                </div>
+                {user?.profilePicture ? (
+                    <img src={user.profilePicture} alt={user.name} className="w-16 h-16 rounded-full object-cover mb-3 border-4 border-brand-sand" />
+                ) : (
+                    <div className="w-16 h-16 rounded-full bg-brand-green flex items-center justify-center text-white text-2xl font-heading font-bold mb-3 border-4 border-brand-sand">
+                        {getInitials(user?.name)}
+                    </div>
+                )}
                 <h3 className="font-heading font-semibold text-lg text-brand-dark">{user?.name}</h3>
                 <span className="inline-block mt-1 px-3 py-1 bg-brand-terra/10 text-brand-terra text-xs font-bold uppercase tracking-wider rounded-full">
                     {role.replace('_', ' ')}

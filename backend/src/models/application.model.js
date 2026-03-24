@@ -26,6 +26,11 @@ const applicationSchema = mongoose.Schema(
             type: String,
             trim: true,
         },
+        cvUrl: {
+            type: String,
+            trim: true,
+            default: null,
+        },
     },
     {
         timestamps: true,

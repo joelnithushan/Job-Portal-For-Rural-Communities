@@ -15,6 +15,7 @@ export const JobsPage = () => {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
     const [filters, setFilters] = useState({
@@ -35,42 +36,45 @@ export const JobsPage = () => {
         setLoading(true);
         try {
             let response;
-            if (filters.nearMe && window.lastKnownCoords) {
+            if (filters.nearMe) {
+                if (!filters.coords) {
+                    setJobs([]);
+                    setTotal(0);
+                    setLoading(false);
+                    return; // Wait for JobFilters to supply coords
+                }
                 response = await jobsAPI.getNearbyJobs({
-                    lat: window.lastKnownCoords.lat,
-                    lng: window.lastKnownCoords.lng,
-                    radiusKm: filters.radius,
+                    lat: filters.coords.lat,
+                    lng: filters.coords.lng,
+                    radiusKm: filters.radius || 5,
                 });
             } else {
-                // Only send params the backend accepts
+                // Send all filter params to backend
                 const apiParams = {};
                 if (filters.district) apiParams.district = filters.district;
                 if (filters.category) apiParams.category = filters.category;
                 if (filters.type) apiParams.jobType = filters.type;
+                if (filters.search) apiParams.search = filters.search;
+                if (filters.sort) apiParams.sort = filters.sort;
+                if (filters.salaryMin) apiParams.salaryMin = filters.salaryMin;
+                if (filters.salaryMax) apiParams.salaryMax = filters.salaryMax;
                 apiParams.page = filters.page;
                 apiParams.limit = filters.limit;
                 response = await jobsAPI.getJobs(apiParams);
             }
 
-            let jobsData = response.data?.jobs || response.data || [];
+            const jobsData = response.data?.jobs || response.data || [];
             const totalCount = response.data?.total || jobsData.length || 0;
-
-            // Client-side search filter
-            if (filters.search) {
-                const q = filters.search.toLowerCase();
-                jobsData = jobsData.filter(j =>
-                    j.title?.toLowerCase().includes(q) ||
-                    j.district?.toLowerCase().includes(q) ||
-                    j.category?.toLowerCase().includes(q)
-                );
-            }
+            const totalPagesCount = response.data?.totalPages || Math.ceil(totalCount / filters.limit);
 
             setJobs(jobsData);
             setTotal(totalCount);
+            setTotalPages(totalPagesCount);
         } catch (error) {
             console.error("Failed to fetch jobs", error);
             setJobs([]);
             setTotal(0);
+            setTotalPages(1);
         } finally {
             setLoading(false);
         }
@@ -97,15 +101,24 @@ export const JobsPage = () => {
         !['page', 'limit', 'sort', 'radius'].includes(key) && !!value
     ).length;
 
+    // Generate page numbers for pagination
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisible = 5;
+        let start = Math.max(1, filters.page - Math.floor(maxVisible / 2));
+        let end = Math.min(totalPages, start + maxVisible - 1);
+        if (end - start + 1 < maxVisible) {
+            start = Math.max(1, end - maxVisible + 1);
+        }
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+        return pages;
+    };
+
     return (
         <div className="min-h-screen bg-brand-cream/40 py-8 lg:py-12">
             <div className="max-w-7xl mx-auto px-4">
-
-                {/* Page Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl md:text-5xl font-heading font-bold text-brand-green mb-4">Find Your Next Job</h1>
-                    <p className="text-brand-muted max-w-2xl text-lg">Browse local opportunities in your district and apply instantly.</p>
-                </div>
 
                 <div className="flex flex-col lg:flex-row gap-8">
 
@@ -144,6 +157,11 @@ export const JobsPage = () => {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                             <p className="font-semibold text-brand-dark">
                                 <span className="text-brand-terra font-bold">{total}</span> Jobs Found
+                                {totalPages > 1 && (
+                                    <span className="text-sm text-brand-muted font-normal ml-2">
+                                        (Page {filters.page} of {totalPages})
+                                    </span>
+                                )}
                             </p>
                             <div className="flex items-center gap-3">
                                 <span className="text-sm text-brand-muted shrink-0">Sort by:</span>
@@ -190,24 +208,66 @@ export const JobsPage = () => {
                             )}
                         </div>
 
-                        {/* Pagination (Simple Example) */}
-                        {!loading && total > filters.limit && (
+                        {/* Pagination */}
+                        {!loading && totalPages > 1 && (
                             <div className="flex justify-center mt-8">
-                                <div className="flex gap-2">
+                                <div className="flex items-center gap-1">
                                     <Button
                                         variant="outline"
+                                        size="sm"
                                         disabled={filters.page === 1}
-                                        onClick={() => handleFilterChange({ page: filters.page - 1 })}
+                                        onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
                                     >
                                         Previous
                                     </Button>
-                                    <span className="flex items-center justify-center w-10 font-medium text-brand-terra border-b-2 border-brand-terra">
-                                        {filters.page}
-                                    </span>
+
+                                    {getPageNumbers()[0] > 1 && (
+                                        <>
+                                            <button
+                                                onClick={() => setFilters(prev => ({ ...prev, page: 1 }))}
+                                                className="w-9 h-9 rounded-lg text-sm font-medium text-brand-muted hover:bg-brand-cream transition-colors"
+                                            >
+                                                1
+                                            </button>
+                                            {getPageNumbers()[0] > 2 && (
+                                                <span className="w-9 h-9 flex items-center justify-center text-gray-400">...</span>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {getPageNumbers().map(pageNum => (
+                                        <button
+                                            key={pageNum}
+                                            onClick={() => setFilters(prev => ({ ...prev, page: pageNum }))}
+                                            className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                                                filters.page === pageNum
+                                                    ? 'bg-brand-terra text-white shadow-sm'
+                                                    : 'text-brand-muted hover:bg-brand-cream'
+                                            }`}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    ))}
+
+                                    {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
+                                        <>
+                                            {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
+                                                <span className="w-9 h-9 flex items-center justify-center text-gray-400">...</span>
+                                            )}
+                                            <button
+                                                onClick={() => setFilters(prev => ({ ...prev, page: totalPages }))}
+                                                className="w-9 h-9 rounded-lg text-sm font-medium text-brand-muted hover:bg-brand-cream transition-colors"
+                                            >
+                                                {totalPages}
+                                            </button>
+                                        </>
+                                    )}
+
                                     <Button
                                         variant="outline"
-                                        disabled={filters.page * filters.limit >= total}
-                                        onClick={() => handleFilterChange({ page: filters.page + 1 })}
+                                        size="sm"
+                                        disabled={filters.page >= totalPages}
+                                        onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
                                     >
                                         Next
                                     </Button>

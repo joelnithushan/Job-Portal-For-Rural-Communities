@@ -97,6 +97,11 @@ const getAdminNotifications = async () => {
     return notifications;
 };
 
+const getAllCompanies = async () => {
+    const companies = await Company.find().populate('employerUserId', 'name email');
+    return companies;
+};
+
 module.exports = {
     getAllUsers,
     updateUserStatus,
@@ -107,4 +112,5 @@ module.exports = {
     verifyCompany,
     suspendCompany,
     getAdminNotifications,
+    getAllCompanies,
 };

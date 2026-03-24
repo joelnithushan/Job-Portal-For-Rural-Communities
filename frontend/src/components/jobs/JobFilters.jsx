@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, MapPin, SlidersHorizontal } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
@@ -7,7 +8,7 @@ import { DISTRICTS, CATEGORIES, JOB_TYPES, JOB_TYPE_LABELS } from '../../utils/c
 import { useGeolocation } from '../../hooks/useGeolocation';
 
 export const JobFilters = ({ filters, onFilterChange, onClear, isLoading }) => {
-    const { coords, loading: geoLoading, getLocation } = useGeolocation();
+    const { coords, error: geoError, loading: geoLoading, getLocation } = useGeolocation();
 
     // Local state for debounced inputs
     const [localSearch, setLocalSearch] = useState(filters.search || '');
@@ -27,16 +28,31 @@ export const JobFilters = ({ filters, onFilterChange, onClear, isLoading }) => {
         });
     };
 
+    useEffect(() => {
+        if (coords && filters.nearMe && !filters.coords) {
+            onFilterChange({ coords });
+        }
+    }, [coords, filters.nearMe]);
+
+    useEffect(() => {
+        if (geoError && filters.nearMe) {
+            toast.error(`Location error: ${geoError}`);
+            onFilterChange({ nearMe: false, coords: null });
+        }
+    }, [geoError]);
+
     const handleNearMeToggle = () => {
         const willEnable = !filters.nearMe;
 
         if (willEnable) {
-            getLocation();
-            // Only set filter if we get coords (handled in a useEffect in the parent, or here)
-            // For now, we optimistically set it
-            onFilterChange({ nearMe: true, radius: filters.radius || 5 });
+            if (coords) {
+                onFilterChange({ nearMe: true, radius: filters.radius || 5, coords });
+            } else {
+                getLocation();
+                onFilterChange({ nearMe: true, radius: filters.radius || 5 });
+            }
         } else {
-            onFilterChange({ nearMe: false });
+            onFilterChange({ nearMe: false, coords: null });
         }
     };
 

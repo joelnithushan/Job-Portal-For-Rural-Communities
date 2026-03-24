@@ -11,7 +11,7 @@ export const MOCK_JOBS = [
     {
         _id: '2', title: 'Construction Worker (Mason)', category: 'Construction',
         type: 'CONTRACT', status: 'OPEN', district: 'Galle',
-        salary: { min: 40000, max: null },
+        salary: { min: 40000, max: 75000 },
         description: 'Immediate requirement for skilled masons for a commercial building project in Galle town. Min 2 years experience required. Meals provided during shift.',
         companyId: { name: 'BuildRight Construction', logoUrl: null, description: 'Commercial construction specialists.' },
         createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
@@ -38,11 +38,38 @@ export const MOCK_JOBS = [
     {
         _id: '5', title: 'Delivery Rider', category: 'Transport',
         type: 'PART_TIME', status: 'OPEN', district: 'Kurunegala',
-        salary: { min: null, max: null },
+        salary: { min: 30000, max: 50000 },
         description: 'Part-time delivery riders needed for local food and grocery deliveries. Must own a valid driving license and motorcycle.',
         companyId: { name: 'QuickDrop Logistics', logoUrl: null },
         createdAt: new Date(Date.now() - 3600000).toISOString(),
         applicationsCount: 5
+    },
+    {
+        _id: '6', title: 'Tuk-tuk Driver', category: 'Logistics',
+        type: 'FULL_TIME', status: 'OPEN', district: 'Colombo',
+        salary: { min: 40000, max: 60000 },
+        description: 'Friendly Tuk-tuk drivers needed for our new courier service in the Colombo district.',
+        companyId: { name: 'CityExpress Logistics', logoUrl: null },
+        createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+        applicationsCount: 12
+    },
+    {
+        _id: '7', title: 'Pettah Shop Assistant', category: 'Retail',
+        type: 'FULL_TIME', status: 'OPEN', district: 'Colombo',
+        salary: { min: 35000, max: 50000 },
+        description: 'Helper needed for a busy wholesale shop in Pettah. Must be physically fit.',
+        companyId: { name: 'Pettah Wholesale Center', logoUrl: null },
+        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+        applicationsCount: 7
+    },
+    {
+        _id: '8', title: 'Garment QC Specialist', category: 'Garment',
+        type: 'FULL_TIME', status: 'OPEN', district: 'Gampaha',
+        salary: { min: 45000, max: 65000 },
+        description: 'Quality Control specialist for apparel exports. Experience in Juki machines preferred.',
+        companyId: { name: 'BlueLines Apparel', logoUrl: null },
+        createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+        applicationsCount: 19
     }
 ];
 

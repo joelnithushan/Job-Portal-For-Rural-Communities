@@ -14,7 +14,7 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
         CASUAL: 'border-l-brand-terra',
     };
 
-    const borderLeftColor = typeColors[job.type] || 'border-l-brand-green';
+    const borderLeftColor = typeColors[job.jobType] || 'border-l-brand-green';
 
     return (
         <motion.div
@@ -26,11 +26,11 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
             {/* Company Logo / Initials */}
             <div className="flex-shrink-0 flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full bg-brand-cream border border-brand-border flex items-center justify-center overflow-hidden">
-                    {job.companyId?.logoUrl ? (
-                        <img src={job.companyId.logoUrl} alt={job.companyId.name} className="w-full h-full object-cover" />
+                    {job.employerId?.profilePicture ? (
+                        <img src={job.employerId.profilePicture} alt={job.employerId.name} className="w-full h-full object-cover" />
                     ) : (
                         <span className="text-xl font-heading font-bold text-brand-green">
-                            {getInitials(job.companyId?.name || 'Company')}
+                            {getInitials(job.employerId?.name || 'Company')}
                         </span>
                     )}
                 </div>
@@ -51,7 +51,7 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-brand-muted">
                     <span className="font-medium text-brand-dark truncate max-w-[200px]">
-                        {job.companyId?.name}
+                        {job.employerId?.name}
                     </span>
                     <span className="hidden md:inline text-gray-300">•</span>
 
@@ -72,7 +72,7 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
 
                 <div className="flex items-center gap-4 mt-1 text-sm">
                     <div className="font-semibold text-amber-600">
-                        {formatSalary(job.salary?.min, job.salary?.max)}
+                        {formatSalary(job.salaryMin, job.salaryMax)}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-brand-muted">
                         <Clock size={12} />

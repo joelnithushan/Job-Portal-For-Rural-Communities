@@ -22,6 +22,9 @@ const login = async (email, password) => {
     if (!user || !(await user.isPasswordMatch(password))) {
         throw { statusCode: 401, message: 'Incorrect email or password' };
     }
+    if (user.status === 'SUSPENDED') {
+        throw { statusCode: 403, message: 'Your account is suspended' };
+    }
     const token = generateToken(user._id, user.role);
     return { user, token };
 };
@@ -41,12 +44,23 @@ const googleLogin = async (idToken, role = 'JOB_SEEKER') => {
     });
 
     if (user) {
+        let needsSave = false;
         // If user exists but doesn't have googleId linked, link it now
         if (!user.googleId) {
             user.googleId = googleId;
             if (!user.profilePicture && picture) {
                 user.profilePicture = picture;
             }
+            needsSave = true;
+        }
+        
+        // Upgrade role if they use the Employer SSO flow
+        if (role === 'EMPLOYER' && user.role === 'JOB_SEEKER') {
+            user.role = 'EMPLOYER';
+            needsSave = true;
+        }
+
+        if (needsSave) {
             await user.save();
         }
     } else {
