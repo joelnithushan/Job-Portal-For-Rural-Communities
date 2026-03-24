@@ -23,7 +23,7 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
             whileHover={{ y: -2 }}
             className={`bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 border border-brand-border/40 overflow-hidden flex flex-col md:flex-row p-5 md:items-center gap-6 relative border-l-4 ${borderLeftColor}`}
         >
-            {/* Company Logo / Initials */}
+
             <div className="flex-shrink-0 flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full bg-brand-cream border border-brand-border flex items-center justify-center overflow-hidden">
                     {job.companyId?.logoUrl ? (
@@ -36,7 +36,7 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
                 </div>
             </div>
 
-            {/* Main Content */}
+
             <div className="flex-1 flex flex-col gap-2 min-w-0">
                 <div className="flex flex-col md:flex-row md:items-center gap-2 justify-between">
                     <Link to={`/jobs/${job._id}`} className="group min-w-0">
@@ -87,7 +87,7 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
                 </div>
             </div>
 
-            {/* Actions */}
+
             <div className="flex items-center gap-3 md:flex-col md:items-end md:justify-center flex-shrink-0 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-100 md:ml-4">
                 <Link to={`/jobs/${job._id}`} className="flex-1 md:flex-none">
                     <Button variant="outline" size="sm" fullWidth>
