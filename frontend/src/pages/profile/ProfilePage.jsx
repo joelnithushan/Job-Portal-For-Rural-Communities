@@ -5,6 +5,7 @@ import * as yup from 'yup';
 import { useAuth } from '../../context/AuthContext';
 import { profileAPI } from '../../api/services';
 import toast from 'react-hot-toast';
+import defaultAvatar from '../../assets/default-avatar.png';
 import {
     Camera, Trash2, User, Phone, MapPin, FileText,
     Mail, Shield, Calendar, Edit3, Save, X, CheckCircle, CreditCard
@@ -188,9 +189,7 @@ export const ProfilePage = () => {
                             {(photoPreview || user?.profilePicture) ? (
                                 <img src={photoPreview || user.profilePicture} alt="Profile" className="h-32 w-32 object-cover rounded-full border-4 border-[#8B1A1A]" />
                             ) : (
-                                <div className="h-32 w-32 rounded-full bg-[#8B1A1A] text-white text-4xl font-bold flex items-center justify-center border-4 border-[#8B1A1A]">
-                                    {getInitials(user?.name)}
-                                </div>
+                                <img src={defaultAvatar} alt="Default Profile" className="h-32 w-32 object-cover rounded-full border-4 border-[#8B1A1A] bg-white shadow-sm" />
                             )}
                             <button onClick={() => fileInputRef.current?.click()} disabled={uploadingPhoto}
                                 className="absolute bottom-1 right-1 bg-[#E2B325] text-[#8B1A1A] p-2 rounded-full border-2 border-white hover:bg-[#d4a420] transition-colors" title="Change photo">
