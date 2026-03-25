@@ -82,8 +82,7 @@ const SectionCard = ({ children, className = '', title, subtitle }) => (
 const PageHeading = ({ title, subtitle, right }) => (
     <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-            {title && <h1 className="text-2xl font-bold text-[#1A1A1A] font-['Playfair_Display']">{title}</h1>}
-            {subtitle && <p className="text-sm text-gray-400 uppercase tracking-widest mt-1">{subtitle}</p>}
+            {/* Minimal heading */}
         </div>
         {right && <div>{right}</div>}
     </div>
@@ -282,9 +281,7 @@ export const AdminDashboard = () => {
                                     {u.profilePicture ? (
                                         <img src={u.profilePicture} alt={u.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
                                     ) : (
-                                        <div className="w-9 h-9 bg-[#8B1A1A] text-white flex items-center justify-center text-xs font-bold rounded-full shrink-0">
-                                            {getInitials(u.name)}
-                                        </div>
+                                        <img src={defaultAvatar} alt="Default Avatar" className="w-9 h-9 rounded-full object-cover shrink-0 bg-white" />
                                     )}
                                     <div>
                                         <p className="font-semibold text-[#1A1A1A] text-sm">{u.name}</p>
@@ -515,9 +512,7 @@ export const AdminUsersPage = () => {
                                                 {user.profilePicture ? (
                                                     <img src={user.profilePicture} alt={user.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
                                                 ) : (
-                                                    <div className="w-8 h-8 bg-[#8B1A1A] text-white flex items-center justify-center text-xs font-bold rounded-full shrink-0">
-                                                        {getInitials(user.name)}
-                                                    </div>
+                                                    <img src={defaultAvatar} alt="Default Avatar" className="w-8 h-8 rounded-full object-cover shrink-0 bg-white" />
                                                 )}
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-semibold text-[#1A1A1A]">{user.name}</span>
@@ -607,9 +602,7 @@ export const AdminUsersPage = () => {
                             {viewUserModal.user.profilePicture ? (
                                 <img src={viewUserModal.user.profilePicture} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200" />
                             ) : (
-                                <div className="w-16 h-16 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center text-xl font-bold">
-                                    {getInitials(viewUserModal.user.name)}
-                                </div>
+                                <img src={defaultAvatar} alt="Default Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 bg-white" />
                             )}
                             <div>
                                 <h3 className="text-lg font-bold text-[#1A1A1A]">{viewUserModal.user.name}</h3>
