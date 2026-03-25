@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, Phone, Briefcase, ArrowLeft, CheckCircle, Building, Search } from 'lucide-react';
+import { MapPin, Clock, DollarSign, Phone, Briefcase, ArrowLeft, CheckCircle, Building, Search, Bookmark } from 'lucide-react';
 import { jobsAPI, applicationsAPI, companiesAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { formatSalary, formatDate, timeAgo } from '../../utils/formatters';
 import { JOB_TYPE_LABELS } from '../../utils/constants';
 import toast from 'react-hot-toast';
+import { useSavedJobs } from '../../hooks/useSavedJobs';
 
 // ─── JOB DETAIL PAGE ──────────────────────────────────────────
 export const JobDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { isJobSaved, toggleSaveJob } = useSavedJobs();
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [applying, setApplying] = useState(false);
@@ -87,85 +89,101 @@ export const JobDetailPage = () => {
     return (
         <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
             {/* Back link */}
-            <Link to="/jobs" className="inline-flex items-center gap-2 text-sm text-brand-green font-semibold hover:underline mb-6">
-                <ArrowLeft size={16} /> Back to Jobs
+            <Link to="/jobs" className="inline-flex items-center gap-2 text-xs text-[#8B1A1A] font-bold uppercase tracking-widest hover:underline mb-8">
+                <ArrowLeft size={16} /> BACK TO JOBS
             </Link>
 
-            <div className="bg-white border border-gray-100 shadow-sm p-6 md:p-10">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8 pb-6 border-b border-gray-100">
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-heading font-bold text-brand-dark mb-3">{job.title}</h1>
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
-                            <span className="flex items-center gap-1"><Building size={14} /> {job.employerId?.name || 'Company'}</span>
-                            <span className="flex items-center gap-1"><MapPin size={14} /> {job.district}{job.town ? `, ${job.town}` : ''}</span>
-                            <span className="flex items-center gap-1"><Clock size={14} /> {timeAgo(job.createdAt)}</span>
-                        </div>
-                    </div>
-
-                    {/* Apply Button */}
-                    <div className="shrink-0">
-                        {user?.role === 'JOB_SEEKER' ? (
-                            hasApplied ? (
-                                <span className="inline-flex items-center gap-2 px-6 py-3 bg-green-50 text-green-700 font-semibold text-sm border border-green-200">
-                                    <CheckCircle size={16} /> Applied ✓
-                                </span>
-                            ) : (
-                                <Button variant="primary" size="lg" loading={applying} onClick={handleApply}>
-                                    APPLY NOW
-                                </Button>
-                            )
-                        ) : !user ? (
-                            <Link to="/login" state={{ from: { pathname: `/jobs/${id}` } }}>
-                                <Button variant="primary" size="lg">LOGIN TO APPLY</Button>
-                            </Link>
-                        ) : null}
-                    </div>
+            <div className="bg-white border border-gray-200 overflow-hidden mb-8">
+                <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between">
+                    <h2 className="text-white text-sm font-bold uppercase tracking-widest">JOB DETAILS</h2>
                 </div>
-
-                {/* Job Meta Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-gray-50 p-4 text-center">
-                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Type</p>
-                        <p className="font-semibold text-brand-dark text-sm">{JOB_TYPE_LABELS[job.jobType] || job.jobType}</p>
-                    </div>
-                    <div className="bg-gray-50 p-4 text-center">
-                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Category</p>
-                        <p className="font-semibold text-brand-dark text-sm">{job.category || 'General'}</p>
-                    </div>
-                    <div className="bg-gray-50 p-4 text-center">
-                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Salary</p>
-                        <p className="font-semibold text-brand-dark text-sm">{formatSalary(job.salaryMin, job.salaryMax)}</p>
-                    </div>
-                    <div className="bg-gray-50 p-4 text-center">
-                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Status</p>
-                        <p className={`font-semibold text-sm ${job.status === 'OPEN' ? 'text-green-600' : 'text-gray-400'}`}>
-                            {job.status}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Description */}
-                <div className="mb-8">
-                    <h2 className="text-lg font-heading font-semibold text-brand-dark mb-4">Job Description</h2>
-                    <div className="text-gray-600 leading-relaxed whitespace-pre-line">{job.description}</div>
-                </div>
-
-                {/* Contact */}
-                {job.contactPhone && (
-                    <div className="bg-gray-50 p-5 flex items-center gap-3">
-                        <Phone size={18} className="text-brand-green" />
+                <div className="p-6 md:p-10">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8 pb-6 border-b border-gray-100">
                         <div>
-                            <p className="text-xs text-gray-400 uppercase tracking-wider">Contact Phone</p>
-                            <p className="font-semibold text-brand-dark">{job.contactPhone}</p>
+                            <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] uppercase tracking-tight mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>{job.title}</h1>
+                            <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                <span className="flex items-center gap-1.5"><Building size={14} className="text-[#E2B325]" /> {job.employerId?.name || 'Company'}</span>
+                                <span className="flex items-center gap-1.5"><MapPin size={14} className="text-[#E2B325]" /> {job.district}{job.town ? `, ${job.town}` : ''}</span>
+                                <span className="flex items-center gap-1.5"><Clock size={14} className="text-[#E2B325]" /> {timeAgo(job.createdAt)}</span>
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="shrink-0 flex flex-wrap items-center justify-end gap-3">
+                            <button
+                                onClick={() => toggleSaveJob(job._id || job.id)}
+                                className={`p-3 border ${
+                                    isJobSaved(job._id || job.id)
+                                    ? 'bg-[#8B1A1A]/10 border-[#8B1A1A] text-[#8B1A1A]'
+                                    : 'bg-white border-gray-200 text-gray-400 hover:border-[#8B1A1A] hover:text-[#8B1A1A]'
+                                } transition-colors`}
+                                title={isJobSaved(job._id || job.id) ? "Unsave Job" : "Save Job"}
+                            >
+                                <Bookmark size={20} className={isJobSaved(job._id || job.id) ? "fill-current" : ""} />
+                            </button>
+                            {user?.role === 'JOB_SEEKER' ? (
+                                hasApplied ? (
+                                    <span className="inline-flex items-center gap-2 px-6 py-3 bg-green-50 text-green-700 font-semibold text-sm border border-green-200">
+                                        <CheckCircle size={16} /> Applied ✓
+                                    </span>
+                                ) : (
+                                    <button onClick={handleApply} className="bg-[#8B1A1A] text-white px-8 py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-[#6e1515] transition-colors disabled:opacity-50">
+                                        {applying ? 'WAIT...' : 'APPLY NOW'}
+                                    </button>
+                                )
+                            ) : !user ? (
+                                <Link to="/login" state={{ from: { pathname: `/jobs/${id}` } }}>
+                                    <button className="bg-[#8B1A1A] text-white px-8 py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-[#6e1515] transition-colors">LOGIN TO APPLY</button>
+                                </Link>
+                            ) : null}
                         </div>
                     </div>
-                )}
 
-                {/* Posted date */}
-                <p className="mt-6 text-sm text-gray-400">
-                    Posted on {formatDate(job.createdAt)}
-                </p>
+                    {/* Job Meta Cards */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                        <div className="bg-[#FAF7F2] p-4 text-center border-l-2 border-[#E2B325]">
+                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-bold">Type</p>
+                            <p className="font-bold text-[#1A1A1A] text-[11px] uppercase">{JOB_TYPE_LABELS[job.jobType] || job.jobType}</p>
+                        </div>
+                        <div className="bg-[#FAF7F2] p-4 text-center border-l-2 border-[#E2B325]">
+                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-bold">Category</p>
+                            <p className="font-bold text-[#1A1A1A] text-[11px] uppercase">{job.category || 'General'}</p>
+                        </div>
+                        <div className="bg-[#FAF7F2] p-4 text-center border-l-2 border-[#E2B325]">
+                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-bold">Salary</p>
+                            <p className="font-bold text-[#8B1A1A] text-[11px] uppercase">{formatSalary(job.salaryMin, job.salaryMax)}</p>
+                        </div>
+                        <div className="bg-[#FAF7F2] p-4 text-center border-l-2 border-[#E2B325]">
+                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-bold">Status</p>
+                            <p className={`font-bold text-[11px] uppercase ${job.status === 'OPEN' ? 'text-green-600' : 'text-gray-400'}`}>
+                                {job.status}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="mb-8">
+                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">Job Description</h2>
+                        <div className="text-[#1A1A1A] leading-relaxed whitespace-pre-line text-sm">{job.description}</div>
+                    </div>
+
+                    {/* Contact */}
+                    {job.contactPhone && (
+                        <div className="bg-[#FAF7F2] p-5 flex items-center gap-4 border border-gray-100">
+                            <div className="bg-[#8B1A1A]/10 p-2"><Phone size={18} className="text-[#8B1A1A]" /></div>
+                            <div>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Contact Phone</p>
+                                <p className="font-bold text-[#1A1A1A] text-sm uppercase">{job.contactPhone}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Posted date */}
+                    <p className="mt-6 text-sm text-gray-400">
+                        Posted on {formatDate(job.createdAt)}
+                    </p>
+                </div>
             </div>
         </div>
     );
@@ -222,65 +240,72 @@ export const CompaniesPage = () => {
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
-            <div className="mb-8">
+            <div className="bg-white border border-gray-200 overflow-hidden mb-6">
+                <div className="bg-[#8B1A1A] px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h2 className="text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                        REGISTERED COMPANIES
+                    </h2>
+                    <div className="relative max-w-sm w-full sm:w-64">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 z-10" />
+                        <input
+                            type="text"
+                            placeholder="SEARCH COMPANIES..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 bg-[#6e1515] border border-[#E2B325]/30 text-white placeholder-gray-300 focus:outline-none focus:border-[#E2B325] text-[10px] font-bold uppercase tracking-wider transition-colors"
+                        />
+                    </div>
+                </div>
 
-                {/* Search */}
-                <div className="relative max-w-md">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Search companies..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green"
-                    />
+                <div className="p-5">
+                    {filtered.length === 0 ? (
+                        <div className="text-center py-16">
+                            <Building size={40} className="mx-auto text-gray-300 mb-4" />
+                            <h3 className="text-lg font-semibold text-gray-500">No companies found</h3>
+                            <p className="text-gray-400 mt-1">Try a different search term.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filtered.map(company => (
+                                <Link to={`/companies/${company._id}/jobs`} key={company._id} className="block bg-white border border-gray-100 p-6 border-l-4 border-l-[#E2B325] hover:shadow-md transition-shadow">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        {company.logo ? (
+                                            <img src={company.logo} alt={company.businessName || company.name} className="w-12 h-12 object-cover rounded-none border border-gray-100" />
+                                        ) : (
+                                            <div className="w-12 h-12 bg-[#8B1A1A]/5 flex items-center justify-center text-[#8B1A1A] font-bold text-lg rounded-none border border-[#8B1A1A]/10">
+                                                {(company.businessName || company.name || 'C').charAt(0)}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <h3 className="font-semibold text-brand-dark">{company.businessName || company.name}</h3>
+                                            {company.district && (
+                                                <p className="text-sm text-gray-400 flex items-center gap-1">
+                                                    <MapPin size={12} /> {company.district}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {company.description && (
+                                        <p className="text-sm text-gray-500 mb-3 line-clamp-2">{company.description}</p>
+                                    )}
+                                    <div className="flex items-center justify-between">
+                                        {company.verificationStatus === 'VERIFIED' && (
+                                            <span className="text-xs text-green-600 font-semibold flex items-center gap-1">
+                                                <CheckCircle size={12} /> Verified
+                                            </span>
+                                        )}
+                                        {company.jobCount && (
+                                            <span className="text-[10px] text-[#8B1A1A] font-bold bg-[#8B1A1A]/5 border border-[#8B1A1A]/10 px-2 py-0.5 uppercase tracking-wider">
+                                                {company.jobCount} OPEN POSITIONS
+                                            </span>
+                                        )}
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
-
-            {filtered.length === 0 ? (
-                <div className="text-center py-16">
-                    <Building size={40} className="mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-500">No companies found</h3>
-                    <p className="text-gray-400 mt-1">Try a different search term.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filtered.map(company => (
-                        <div key={company._id} className="bg-white border border-gray-100 p-6 hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-4 mb-4">
-                                {company.logo ? (
-                                    <img src={company.logo} alt={company.businessName || company.name} className="w-12 h-12 object-cover rounded shadow-sm border border-gray-100" />
-                                ) : (
-                                    <div className="w-12 h-12 bg-brand-green/10 flex items-center justify-center text-brand-green font-bold text-lg rounded">
-                                        {(company.businessName || company.name || 'C').charAt(0)}
-                                    </div>
-                                )}
-                                <div>
-                                    <h3 className="font-semibold text-brand-dark">{company.businessName || company.name}</h3>
-                                    {company.district && (
-                                        <p className="text-sm text-gray-400 flex items-center gap-1">
-                                            <MapPin size={12} /> {company.district}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                            {company.description && (
-                                <p className="text-sm text-gray-500 mb-3 line-clamp-2">{company.description}</p>
-                            )}
-                            <div className="flex items-center justify-between">
-                                {company.verificationStatus === 'VERIFIED' && (
-                                    <span className="text-xs text-green-600 font-semibold flex items-center gap-1">
-                                        <CheckCircle size={12} /> Verified
-                                    </span>
-                                )}
-                                {company.jobCount && (
-                                    <span className="text-xs text-gray-400">{company.jobCount} active job{company.jobCount > 1 ? 's' : ''}</span>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
         </div>
     );
 };

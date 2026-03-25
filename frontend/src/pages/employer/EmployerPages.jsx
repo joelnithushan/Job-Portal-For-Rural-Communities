@@ -152,8 +152,6 @@ export const EmployerDashboard = () => {
     return (
         <>
             <PageHeader
-                title="Dashboard"
-                subtitle="Overview of your hiring activity."
                 rightSlot={
                     <button onClick={() => navigate('/employer/post-job')} className="bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420] flex items-center gap-2">
                         <Plus size={16} /> POST NEW JOB
@@ -328,9 +326,7 @@ export const PostJobPage = () => {
     return (
         <>
             <PageHeader
-                title="Post a New Job"
-                subtitle="Fill in the details to attract the right candidates"
-                rightSlot={<button onClick={() => navigate('/employer/jobs')} className="text-white/70 hover:text-white text-sm uppercase tracking-wider">← MY JOBS</button>}
+                rightSlot={<button onClick={() => navigate('/employer/jobs')} className="text-[#8B1A1A] hover:bg-[#FAF7F2] border border-[#8B1A1A] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider">← MY JOBS</button>}
             />
 
             <div className="bg-white border border-gray-200 border-t-4 border-t-[#8B1A1A]">
@@ -483,8 +479,6 @@ export const MyJobsPage = () => {
     return (
         <>
             <PageHeader
-                title="My Jobs"
-                subtitle="Manage all your job postings"
                 rightSlot={
                     <div className="flex items-center gap-4">
                         <div className="bg-white/10 border border-white/20 px-4 py-2 text-white text-xs uppercase tracking-wider">
@@ -621,9 +615,7 @@ export const JobApplicationsPage = () => {
     return (
         <>
             <PageHeader
-                title="Applications"
-                subtitle={`For: ${job?.title || 'Job'} · ${job?.district || ''}`}
-                rightSlot={<button onClick={() => navigate('/employer/jobs')} className="text-white/70 hover:text-white text-sm uppercase tracking-wider cursor-pointer">← BACK TO JOBS</button>}
+                rightSlot={<button onClick={() => navigate('/employer/jobs')} className="text-[#8B1A1A] hover:bg-[#FAF7F2] border border-[#8B1A1A] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider">← BACK TO JOBS</button>}
             />
 
             {/* Stats Row */}
