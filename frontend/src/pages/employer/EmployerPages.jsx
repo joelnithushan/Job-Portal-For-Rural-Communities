@@ -305,7 +305,13 @@ export const PostJobPage = () => {
             toast.success('Job posted successfully!');
             navigate('/employer/jobs');
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to post job');
+            const msg = error.response?.data?.message || 'Failed to post job';
+            if (msg.includes('INCOMPLETE_COMPANY')) {
+                toast.error('Please set up your company profile before posting a job');
+                navigate('/employer/company');
+                return;
+            }
+            toast.error(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -579,19 +585,25 @@ export const JobApplicationsPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [jobRes, appsRes] = await Promise.all([
-                    jobsAPI.getJobById(jobId),
-                    applicationsAPI.getJobApplications(jobId),
-                ]);
-                setJob(jobRes.data?.job || jobRes.data);
-                setApplications(appsRes.data?.applications || appsRes.data || []);
+                if (jobId && jobId !== 'jobId') {
+                    const [jobRes, appsRes] = await Promise.all([
+                        jobsAPI.getJobById(jobId),
+                        applicationsAPI.getJobApplications(jobId),
+                    ]);
+                    setJob(jobRes.data?.job || jobRes.data);
+                    setApplications(appsRes.data?.applications || appsRes.data || []);
+                } else {
+                    const appsRes = await applicationsAPI.getEmployerApplications();
+                    setApplications(appsRes.data?.applications || appsRes.data || []);
+                    setJob(null);
+                }
             } catch (error) {
                 toast.error('Failed to load applications');
             } finally {
                 setLoading(false);
             }
         };
-        if (jobId) fetchData();
+        fetchData();
     }, [jobId]);
 
     const handleStatusChange = async (appId, newStatus) => {
@@ -615,8 +627,19 @@ export const JobApplicationsPage = () => {
     return (
         <>
             <PageHeader
-                rightSlot={<button onClick={() => navigate('/employer/jobs')} className="text-[#8B1A1A] hover:bg-[#FAF7F2] border border-[#8B1A1A] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider">← BACK TO JOBS</button>}
+                rightSlot={jobId && jobId !== 'jobId' ? (
+                    <button onClick={() => navigate('/employer/jobs')} className="text-[#8B1A1A] hover:bg-[#FAF7F2] border border-[#8B1A1A] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider">← BACK TO JOBS</button>
+                ) : null}
             />
+
+            <div className="mb-6">
+                <h1 className="text-2xl font-heading text-[#1A1A1A] font-bold uppercase tracking-tight">
+                    {job ? `Applications for: ${job.title}` : 'All Job Applications'}
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                    {job ? 'Review candidates who applied for this specific position' : 'Review all candidates across all your active job postings'}
+                </p>
+            </div>
 
             {/* Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -627,14 +650,14 @@ export const JobApplicationsPage = () => {
             </div>
 
             {/* Applications Table */}
-            <SectionCard className="!p-0" title="ALL APPLICANTS" rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{totalApps}</span>}>
+            <SectionCard className="!p-0" title={job ? "APPLICANTS FOR THIS JOB" : "ALL APPLICANTS"} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{totalApps}</span>}>
                 {applications.length === 0 ? <EmptyState message="No applications yet" subtitle="Share the job listing to attract candidates" /> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="bg-[#8B1A1A]">
-                                    {['#', 'APPLICANT', 'APPLIED DATE', 'CV', 'STATUS', 'NOTE', 'ACTIONS'].map((h, i) => (
-                                        <th key={h} className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap ${i < 6 ? 'border-r border-[#6e1515]' : ''} text-left`}>{h}</th>
+                                    {['#', 'APPLICANT', !job ? 'JOB TITLE' : null, 'APPLIED DATE', 'CV', 'STATUS', 'ACTIONS'].filter(Boolean).map((h, i) => (
+                                        <th key={h} className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap ${i < (!job ? 6 : 5) ? 'border-r border-[#6e1515]' : ''} text-left`}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -653,6 +676,11 @@ export const JobApplicationsPage = () => {
                                                 </div>
                                             </div>
                                         </td>
+                                        {!job && (
+                                            <td className="py-3 px-4 border-b border-gray-100">
+                                                <p className="text-xs font-bold text-[#8B1A1A] uppercase tracking-wider">{app.jobId?.title || 'Unknown Job'}</p>
+                                            </td>
+                                        )}
                                         <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100">{fmtDate(app.createdAt)}</td>
                                         <td className="py-3 px-4 border-b border-gray-100 text-center">
                                             {app.cvUrl ? (

@@ -59,7 +59,7 @@ export const HomePage = () => {
             </section>
 
             {/* ── STATS ── */}
-            <section className="bg-brand-green py-10">
+            <section className="bg-brand-green py-4">
                 <div className="max-w-5xl mx-auto px-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                         {[

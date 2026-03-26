@@ -175,6 +175,17 @@ export const AppRouter = () => {
                         </div>
                     </RoleRoute>
                 } />
+                <Route path="/employer/applications" element={
+                    <RoleRoute roles={['EMPLOYER']}>
+                        <div className="flex min-h-screen bg-[#FAF7F2]">
+                            <Sidebar />
+                            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
+                                <Navbar />
+                                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><JobApplicationsPage /></main>
+                            </div>
+                        </div>
+                    </RoleRoute>
+                } />
                 <Route path="/employer/jobs/:jobId/applications" element={
                     <RoleRoute roles={['EMPLOYER']}>
                         <div className="flex min-h-screen bg-[#FAF7F2]">
