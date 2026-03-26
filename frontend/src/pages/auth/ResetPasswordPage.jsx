@@ -46,7 +46,7 @@ export const ResetPasswordPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
             <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-gray-100 p-8 sm:p-10 shadow-xl">
                 {/* Logo */}
                 <div className="text-center mb-6">
