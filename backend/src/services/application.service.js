@@ -24,6 +24,12 @@ exports.applyToJob = async (jobId, seekerId, cvUrl) => {
     throw new Error("You have already applied for this job");
   }
 
+  const seekerForCheck = await User.findById(seekerId);
+  if (!seekerForCheck.phone || !seekerForCheck.district || !seekerForCheck.nic || !seekerForCheck.bio) {
+      const error = new Error("INCOMPLETE_PROFILE");
+      error.statusCode = 403;
+      throw error;
+  }
 
   const application = await Application.create({
     jobId,
@@ -137,6 +143,13 @@ exports.getApplicantsByJob = async (jobId, employerId) => {
   }
 
   return await Application.find({ jobId })
+    .populate("seekerId", "name email phone")
+    .populate("jobId", "title");
+};
+
+
+exports.getEmployerApplications = async (employerId) => {
+  return await Application.find({ employerId })
     .populate("seekerId", "name email phone")
     .populate("jobId", "title");
 };

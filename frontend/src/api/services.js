@@ -26,6 +26,7 @@ export const applicationsAPI = {
     }),
     getMyApplications: () => api.get('/applications/me'),
     getJobApplications: (jobId) => api.get(`/applications/job/${jobId}`),
+    getEmployerApplications: () => api.get('/applications/employer'),
     updateAppStatus: (id, data) => api.patch(`/applications/${id}/status`, data),
     withdrawApplication: (id) => api.delete(`/applications/${id}`),
 };

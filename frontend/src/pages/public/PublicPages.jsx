@@ -59,6 +59,11 @@ export const JobDetailPage = () => {
             toast.success('Applied successfully!');
         } catch (error) {
             const msg = error.response?.data?.message || 'Failed to apply';
+            if (msg.includes('INCOMPLETE_PROFILE')) {
+                toast.error('Please complete your profile to apply for jobs');
+                navigate('/profile');
+                return;
+            }
             if (error.response?.status === 409 || msg.toLowerCase().includes('already')) {
                 setHasApplied(true);
             }
@@ -112,7 +117,13 @@ export const JobDetailPage = () => {
                         {/* Actions */}
                         <div className="shrink-0 flex flex-wrap items-center justify-end gap-3">
                             <button
-                                onClick={() => toggleSaveJob(job._id || job.id)}
+                                onClick={() => {
+                                    if (!user) {
+                                        navigate('/login', { state: { from: { pathname: `/jobs/${id}` } } });
+                                        return;
+                                    }
+                                    toggleSaveJob(job._id || job.id);
+                                }}
                                 className={`p-3 border ${
                                     isJobSaved(job._id || job.id)
                                     ? 'bg-[#8B1A1A]/10 border-[#8B1A1A] text-[#8B1A1A]'

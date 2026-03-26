@@ -2,6 +2,7 @@ const User = require('../models/user.model');
 const Job = require('../models/job.model');
 const Application = require('../models/application.model');
 const Company = require('../models/company.model');
+const Notification = require('../models/notification.model');
 
 const getAllUsers = async () => {
     const users = await User.find().select('-password -__v');
@@ -15,6 +16,19 @@ const updateUserStatus = async (userId, status) => {
     }
     user.status = status;
     await user.save();
+
+    try {
+        await Notification.create({
+            userId: user._id,
+            title: status === 'SUSPENDED' ? 'Account Suspended' : 'Account Activated',
+            message: status === 'SUSPENDED'
+                ? 'Your account has been suspended by the administrator.'
+                : 'Your account has been activated by the administrator.',
+            type: status === 'SUSPENDED' ? 'WARNING' : 'SUCCESS',
+            link: '/profile'
+        });
+    } catch(e) { console.error('Notification error:', e); }
+
     return user;
 };
 
@@ -28,7 +42,20 @@ const deleteJob = async (jobId) => {
     if (!job) {
         throw { statusCode: 404, message: 'Job not found' };
     }
+    const employerId = job.employerId;
+    const jobTitle = job.title;
     await job.deleteOne();
+
+    try {
+        await Notification.create({
+            userId: employerId,
+            title: 'Job Removed by Admin',
+            message: `Your job listing "${jobTitle}" was removed by the administrator.`,
+            type: 'WARNING',
+            link: '/employer/jobs'
+        });
+    } catch(e) { console.error('Notification error:', e); }
+
     return job;
 };
 
@@ -56,6 +83,17 @@ const verifyCompany = async (companyId) => {
     }
     company.verificationStatus = 'VERIFIED';
     await company.save();
+
+    try {
+        await Notification.create({
+            userId: company.employerUserId,
+            title: 'Company Verified',
+            message: `Your company "${company.businessName}" has been verified by the administrator.`,
+            type: 'SUCCESS',
+            link: '/employer/company'
+        });
+    } catch(e) { console.error('Notification error:', e); }
+
     return company;
 };
 
@@ -64,36 +102,30 @@ const suspendCompany = async (companyId) => {
     if (!company) {
         throw { statusCode: 404, message: 'Company not found' };
     }
-    company.isSuspended = true;
+    company.isSuspended = !company.isSuspended;
     await company.save();
+
+    try {
+        await Notification.create({
+            userId: company.employerUserId,
+            title: company.isSuspended ? 'Company Suspended' : 'Company Unsuspended',
+            message: company.isSuspended
+                ? `Your company "${company.businessName}" has been suspended.`
+                : `Your company "${company.businessName}" has been unsuspended.`,
+            type: company.isSuspended ? 'WARNING' : 'SUCCESS',
+            link: '/employer/company'
+        });
+    } catch(e) { console.error('Notification error:', e); }
+
     return company;
 };
 
 const getAdminNotifications = async () => {
-    const notifications = [];
-
-    // 1. Pending Companies
-    const pendingCompanies = await Company.find({ verificationStatus: 'PENDING' })
+    const admins = await User.find({ role: 'ADMIN' }).select('_id');
+    const adminIds = admins.map(a => a._id);
+    const notifications = await Notification.find({ userId: { $in: adminIds } })
         .sort({ createdAt: -1 })
-        .limit(10);
-        
-    pendingCompanies.forEach(company => {
-        notifications.push({
-            id: `company_${company._id}`,
-            type: 'COMPANY_VERIFICATION',
-            title: 'Pending Verification',
-            message: `Company "${company.businessName}" is waiting for verification.`,
-            isRead: false,
-            createdAt: company.createdAt,
-            link: '/admin/companies'
-        });
-    });
-
-    // We can add more aggregations here later (e.g., reported users, pending jobs)
-
-    // Sort all aggregated notifications by date descending
-    notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
+        .limit(50);
     return notifications;
 };
 

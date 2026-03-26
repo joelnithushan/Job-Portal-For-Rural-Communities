@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { getInitials } from '../../utils/formatters';
 import { adminAPI, notificationsAPI } from '../../api/services';
-import defaultAvatar from '../../assets/default-avatar.png';
+const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774508360/job-portal-af/defaults/default_avatar.png';
 
 const languages = [
     { code: 'en', label: 'EN', full: 'English' },
@@ -47,7 +47,7 @@ export const Navbar = () => {
     }, [isAuthenticated, user?.role]);
 
     const handleNotificationClick = async (notif) => {
-        if (user?.role !== 'ADMIN' && !notif.isRead) {
+        if (!notif.isRead) {
             try {
                 await notificationsAPI.markAsRead(notif._id);
                 setNotifications(prev => prev.map(n => n._id === notif._id ? { ...n, isRead: true } : n));
@@ -60,19 +60,15 @@ export const Navbar = () => {
     const handleMarkAllAsRead = async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (user?.role !== 'ADMIN') {
-            try {
-                await notificationsAPI.markAllAsRead();
-                setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-            } catch (error) {
-                console.error('Failed to mark all as read', error);
-            }
+        try {
+            await notificationsAPI.markAllAsRead();
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        } catch (error) {
+            console.error('Failed to mark all as read', error);
         }
     };
 
-    const unreadCount = user?.role === 'ADMIN' 
-        ? notifications.length 
-        : notifications.filter(n => !n.isRead).length;
+    const unreadCount = notifications.filter(n => !n.isRead).length;
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -190,11 +186,18 @@ export const Navbar = () => {
                                     <div className="absolute right-0 top-full mt-1 w-80 bg-white shadow-xl rounded-xl border border-gray-100 opacity-0 invisible group-hover/adminnotif:opacity-100 group-hover/adminnotif:visible transition-all duration-200 origin-top-right z-50">
                                         <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                             <h3 className="font-semibold text-brand-dark text-sm">Notifications</h3>
-                                            {unreadCount > 0 && (
-                                                <span className="bg-[#8B1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                                    {unreadCount}
-                                                </span>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                {unreadCount > 0 && (
+                                                    <span className="bg-[#8B1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                        {unreadCount}
+                                                    </span>
+                                                )}
+                                                {unreadCount > 0 && (
+                                                    <button onClick={handleMarkAllAsRead} className="text-[10px] text-[#8B1A1A] hover:underline hover:text-[#6e1515] font-semibold uppercase tracking-wider cursor-pointer">
+                                                        Mark as read
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="max-h-[300px] overflow-y-auto">
                                             {notifications.length === 0 ? (
@@ -204,11 +207,15 @@ export const Navbar = () => {
                                             ) : (
                                                 notifications.map(notification => (
                                                     <Link 
-                                                        key={notification.id || notification._id} 
+                                                        key={notification._id} 
                                                         to={notification.link || '#'}
-                                                        className="block p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-b-0"
+                                                        onClick={() => handleNotificationClick(notification)}
+                                                        className={`block p-3 border-b border-gray-50 transition-colors last:border-b-0 ${!notification.isRead ? 'bg-[#8B1A1A]/5 hover:bg-[#8B1A1A]/10' : 'hover:bg-gray-50'}`}
                                                     >
-                                                        <p className="text-sm text-brand-dark font-medium mb-1">{notification.title}</p>
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <p className="text-sm text-brand-dark font-medium">{notification.title}</p>
+                                                            {!notification.isRead && <span className="w-2 h-2 rounded-full bg-[#8B1A1A] mt-1.5 flex-shrink-0"></span>}
+                                                        </div>
                                                         <p className="text-xs text-brand-muted line-clamp-2">{notification.message}</p>
                                                         <p className="text-[10px] text-gray-400 mt-2">
                                                             {new Date(notification.createdAt).toLocaleDateString()}

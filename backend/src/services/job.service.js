@@ -1,7 +1,17 @@
 const Job = require('../models/job.model');
+const Company = require('../models/company.model');
+const Notification = require('../models/notification.model');
+const User = require('../models/user.model');
 const geoService = require('./geo.service');
 
 const createJob = async (jobData) => {
+    const company = await Company.findOne({ employerUserId: jobData.employerId });
+    if (!company || !company.businessName || !company.district || !company.town || !company.contactPhone) {
+        const error = new Error("INCOMPLETE_COMPANY");
+        error.statusCode = 403;
+        throw error;
+    }
+
     if (jobData.district && (!jobData.location || !jobData.location.coordinates)) {
         try {
             const query = jobData.town ? `${jobData.town}, ${jobData.district}, Sri Lanka` : `${jobData.district}, Sri Lanka`;
@@ -27,6 +37,20 @@ const createJob = async (jobData) => {
         }
     }
     const job = await Job.create(jobData);
+
+    try {
+        const admins = await User.find({ role: 'ADMIN' }).select('_id');
+        for (const admin of admins) {
+            await Notification.create({
+                userId: admin._id,
+                title: 'New Job Posted',
+                message: `A new job "${job.title}" has been posted in ${job.district}.`,
+                type: 'INFO',
+                link: '/admin/jobs'
+            });
+        }
+    } catch(e) { console.error('Notification error:', e); }
+
     return job;
 };
 

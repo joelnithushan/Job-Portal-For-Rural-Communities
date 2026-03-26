@@ -109,7 +109,7 @@ const forgotPassword = async (req, res, next) => {
                 html,
             });
         } catch (emailError) {
-            // Clear token on email failure
+            console.error('SMTP Email Error:', emailError);
             user.passwordResetToken = undefined;
             user.passwordResetExpires = undefined;
             await user.save();

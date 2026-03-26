@@ -44,6 +44,13 @@ router.get(
 );
 
 router.get(
+  "/employer",
+  auth,
+  requireRole("EMPLOYER"),
+  controller.getEmployerApplications
+);
+
+router.get(
   "/job/:jobId",
   auth,
   requireRole("EMPLOYER"),
