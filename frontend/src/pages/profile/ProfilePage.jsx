@@ -5,7 +5,7 @@ import * as yup from 'yup';
 import { useAuth } from '../../context/AuthContext';
 import { profileAPI } from '../../api/services';
 import toast from 'react-hot-toast';
-import defaultAvatar from '../../assets/default-avatar.png';
+const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774508360/job-portal-af/defaults/default_avatar.png';
 import {
     Camera, Trash2, User, Phone, MapPin, FileText,
     Mail, Shield, Calendar, Edit3, Save, X, CheckCircle, CreditCard

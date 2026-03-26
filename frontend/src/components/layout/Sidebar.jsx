@@ -6,7 +6,7 @@ import { getInitials } from '../../utils/formatters';
 import { LayoutDashboard, FileText, Heart, User, LogOut, PlusCircle, Briefcase, Users, Building, ClipboardList, Building2 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import defaultAvatar from '../../assets/default-avatar.png';
+const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774508360/job-portal-af/defaults/default_avatar.png';
 
 export const Sidebar = () => {
     const { user, logout } = useAuth();
@@ -35,7 +35,7 @@ export const Sidebar = () => {
             { label: 'Dashboard', path: '/employer', icon: LayoutDashboard },
             { label: 'Post a Job', path: '/employer/post-job', icon: PlusCircle },
             { label: 'My Jobs', path: '/employer/jobs', icon: Briefcase },
-            { label: 'Applications', path: '/employer/jobs/:jobId/applications', icon: ClipboardList },
+            { label: 'Applications', path: '/employer/applications', icon: ClipboardList },
             { label: 'Company Profile', path: '/employer/company', icon: Building2 },
             { label: 'My Profile', path: '/profile', icon: User },
         ],

@@ -1,10 +1,13 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Clock, Bookmark, Building2, Briefcase } from 'lucide-react';
 import { formatSalary, timeAgo } from '../../utils/formatters';
 import { JOB_TYPE_LABELS } from '../../utils/constants';
+import { useAuth } from '../../context/AuthContext';
 
 export const JobCard = ({ job, isSaved, onSaveToggle }) => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { isAuthenticated } = useAuth();
 
     const handleCardClick = (e) => {
         // Prevent navigation if clicking on the save button
@@ -40,6 +43,10 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
+                                if (!isAuthenticated) {
+                                    navigate('/login', { state: { from: location } });
+                                    return;
+                                }
                                 onSaveToggle(job._id);
                             }}
                             className={`save-btn p-1.5 rounded-none text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors ${

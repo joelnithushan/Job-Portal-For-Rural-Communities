@@ -61,6 +61,15 @@ exports.getApplicantsByJob = async (req, res, next) => {
   }
 };
 
+exports.getEmployerApplications = async (req, res, next) => {
+  try {
+    const applications = await service.getEmployerApplications(req.user.id);
+    return successResponse(res, "Employer applications fetched successfully", { applications });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.updateStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
