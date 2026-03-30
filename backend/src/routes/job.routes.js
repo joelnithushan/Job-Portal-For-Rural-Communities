@@ -77,6 +77,8 @@ const nearbyJobsSchema = {
 };
 
 router.get('/', validate(getJobsSchema), jobController.getJobs);
+router.get('/stats/categories', jobController.getCategoryStats);
+router.get('/stats/summary', jobController.getSummaryStats);
 router.get('/nearby', validate(nearbyJobsSchema), jobController.getNearbyJobs);
 router.get('/mine', auth, requireRole('EMPLOYER'), jobController.getMyJobs);
 router.get('/:id', validate(paramIdSchema), jobController.getJobById);

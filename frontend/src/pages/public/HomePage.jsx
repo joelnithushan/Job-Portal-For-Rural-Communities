@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../api/axios';
 import { motion } from 'framer-motion';
 import {
     Briefcase, Users, MapPin, ArrowRight,
@@ -14,19 +15,58 @@ const MOCK_FEATURED_JOBS = [
     { id: 4, title: 'Delivery Driver', company: 'Express Cargo', location: 'Kurunegala', type: 'Full Time', salary: 'LKR 40,000 – 50,000' },
 ];
 
-const CATEGORIES = [
-    { name: 'Agriculture', icon: Leaf, count: 124 },
-    { name: 'Construction', icon: HardHat, count: 85 },
-    { name: 'Healthcare', icon: Heart, count: 42 },
-    { name: 'Education', icon: BookOpen, count: 67 },
-    { name: 'Retail', icon: ShoppingBag, count: 110 },
-    { name: 'Transport', icon: Truck, count: 93 },
-    { name: 'Hospitality', icon: Coffee, count: 56 },
-    { name: 'Fishing', icon: Fish, count: 28 },
+const DEFAULT_CATEGORIES = [
+    { name: 'Agriculture', icon: Leaf, count: 0 },
+    { name: 'Construction', icon: HardHat, count: 0 },
+    { name: 'Logistics', icon: Truck, count: 0 },
+    { name: 'Retail', icon: ShoppingBag, count: 0 },
+    { name: 'Healthcare', icon: Heart, count: 0 },
+    { name: 'Education', icon: BookOpen, count: 0 },
+    { name: 'Hospitality', icon: Coffee, count: 0 },
+    { name: 'IT', icon: Briefcase, count: 0 },
 ];
 
 export const HomePage = () => {
     const [activeTab, setActiveTab] = useState('seeker');
+    const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+    const [summaryStats, setSummaryStats] = useState({
+        jobsCount: '2,400+',
+        employersCount: '580+',
+        districtsCount: '24',
+        placementRate: '89%'
+    });
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                // Fetch Category Stats
+                const catResponse = await api.get('/jobs/stats/categories');
+                if (catResponse.success) {
+                    const stats = catResponse.data.stats;
+                    const updatedCategories = DEFAULT_CATEGORIES.map(cat => {
+                        const stat = stats.find(s => s._id === cat.name);
+                        return { ...cat, count: stat ? stat.count : 0 };
+                    });
+                    setCategories(updatedCategories);
+                }
+
+                // Fetch Summary Stats
+                const summaryResponse = await api.get('/jobs/stats/summary');
+                if (summaryResponse.success) {
+                    const { jobsCount, employersCount, districtsCount, placementRate } = summaryResponse.data;
+                    setSummaryStats({
+                        jobsCount: jobsCount.toLocaleString() + '+',
+                        employersCount: employersCount.toLocaleString() + '+',
+                        districtsCount: districtsCount.toString(),
+                        placementRate: placementRate + '%'
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching home page stats:', error);
+            }
+        };
+        fetchStats();
+    }, []);
 
     const fadeIn = {
         hidden: { opacity: 0, y: 20 },
@@ -63,10 +103,10 @@ export const HomePage = () => {
                 <div className="max-w-5xl mx-auto px-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                         {[
-                            { value: '2,400+', label: 'Jobs Posted' },
-                            { value: '580+', label: 'Verified Employers' },
-                            { value: '24', label: 'Districts' },
-                            { value: '89%', label: 'Placement Rate' },
+                            { value: summaryStats.jobsCount, label: 'Jobs Posted' },
+                            { value: summaryStats.employersCount, label: 'Verified Employers' },
+                            { value: summaryStats.districtsCount, label: 'Districts' },
+                            { value: summaryStats.placementRate, label: 'Placement Rate' },
                         ].map((stat, i) => (
                             <div key={i}>
                                 <span className="block text-3xl lg:text-4xl font-heading text-white mb-1">{stat.value}</span>
@@ -85,18 +125,23 @@ export const HomePage = () => {
                         <p className="text-gray-500 max-w-lg mx-auto text-sm">Find opportunities that match your skills across Sri Lanka's key industries.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                        {CATEGORIES.map((cat, i) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-l border-t border-brand-green/20">
+                        {categories.map((cat, i) => (
                             <Link
                                 key={i}
                                 to={`/jobs?category=${cat.name}`}
-                                className="group flex items-center justify-between px-6 py-5 border border-gray-100 hover:bg-brand-green hover:text-white transition-colors"
+                                className="group flex items-center justify-between px-6 py-8 border-r border-b border-brand-green/20 bg-brand-green text-white hover:bg-brand-amber hover:text-brand-dark transition-all duration-300"
                             >
-                                <div>
-                                    <h3 className="text-sm font-semibold text-brand-dark group-hover:text-white transition-colors">{cat.name}</h3>
-                                    <p className="text-xs text-gray-400 group-hover:text-white/60 transition-colors mt-0.5">{cat.count} open positions</p>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 flex items-center justify-center bg-white/10 group-hover:bg-brand-dark/10 rounded-full transition-colors">
+                                        <cat.icon size={20} className="text-white group-hover:text-brand-dark transition-colors" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-white group-hover:text-brand-dark transition-colors uppercase tracking-wider">{cat.name}</h3>
+                                        <p className="text-[10px] text-white/60 group-hover:text-brand-dark/60 transition-colors mt-0.5 font-medium tracking-widest">{cat.count} OPEN POSITIONS</p>
+                                    </div>
                                 </div>
-                                <ArrowRight size={14} className="text-gray-300 group-hover:text-white transition-colors" />
+                                <ArrowRight size={14} className="text-white/40 group-hover:text-brand-dark transition-colors" />
                             </Link>
                         ))}
                     </div>
