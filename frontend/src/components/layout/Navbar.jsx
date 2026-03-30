@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { getInitials } from '../../utils/formatters';
 import { adminAPI, notificationsAPI } from '../../api/services';
-const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774508360/job-portal-af/defaults/default_avatar.png';
+const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
 
 const languages = [
     { code: 'en', label: 'EN', full: 'English' },
@@ -293,9 +293,9 @@ export const Navbar = () => {
                                 <div className="relative group/profile">
                                     <Link to="/profile" className="flex items-center gap-2">
                                         {user?.profilePicture ? (
-                                            <img src={user.profilePicture} alt={user.name} className="h-9 w-9 object-cover rounded-full border-2 border-[#8B1A1A]" />
+                                            <img src={user.profilePicture} alt={user.name} className="h-9 w-9 object-cover rounded-full border-2 border-[#E2B325] bg-white shadow-sm" />
                                         ) : (
-                                            <img src={defaultAvatar} alt="Default Avatar" className="h-9 w-9 object-cover rounded-full border-2 border-[#8B1A1A] bg-white" />
+                                            <img src={defaultAvatar} alt="Default Avatar" className="h-9 w-9 object-cover rounded-full border-2 border-[#E2B325] bg-white shadow-sm" />
                                         )}
                                     </Link>
 
@@ -384,9 +384,9 @@ export const Navbar = () => {
                                 <div className="flex items-center justify-between">
                                     <Link to={user?.role === 'EMPLOYER' ? '/employer' : user?.role === 'ADMIN' ? '/admin' : '/dashboard'} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3">
                                         {user?.profilePicture ? (
-                                            <img src={user.profilePicture} alt={user.name} className="w-9 h-9 rounded-full object-cover border-2 border-[#8B1A1A]" />
+                                            <img src={user.profilePicture} alt={user.name} className="w-9 h-9 rounded-full object-cover border-2 border-[#E2B325] bg-white shadow-sm" />
                                         ) : (
-                                            <img src={defaultAvatar} alt="Default Avatar" className="w-9 h-9 rounded-full object-cover border-2 border-[#8B1A1A] bg-white" />
+                                            <img src={defaultAvatar} alt="Default Avatar" className="w-9 h-9 rounded-full object-cover border-2 border-[#E2B325] bg-white shadow-sm" />
                                         )}
                                         <div>
                                             <p className="font-bold text-[#1A1A1A] text-sm">{user?.name}</p>

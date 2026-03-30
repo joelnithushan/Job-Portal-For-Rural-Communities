@@ -6,7 +6,7 @@ import { getInitials } from '../../utils/formatters';
 import { LayoutDashboard, FileText, Heart, User, LogOut, PlusCircle, Briefcase, Users, Building, ClipboardList, Building2 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774508360/job-portal-af/defaults/default_avatar.png';
+const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
 
 export const Sidebar = () => {
     const { user, logout } = useAuth();
@@ -91,7 +91,7 @@ export const Sidebar = () => {
             {/* Top Section */}
             <div className="bg-[#6e1515] p-6 flex flex-col items-center">
                 {user?.profilePicture ? (
-                    <img src={user.profilePicture} alt={user.name} className="h-16 w-16 rounded-full object-cover border-2 border-[#E2B325]" />
+                    <img src={user.profilePicture} alt={user.name} className="h-16 w-16 rounded-full object-cover border-2 border-[#E2B325] bg-white shadow-sm" />
                 ) : (
                     <img src={defaultAvatar} alt="Default Avatar" className="h-16 w-16 rounded-full object-cover border-2 border-[#E2B325] shadow-sm bg-white" />
                 )}

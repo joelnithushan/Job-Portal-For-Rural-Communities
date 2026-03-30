@@ -10,7 +10,7 @@ import { adminAPI } from '../../api/services';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 
-const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774508360/job-portal-af/defaults/default_avatar.png';
+const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
 
 // ─── SHARED HELPERS ────────────────────────────────────────────
 

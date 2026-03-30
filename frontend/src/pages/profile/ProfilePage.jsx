@@ -5,7 +5,7 @@ import * as yup from 'yup';
 import { useAuth } from '../../context/AuthContext';
 import { profileAPI } from '../../api/services';
 import toast from 'react-hot-toast';
-const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774508360/job-portal-af/defaults/default_avatar.png';
+const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
 import {
     Camera, Trash2, User, Phone, MapPin, FileText,
     Mail, Shield, Calendar, Edit3, Save, X, CheckCircle, CreditCard
@@ -110,8 +110,8 @@ export const ProfilePage = () => {
         setDeletingPhoto(true);
         try {
             await profileAPI.deleteProfilePicture();
-            updateUser({ ...user, profilePicture: null });
-            toast.success('Profile picture removed.');
+            updateUser({ ...user, profilePicture: defaultAvatar });
+            toast.success('Profile picture removed (reset to default).');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Could not remove photo.');
         } finally {
@@ -187,9 +187,9 @@ export const ProfilePage = () => {
                         {/* Avatar */}
                         <div className="relative inline-block">
                             {(photoPreview || user?.profilePicture) ? (
-                                <img src={photoPreview || user.profilePicture} alt="Profile" className="h-32 w-32 object-cover rounded-full border-4 border-[#8B1A1A]" />
+                                <img src={photoPreview || user.profilePicture} alt="Profile" className="h-32 w-32 object-cover rounded-full border-4 border-[#E2B325] bg-white shadow-md" />
                             ) : (
-                                <img src={defaultAvatar} alt="Default Profile" className="h-32 w-32 object-cover rounded-full border-4 border-[#8B1A1A] bg-white shadow-sm" />
+                                <img src={defaultAvatar} alt="Default Profile" className="h-32 w-32 object-cover rounded-full border-4 border-[#E2B325] bg-white shadow-md" />
                             )}
                             <button onClick={() => fileInputRef.current?.click()} disabled={uploadingPhoto}
                                 className="absolute bottom-1 right-1 bg-[#E2B325] text-[#8B1A1A] p-2 rounded-full border-2 border-white hover:bg-[#d4a420] transition-colors" title="Change photo">
