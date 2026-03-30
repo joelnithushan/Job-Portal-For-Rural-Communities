@@ -34,7 +34,8 @@ export const LoginPage = () => {
                     user.role === 'ADMIN' ? '/admin' : '/dashboard');
             navigate(from, { replace: true });
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Google Login failed');
+            // Error is already toasted by the axios interceptor
+            console.error('Google Login error:', error);
         }
     };
 

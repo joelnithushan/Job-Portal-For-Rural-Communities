@@ -126,26 +126,30 @@ const deleteProfilePicture = async (req, res) => {
             return errorResponse(res, 'User not found', 404);
         }
 
-        if (!user.profilePicture) {
-            return errorResponse(res, 'No profile picture to remove.', 400);
+        const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
+        const isAlreadyDefault = user.profilePicture === defaultAvatar;
+
+        if (isAlreadyDefault || !user.profilePicture) {
+            return res.status(200).json({ success: true, message: 'Profile picture is already set to default.', user });
         }
 
-        // Delete from Cloudinary
+        // Delete from Cloudinary if it's a user-uploaded image
         try {
             const oldPublicId = user.profilePicture
                 .split('/').slice(-1)[0].split('.')[0];
-            if (oldPublicId && oldPublicId.startsWith('user_')) {
+            // Only destroy if it belongs to the user-uploaded folder/prefix
+            if (oldPublicId && (oldPublicId.startsWith('user_') || user.profilePicture.includes('/profiles/'))) {
                 await cloudinary.uploader.destroy(`ruralwork/profiles/${oldPublicId}`);
             }
         } catch (err) {
             console.error('Failed to delete from Cloudinary:', err.message);
         }
 
-        user.profilePicture = null;
+        user.profilePicture = defaultAvatar;
         await user.save();
 
-        return successResponse(res, 'Profile picture removed.', {
-            profilePicture: null,
+        return successResponse(res, 'Profile picture removed (reset to default).', {
+            profilePicture: defaultAvatar,
         });
     } catch (error) {
         return errorResponse(res, 'Failed to remove profile picture', 500);
