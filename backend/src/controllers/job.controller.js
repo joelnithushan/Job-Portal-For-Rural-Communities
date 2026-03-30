@@ -101,6 +101,24 @@ const getMyJobs = async (req, res, next) => {
     }
 };
 
+const getCategoryStats = async (req, res, next) => {
+    try {
+        const stats = await jobService.getCategoryStats();
+        successResponse(res, 'Category stats retrieved successfully', { stats });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getSummaryStats = async (req, res, next) => {
+    try {
+        const stats = await jobService.getSummaryStats();
+        successResponse(res, 'Summary stats retrieved successfully', stats);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createJob,
     getJobs,
@@ -109,4 +127,6 @@ module.exports = {
     deleteJob,
     getNearbyJobs,
     getMyJobs,
+    getCategoryStats,
+    getSummaryStats,
 };
