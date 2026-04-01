@@ -42,6 +42,11 @@ const companySchema = mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        suspensionReason: {
+            type: String,
+            default: null,
+            maxlength: 255,
+        },
     },
     {
         timestamps: true,

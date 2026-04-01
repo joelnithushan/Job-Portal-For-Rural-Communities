@@ -56,7 +56,13 @@ const createJob = async (jobData) => {
 };
 
 const getJobs = async ({ district, category, jobType, search, sort, salaryMin, salaryMax, page = 1, limit = 10 }) => {
-    const filter = {};
+    // Only show jobs from ACTIVE employers
+    const activeEmployers = await User.find({ role: 'EMPLOYER', status: 'ACTIVE' }).select('_id');
+    const activeEmployerIds = activeEmployers.map(e => e._id);
+
+    const filter = {
+        employerId: { $in: activeEmployerIds }
+    };
     if (district) filter.district = district;
     if (category) filter.category = category;
     if (jobType) filter.jobType = jobType;
@@ -174,7 +180,13 @@ const deleteJob = async (jobId, user) => {
 
 const getNearbyJobs = async (lat, lng, radiusKm = 10) => {
     const radiusInMeters = radiusKm * 1000;
+    
+    // Only show jobs from ACTIVE employers
+    const activeEmployers = await User.find({ role: 'EMPLOYER', status: 'ACTIVE' }).select('_id');
+    const activeEmployerIds = activeEmployers.map(e => e._id);
+
     const jobs = await Job.find({
+        employerId: { $in: activeEmployerIds },
         location: {
             $near: {
                 $geometry: {
@@ -209,8 +221,11 @@ const getJobsByEmployer = async (employerId, page = 1, limit = 100) => {
 };
 
 const getCategoryStats = async () => {
+    const activeEmployers = await User.find({ role: 'EMPLOYER', status: 'ACTIVE' }).select('_id');
+    const activeEmployerIds = activeEmployers.map(e => e._id);
+
     const stats = await Job.aggregate([
-        { $match: { status: 'OPEN' } },
+        { $match: { status: 'OPEN', employerId: { $in: activeEmployerIds } } },
         {
             $group: {
                 _id: '$category',

@@ -43,6 +43,11 @@ const userSchema = mongoose.Schema(
             enum: ['ACTIVE', 'SUSPENDED'],
             default: 'ACTIVE',
         },
+        suspensionReason: {
+            type: String,
+            default: null,
+            maxlength: 255,
+        },
         passwordResetToken: {
             type: String,
             default: undefined,
