@@ -18,12 +18,16 @@ const locationSchema = Joi.object().keys({
     coordinates: Joi.array().items(Joi.number()).length(2).required(),
 });
 
+const phoneRegex = /^(?:\+94|0)[0-9]{9}$/;
+
 const createJobSchema = {
     body: Joi.object().keys({
         title: Joi.string().required(),
         description: Joi.string().required(),
         district: Joi.string().required(),
-        contactPhone: Joi.string().required(),
+        contactPhone: Joi.string().required().pattern(phoneRegex).messages({
+            'string.pattern.base': 'Must be a valid Sri Lankan mobile number'
+        }),
         town: Joi.string(),
         category: Joi.string(),
         jobType: Joi.string().valid('FULL_TIME', 'PART_TIME', 'CONTRACT'),
@@ -42,7 +46,9 @@ const updateJobSchema = {
         title: Joi.string(),
         description: Joi.string(),
         district: Joi.string(),
-        contactPhone: Joi.string(),
+        contactPhone: Joi.string().pattern(phoneRegex).messages({
+            'string.pattern.base': 'Must be a valid Sri Lankan mobile number'
+        }),
         town: Joi.string(),
         category: Joi.string(),
         jobType: Joi.string().valid('FULL_TIME', 'PART_TIME', 'CONTRACT'),

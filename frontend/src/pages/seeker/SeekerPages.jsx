@@ -30,22 +30,28 @@ const StatusBadge = ({ status }) => {
     );
 };
 
-const Spinner = () => (
-    <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
-        <p className="text-sm text-gray-400 uppercase tracking-widest">Loading...</p>
-    </div>
-);
-
-const EmptyState = ({ message, subtitle, icon: Icon = Briefcase }) => (
-    <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-        <div className="p-4 bg-gray-50 border border-gray-100 mb-2">
-            <Icon className="h-8 w-8 text-gray-300" />
+const Spinner = () => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
+            <p className="text-sm text-gray-400 uppercase tracking-widest">{t('loading')}</p>
         </div>
-        <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{message || 'No Records Found'}</p>
-        <p className="text-xs text-gray-300 max-w-xs">{subtitle}</p>
-    </div>
-);
+    );
+};
+
+const EmptyState = ({ message, subtitle, icon: Icon = Briefcase }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+            <div className="p-4 bg-gray-50 border border-gray-100 mb-2">
+                <Icon className="h-8 w-8 text-gray-300" />
+            </div>
+            <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{message || t('no_records_found')}</p>
+            <p className="text-xs text-gray-300 max-w-xs">{subtitle}</p>
+        </div>
+    );
+};
 
 const SectionCard = ({ children, className = '', title, rightSlot }) => (
     <div className={`bg-white border border-gray-200 overflow-hidden mb-6 ${className}`}>
@@ -80,7 +86,8 @@ const StatCard = ({ label, value, icon: Icon, accentColor }) => (
     </div>
 );
 
-const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, confirmText = 'CONFIRM' }) => {
+const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, confirmText }) => {
+    const { t } = useTranslation();
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center">
@@ -88,9 +95,9 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
                 <h3 className="font-['Playfair_Display'] text-lg text-[#1A1A1A] font-bold">{title}</h3>
                 <p className="text-sm text-gray-500 mt-2 leading-relaxed">{message}</p>
                 <div className="mt-6 flex gap-3 justify-end">
-                    <button onClick={onCancel} className="border border-gray-300 px-4 py-2 text-sm uppercase tracking-wider text-gray-600 hover:bg-gray-50">CANCEL</button>
+                    <button onClick={onCancel} className="border border-gray-300 px-4 py-2 text-sm uppercase tracking-wider text-gray-600 hover:bg-gray-50">{t('cancel')}</button>
                     <button onClick={onConfirm} disabled={loading} className="bg-[#8B1A1A] text-white px-4 py-2 text-sm uppercase tracking-wider hover:bg-[#6e1515] disabled:opacity-50">
-                        {loading ? 'WAIT...' : confirmText}
+                        {loading ? t('wait') : (confirmText || t('confirm'))}
                     </button>
                 </div>
             </div>
@@ -144,7 +151,7 @@ export const SeekerDashboard = () => {
             <PageHeader
                 rightSlot={
                     <button onClick={() => navigate('/jobs')} className="bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420] flex items-center gap-2">
-                        <Search size={16} /> BROWSE JOBS
+                        <Search size={16} /> {t('browse_jobs')}
                     </button>
                 }
             />
@@ -154,27 +161,27 @@ export const SeekerDashboard = () => {
                 <div className="bg-[#E2B325] border-l-4 border-l-[#8B1A1A] px-5 py-3 mb-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <AlertTriangle className="h-5 w-5 text-[#8B1A1A]" />
-                        <span className="text-[#8B1A1A] text-sm font-semibold">Complete your profile to increase your chances of getting hired</span>
+                        <span className="text-[#8B1A1A] text-sm font-semibold">{t('dash_warn_profile')}</span>
                     </div>
-                    <button onClick={() => navigate('/profile')} className="bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-1.5 hover:bg-[#6e1515]">UPDATE PROFILE</button>
+                    <button onClick={() => navigate('/profile')} className="bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-1.5 hover:bg-[#6e1515]">{t('dash_update_profile')}</button>
                 </div>
             )}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <StatCard label="APPLICATIONS" value={stats.total} icon={FileText} accentColor="#8B1A1A" />
-                <StatCard label="REVIEWED" value={stats.reviewed} icon={Clock} accentColor="#E2B325" />
-                <StatCard label="ACCEPTED" value={stats.accepted} icon={CheckCircle} accentColor="#16a34a" />
-                <StatCard label="REJECTED" value={stats.rejected} icon={XCircle} accentColor="#dc2626" />
+                <StatCard label={t('dash_stats_apps')} value={stats.total} icon={FileText} accentColor="#8B1A1A" />
+                <StatCard label={t('dash_stats_reviewed')} value={stats.reviewed} icon={Clock} accentColor="#E2B325" />
+                <StatCard label={t('dash_stats_accepted')} value={stats.accepted} icon={CheckCircle} accentColor="#16a34a" />
+                <StatCard label={t('dash_stats_rejected')} value={stats.rejected} icon={XCircle} accentColor="#dc2626" />
             </div>
 
             {/* Main Content */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
                 {/* Recent Applications */}
-                <SectionCard className="md:col-span-2 !p-0 border-none" title="RECENT APPLICATIONS" rightSlot={<NavLink to="/dashboard/applications" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white">View All →</NavLink>}>
+                <SectionCard className="md:col-span-2 !p-0 border-none" title={t('recent_applications')} rightSlot={<NavLink to="/dashboard/applications" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white">{t('view_all')} →</NavLink>}>
                     {applications.length === 0 ? (
-                        <EmptyState message="No applications yet" subtitle="Start applying to jobs to track them here" icon={Briefcase} />
+                        <EmptyState message={t('no_applications_yet')} subtitle={t('start_browsing')} icon={Briefcase} />
                     ) : (
                         <div className="divide-y divide-gray-100 bg-white border border-t-0 border-gray-200">
                             {applications.map((app, i) => (
@@ -192,13 +199,13 @@ export const SeekerDashboard = () => {
                 </SectionCard>
 
                 {/* Quick Actions */}
-                <SectionCard className="!p-0 border-none" title="QUICK ACTIONS">
+                <SectionCard className="!p-0 border-none" title={t('quick_actions')}>
                     <div className="bg-white border border-t-0 border-gray-200 divide-y divide-gray-100">
                         {[
-                            { to: '/jobs', icon: Search, label: 'Browse Jobs', desc: 'Find your next opportunity' },
-                            { to: '/dashboard/applications', icon: FileText, label: 'My Applications', desc: 'Track your application statuses' },
-                            { to: '/dashboard/saved', icon: Bookmark, label: 'Saved Jobs', desc: 'View jobs you bookmarked' },
-                            { to: '/profile', icon: User, label: 'My Profile', desc: 'Update your personal details' },
+                            { to: '/jobs', icon: Search, label: t('browse_available_jobs'), desc: t('find_next_opportunity') },
+                            { to: '/dashboard/applications', icon: FileText, label: t('view_my_applications'), desc: t('track_application_status') },
+                            { to: '/dashboard/saved', icon: Bookmark, label: t('saved_jobs'), desc: t('jobs_you_bookmarked') },
+                            { to: '/profile', icon: User, label: t('dash_my_profile'), desc: t('dash_profile_desc') },
                         ].map(action => (
                             <NavLink key={action.to} to={action.to} className="flex items-center gap-4 p-4 hover:bg-[#FAF7F2] transition-colors group">
                                 <div className="p-2.5 bg-[#8B1A1A]/10 flex-shrink-0">
@@ -282,7 +289,7 @@ export const MyApplicationsPage = () => {
             <PageHeader
                 rightSlot={
                     <button onClick={() => navigate('/jobs')} className="bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420] flex items-center gap-2">
-                        <Search size={16} /> BROWSE JOBS
+                        <Search size={16} /> {t('browse_jobs')}
                     </button>
                 }
             />
@@ -316,7 +323,7 @@ export const MyApplicationsPage = () => {
             </div>
 
             {/* Applications Table */}
-            <SectionCard className="!p-0 border-none" title="MY APPLICATIONS" rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{filteredApps.length}</span>}>
+            <SectionCard className="!p-0 border-none" title={t('my_applications')} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{filteredApps.length}</span>}>
                 <div className="bg-white border border-t-0 border-gray-200">
                     {filteredApps.length === 0 ? (
                         <EmptyState message={t('no_applications_msg')} subtitle="Try searching for jobs that match your skillset" icon={Briefcase} />
@@ -457,12 +464,12 @@ export const SavedJobsPage = () => {
             <PageHeader
                 rightSlot={
                     <button onClick={() => navigate('/jobs')} className="bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420] flex items-center gap-2">
-                        <Search size={16} /> BROWSE JOBS
+                        <Search size={16} /> {t('browse_jobs')}
                     </button>
                 }
             />
 
-            <SectionCard className="!p-0 border-none" title="SAVED JOBS" rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{savedJobs.length}</span>}>
+            <SectionCard className="!p-0 border-none" title={t('saved_jobs_title')} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{savedJobs.length}</span>}>
                 <div className="bg-[#FAF7F2] p-6 border-x border-b border-gray-200">
                     {savedJobs.length === 0 ? (
                         <EmptyState message={t('no_saved_jobs')} subtitle={t('no_saved_jobs_sub')} icon={Bookmark} />

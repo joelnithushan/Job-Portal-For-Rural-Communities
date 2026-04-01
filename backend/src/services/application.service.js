@@ -143,14 +143,14 @@ exports.getApplicantsByJob = async (jobId, employerId) => {
   }
 
   return await Application.find({ jobId })
-    .populate("seekerId", "name email phone")
+    .populate("seekerId", "name email phone nic district bio profilePicture")
     .populate("jobId", "title");
 };
 
 
 exports.getEmployerApplications = async (employerId) => {
   return await Application.find({ employerId })
-    .populate("seekerId", "name email phone")
+    .populate("seekerId", "name email phone nic district bio profilePicture")
     .populate("jobId", "title");
 };
 

@@ -16,6 +16,16 @@ const updateStatusSchema = {
     }),
     body: Joi.object().keys({
         status: Joi.string().valid('ACTIVE', 'SUSPENDED').required(),
+        reason: Joi.string().allow('', null).max(255).optional(),
+    }),
+};
+
+const suspendCompanySchema = {
+    params: Joi.object().keys({
+        id: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
+    }),
+    body: Joi.object().keys({
+        reason: Joi.string().allow('', null).max(255).optional(),
     }),
 };
 
@@ -37,7 +47,7 @@ router.get('/applications', adminController.getAllApplications);
 router.delete('/applications/:id', validate(objectIdParamsSchema), adminController.deleteApplication);
 
 router.patch('/companies/:id/verify', validate(objectIdParamsSchema), adminController.verifyCompany);
-router.patch('/companies/:id/suspend', validate(objectIdParamsSchema), adminController.suspendCompany);
+router.patch('/companies/:id/suspend', validate(suspendCompanySchema), adminController.suspendCompany);
 router.get('/companies', adminController.getAllCompanies);
 
 module.exports = router;

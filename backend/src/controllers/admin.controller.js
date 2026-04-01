@@ -12,7 +12,8 @@ const getAllUsers = async (req, res, next) => {
 
 const updateUserStatus = async (req, res, next) => {
     try {
-        const user = await adminService.updateUserStatus(req.params.id, req.body.status);
+        const { status, reason } = req.body;
+        const user = await adminService.updateUserStatus(req.params.id, status, reason);
         successResponse(res, 'User status updated successfully', { user });
     } catch (error) {
         next(error);
@@ -66,8 +67,9 @@ const verifyCompany = async (req, res, next) => {
 
 const suspendCompany = async (req, res, next) => {
     try {
-        const company = await adminService.suspendCompany(req.params.id);
-        successResponse(res, 'Company suspended successfully', { company });
+        const { reason } = req.body || {};
+        const company = await adminService.suspendCompany(req.params.id, reason);
+        successResponse(res, 'Company suspension updated successfully', { company });
     } catch (error) {
         next(error);
     }

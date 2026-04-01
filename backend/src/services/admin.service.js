@@ -9,20 +9,31 @@ const getAllUsers = async () => {
     return users;
 };
 
-const updateUserStatus = async (userId, status) => {
+const updateUserStatus = async (userId, status, reason = null) => {
     const user = await User.findById(userId);
     if (!user) {
         throw { statusCode: 404, message: 'User not found' };
     }
     user.status = status;
+    user.suspensionReason = status === 'SUSPENDED' ? reason : null;
     await user.save();
+
+    // -- CASCADE TO COMPANY (IF EMPLOYER) --
+    if (user.role === 'EMPLOYER') {
+        const company = await Company.findOne({ employerUserId: userId });
+        if (company) {
+            company.isSuspended = status === 'SUSPENDED';
+            company.suspensionReason = status === 'SUSPENDED' ? reason : null;
+            await company.save();
+        }
+    }
 
     try {
         await Notification.create({
             userId: user._id,
             title: status === 'SUSPENDED' ? 'Account Suspended' : 'Account Activated',
             message: status === 'SUSPENDED'
-                ? 'Your account has been suspended by the administrator.'
+                ? `Your account has been suspended by the administrator.${reason ? ` Reason: ${reason}` : ''}`
                 : 'Your account has been activated by the administrator.',
             type: status === 'SUSPENDED' ? 'WARNING' : 'SUCCESS',
             link: '/profile'
@@ -97,20 +108,31 @@ const verifyCompany = async (companyId) => {
     return company;
 };
 
-const suspendCompany = async (companyId) => {
+const suspendCompany = async (companyId, reason = null) => {
     const company = await Company.findById(companyId);
     if (!company) {
         throw { statusCode: 404, message: 'Company not found' };
     }
+    
+    // Toggle suspension
     company.isSuspended = !company.isSuspended;
+    company.suspensionReason = company.isSuspended ? reason : null;
     await company.save();
+
+    // -- CASCADE TO EMPLOYER --
+    const employer = await User.findById(company.employerUserId);
+    if (employer) {
+        employer.status = company.isSuspended ? 'SUSPENDED' : 'ACTIVE';
+        employer.suspensionReason = company.isSuspended ? reason : null;
+        await employer.save();
+    }
 
     try {
         await Notification.create({
             userId: company.employerUserId,
             title: company.isSuspended ? 'Company Suspended' : 'Company Unsuspended',
             message: company.isSuspended
-                ? `Your company "${company.businessName}" has been suspended.`
+                ? `Your company "${company.businessName}" has been suspended.${reason ? ` Reason: ${reason}` : ''}`
                 : `Your company "${company.businessName}" has been unsuspended.`,
             type: company.isSuspended ? 'WARNING' : 'SUCCESS',
             link: '/employer/company'
