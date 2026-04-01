@@ -5,10 +5,11 @@ import * as yup from 'yup';
 import { useAuth } from '../../context/AuthContext';
 import { profileAPI } from '../../api/services';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
 import {
     Camera, Trash2, User, Phone, MapPin, FileText,
-    Mail, Shield, Calendar, Edit3, Save, X, CheckCircle, CreditCard
+    Mail, Shield, Calendar, Edit3, Save, X, CheckCircle, CreditCard, AlertTriangle
 } from 'lucide-react';
 
 const DISTRICTS = [
@@ -41,11 +42,13 @@ const fmtDate = (d) => {
 };
 
 export const ProfilePage = () => {
-    const { user, updateUser } = useAuth();
+    const { t } = useTranslation();
+    const { user, updateUser, logout } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [deletingPhoto, setDeletingPhoto] = useState(false);
+    const [isDeletingAccount, setIsDeletingAccount] = useState(false);
     const [photoPreview, setPhotoPreview] = useState(null);
     const [bioLength, setBioLength] = useState(user?.bio?.length || 0);
     const fileInputRef = useRef(null);
@@ -116,6 +119,20 @@ export const ProfilePage = () => {
             toast.error(err.response?.data?.message || 'Could not remove photo.');
         } finally {
             setDeletingPhoto(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!window.confirm("DANGER: Are you sure you want to PERMANENTLY delete your account?\n\nAll your data, active jobs, and applications will be erased. This action CANNOT be reversed.")) return;
+        
+        setIsDeletingAccount(true);
+        try {
+            await profileAPI.deleteAccount();
+            toast.success("Account permanently deleted.");
+            if (logout) logout();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to delete account");
+            setIsDeletingAccount(false);
         }
     };
 
@@ -247,7 +264,7 @@ export const ProfilePage = () => {
                 {/* RIGHT: Profile Details Card */}
                 <div className="md:col-span-2 bg-white border border-gray-200 overflow-hidden">
                     <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between">
-                        <h2 className="text-white text-sm font-bold uppercase tracking-widest">Personal Information</h2>
+                        <h2 className="text-white text-sm font-bold uppercase tracking-widest">{t('personal_details')}</h2>
                         {isEditing && (
                             <span className="text-[#E2B325] text-xs">
                                 {isDirty ? '● Unsaved changes' : '✓ Up to date'}
@@ -289,7 +306,7 @@ export const ProfilePage = () => {
                                         <label className="text-xs font-semibold uppercase tracking-wider text-gray-600">Full Name <span className="text-[#8B1A1A]">*</span></label>
                                         <div className="relative">
                                             <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                                            <input {...register('name')} type="text" placeholder="Your full name" className={inputCls(errors.name)} />
+                                            <input {...register('name')} type="text" placeholder="e.g. Nimal Perera" className={inputCls(errors.name)} />
                                         </div>
                                         {errors.name && <p className="text-xs text-[#8B1A1A] mt-0.5">{errors.name.message}</p>}
                                     </div>
@@ -368,7 +385,7 @@ export const ProfilePage = () => {
                                             {saving ? (
                                                 <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> SAVING...</>
                                             ) : (
-                                                <><Save className="h-4 w-4" /> SAVE CHANGES</>
+                                                <><Save className="h-4 w-4" /> {t('save_changes')}</>
                                             )}
                                         </button>
                                     </div>
@@ -376,6 +393,29 @@ export const ProfilePage = () => {
                             </form>
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* DANGER ZONE */}
+            <div className="mt-8 border border-red-200 bg-red-50 overflow-hidden">
+                <div className="bg-red-600 px-5 py-3 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-white" />
+                    <h2 className="text-white text-sm font-bold uppercase tracking-widest">Danger Zone</h2>
+                </div>
+                <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 className="text-red-900 font-bold mb-1">Delete Account</h3>
+                        <p className="text-sm text-red-700 max-w-xl">
+                            Permanently delete your account and all associated data. For Employers, this removes your company and all posted jobs. For Job Seekers, this removes all your applications. This action cannot be reversed.
+                        </p>
+                    </div>
+                    <button 
+                        onClick={handleDeleteAccount}
+                        disabled={isDeletingAccount}
+                        className="shrink-0 bg-red-600 text-white font-bold uppercase tracking-wider text-sm px-6 py-3 hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 transition-colors focus:ring-4 focus:ring-red-200"
+                    >
+                        {isDeletingAccount ? "DELETING..." : "DELETE ACCOUNT"}
+                    </button>
                 </div>
             </div>
         </>

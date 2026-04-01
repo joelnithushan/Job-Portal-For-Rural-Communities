@@ -1,5 +1,9 @@
 const { cloudinary } = require('../config/cloudinary');
 const User = require('../models/user.model');
+const Job = require('../models/job.model');
+const Application = require('../models/application.model');
+const Company = require('../models/company.model');
+const Notification = require('../models/notification.model');
 const { successResponse, errorResponse } = require('../utils/response');
 
 // Valid Sri Lanka districts
@@ -156,9 +160,70 @@ const deleteProfilePicture = async (req, res) => {
     }
 };
 
+// DELETE /profile/me
+const deleteAccount = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return errorResponse(res, 'User not found', 404);
+        }
+
+        // ROLE-SPECIFIC CASCADE DELETION
+        if (user.role === 'JOB_SEEKER') {
+            // Delete all applications made by the seeker
+            await Application.deleteMany({ seekerId: userId });
+            
+        } else if (user.role === 'EMPLOYER') {
+            // Find all jobs posted by the employer
+            const employerJobs = await Job.find({ employerId: userId });
+            const jobIds = employerJobs.map(job => job._id);
+
+            // Delete all applications linked to those jobs
+            if (jobIds.length > 0) {
+                await Application.deleteMany({ jobId: { $in: jobIds } });
+            }
+
+            // Delete actual jobs
+            await Job.deleteMany({ employerId: userId });
+
+            // Delete employer company profile
+            await Company.findOneAndDelete({ employerId: userId });
+        }
+
+        // SHARED DELETION LOGIC
+        // 1. Terminate all Notifications belonging to this user
+        await Notification.deleteMany({ userId: userId });
+
+        // 2. Eradicate Cloudinary Avatar (if not default and not Google external)
+        const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
+        if (user.profilePicture && user.profilePicture !== defaultAvatar) {
+            try {
+                const oldPublicId = user.profilePicture.split('/').slice(-1)[0].split('.')[0];
+                if (oldPublicId && (oldPublicId.startsWith('user_') || user.profilePicture.includes('/profiles/'))) {
+                    await cloudinary.uploader.destroy(`ruralwork/profiles/${oldPublicId}`);
+                }
+            } catch (err) {
+                console.error('Failed to delete avatar from Cloudinary on Account Delete:', err.message);
+            }
+        }
+
+        // 3. Purge the User Record
+        await User.findByIdAndDelete(userId);
+
+        return successResponse(res, 'Account and all associated data permanently deleted.', null, 200);
+
+    } catch (error) {
+        console.error('Account Deletion Error:', error);
+        return errorResponse(res, 'Failed to permanently delete account', 500);
+    }
+};
+
 module.exports = {
     getProfile,
     updateProfile,
     uploadProfilePicture,
     deleteProfilePicture,
+    deleteAccount,
 };

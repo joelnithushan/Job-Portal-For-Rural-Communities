@@ -58,7 +58,7 @@ export const LoginPage = () => {
         <div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
 
             {/* Card */}
-            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg">
+            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg rounded-2xl">
                 {/* Logo */}
                 <div className="text-center mb-6">
                     <Link to="/">
@@ -71,7 +71,7 @@ export const LoginPage = () => {
                     <Input
                         label="Email Address"
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder="nimal@gmail.com"
                         error={errors.email?.message}
                         {...register('email')}
                     />
