@@ -41,20 +41,21 @@ export const companiesAPI = {
 
 export const adminAPI = {
     getUsers: () => api.get('/admin/users'),
-    updateUserStatus: (id, data) => api.patch(`/admin/users/${id}/status`, data),
+    updateUserStatus: (id, { status, reason }) => api.patch(`/admin/users/${id}/status`, { status, reason }),
     getJobs: () => api.get('/admin/jobs'),
     deleteJob: (id) => api.delete(`/admin/jobs/${id}`),
     getApplications: () => api.get('/admin/applications'),
     deleteApplication: (id) => api.delete(`/admin/applications/${id}`),
     getAdminCompanies: () => api.get('/admin/companies'),
     verifyCompany: (id) => api.patch(`/admin/companies/${id}/verify`),
-    suspendCompany: (id) => api.patch(`/admin/companies/${id}/suspend`),
+    suspendCompany: (id, reason) => api.patch(`/admin/companies/${id}/suspend`, { reason }),
     getNotifications: () => api.get('/admin/notifications'),
 };
 
 export const profileAPI = {
     getProfile: () => api.get('/profile/me'),
     updateProfile: (data) => api.patch('/profile/me', data),
+    deleteAccount: () => api.delete('/profile/me'),
     uploadProfilePicture: (formData) => api.post('/profile/me/picture', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }),
