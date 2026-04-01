@@ -50,7 +50,7 @@ api.interceptors.response.use(
                     message = data.message || 'Incorrect email or password.';
                 }
             } else if (status === 403) {
-                message = "You don't have permission to do that.";
+                message = data?.message || "You don't have permission to do that.";
             } else if (status === 404) {
                 // Don't toast 404 — let each caller handle it
                 return Promise.reject(error);

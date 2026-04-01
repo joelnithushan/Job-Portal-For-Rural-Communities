@@ -91,7 +91,7 @@ export const HomePage = () => {
                         </button>
                     </Link>
                     <Link to="/register/employer">
-                        <button className="px-10 py-3.5 bg-transparent text-white text-xs tracking-[0.2em] font-medium border border-white hover:bg-white hover:text-brand-dark transition-colors">
+                        <button className="px-10 py-3.5 bg-transparent text-white text-xs tracking-[0.2em] font-medium border border-white hover:bg-brand-amber hover:border-brand-amber hover:text-brand-dark transition-colors">
                             POST A JOB
                         </button>
                     </Link>

@@ -10,10 +10,13 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 
+const nameRegex = /^[a-zA-Z\s.-]+$/;
+const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+
 const registerSchema = yup.object({
-    name: yup.string().required('Full name is required').min(2, 'Name is too short'),
+    name: yup.string().required('Full name is required').min(2, 'Name is too short').matches(nameRegex, 'Name can only contain letters, spaces, dots and hyphens'),
     email: yup.string().email('Please enter a valid email address').required('Email is required'),
-    password: yup.string().required('Password is required').min(8, 'Minimum 8 characters'),
+    password: yup.string().required('Password is required').matches(pwdRegex, 'Password must have min 8 chars, 1 uppercase, 1 number, and 1 special char'),
     confirmPassword: yup.string()
         .required('Please confirm your password')
         .oneOf([yup.ref('password')], 'Passwords must match'),
@@ -59,7 +62,7 @@ export const RegisterEmployerPage = () => {
         <div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
 
             {/* Card */}
-            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg my-8">
+            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg rounded-2xl my-8">
                 <div className="text-center mb-6">
                     <Link to="/">
                         <img src="/logo.png" alt="RuralWork" className="h-20 w-auto object-contain mx-auto mb-4" />

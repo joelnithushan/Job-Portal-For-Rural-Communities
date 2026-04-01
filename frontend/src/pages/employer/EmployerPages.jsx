@@ -13,6 +13,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 
 // ─── SHARED HELPERS ────────────────────────────────────────────
@@ -114,12 +115,71 @@ const fmtDate = (d) => {
     return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
+const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
+    if (!isOpen || !applicant) return null;
+    return (
+        <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center p-4">
+            <div className="bg-white border-t-4 border-t-[#8B1A1A] w-full max-w-lg relative overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-[#8B1A1A] bg-white rounded-full">
+                    <XCircle className="h-6 w-6" />
+                </button>
+                <div className="p-6 overflow-y-auto">
+                    <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+                        {applicant.profilePicture && !applicant.profilePicture.includes('default_avatar') ? (
+                            <img src={applicant.profilePicture} alt={applicant.name} className="h-16 w-16 object-cover rounded-full border-2 border-[#E2B325] shadow-sm shrink-0" />
+                        ) : (
+                            <div className="h-16 w-16 bg-[#8B1A1A] text-white text-xl font-bold rounded-full flex items-center justify-center shrink-0 shadow-inner">
+                                {getInitials(applicant.name)}
+                            </div>
+                        )}
+                        <div>
+                            <h3 className="font-['Playfair_Display'] text-2xl text-[#1A1A1A] font-bold">{applicant.name || 'Applicant'}</h3>
+                            <span className="bg-[#E2B325] text-[#8B1A1A] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 mt-1 inline-block">
+                                Job Seeker
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Email</p>
+                                <p className="text-sm font-medium text-[#1A1A1A] truncate" title={applicant.email}>{applicant.email || '—'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Phone</p>
+                                <p className="text-sm font-medium text-[#1A1A1A]">{applicant.phone || '—'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">NIC</p>
+                                <p className="text-sm font-medium text-[#1A1A1A]">{applicant.nic || '—'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">District</p>
+                                <p className="text-sm font-medium text-[#1A1A1A]">{applicant.district || '—'}</p>
+                            </div>
+                        </div>
+                        
+                        <div className="pt-4 border-t border-gray-100">
+                            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Bio / About Me</p>
+                            <div className="bg-[#FAF7F2] p-4 text-sm text-gray-600 leading-relaxed max-h-40 overflow-y-auto whitespace-pre-line">
+                                {applicant.bio || <span className="italic text-gray-400">No bio provided.</span>}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE 1: EMPLOYER DASHBOARD
 // ═══════════════════════════════════════════════════════════════
 
 export const EmployerDashboard = () => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -154,7 +214,7 @@ export const EmployerDashboard = () => {
             <PageHeader
                 rightSlot={
                     <button onClick={() => navigate('/employer/post-job')} className="bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420] flex items-center gap-2">
-                        <Plus size={16} /> POST NEW JOB
+                        <Plus size={16} /> {t('post_new_job')}
                     </button>
                 }
             />
@@ -164,39 +224,39 @@ export const EmployerDashboard = () => {
                 <div className="bg-[#E2B325] border-l-4 border-l-[#8B1A1A] px-5 py-3 mb-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <AlertTriangle className="h-5 w-5 text-[#8B1A1A]" />
-                        <span className="text-[#8B1A1A] text-sm font-semibold">Set up your company profile to start posting jobs</span>
+                        <span className="text-[#8B1A1A] text-sm font-semibold">{t('setup_company_profile')}</span>
                     </div>
-                    <button onClick={() => navigate('/employer/company')} className="bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-1.5">SETUP PROFILE</button>
+                    <button onClick={() => navigate('/employer/company')} className="bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-1.5">{t('setup_profile_btn')}</button>
                 </div>
             ) : company.verificationStatus === 'PENDING' ? (
                 <div className="bg-orange-50 border-l-4 border-l-orange-500 px-5 py-3 mb-5 flex items-center gap-3">
                     <Clock className="h-5 w-5 text-orange-500" />
-                    <span className="text-orange-800 text-sm font-semibold">Company verification is pending. You can post jobs meanwhile.</span>
+                    <span className="text-orange-800 text-sm font-semibold">{t('company_pending')}</span>
                 </div>
             ) : company.verificationStatus === 'VERIFIED' ? (
                 <div className="bg-green-50 border-l-4 border-l-green-600 px-5 py-3 mb-5 flex items-center gap-3">
                     <CheckCircle className="h-5 w-5 text-green-600" />
-                    <span className="text-green-800 text-sm font-semibold">Verified Employer ✓ — Your company is verified.</span>
+                    <span className="text-green-800 text-sm font-semibold">{t('company_verified')}</span>
                 </div>
             ) : company.verificationStatus === 'REJECTED' ? (
                 <div className="bg-red-50 border-l-4 border-l-[#8B1A1A] px-5 py-3 mb-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <XCircle className="h-5 w-5 text-[#8B1A1A]" />
-                        <span className="text-[#8B1A1A] text-sm font-semibold">Verification rejected. Please update your company profile.</span>
+                        <span className="text-[#8B1A1A] text-sm font-semibold">{t('company_rejected')}</span>
                     </div>
-                    <button onClick={() => navigate('/employer/company')} className="border border-[#8B1A1A] text-[#8B1A1A] text-xs uppercase tracking-wider px-4 py-1.5 hover:bg-[#8B1A1A] hover:text-white">UPDATE PROFILE</button>
+                    <button onClick={() => navigate('/employer/company')} className="border border-[#8B1A1A] text-[#8B1A1A] text-xs uppercase tracking-wider px-4 py-1.5 hover:bg-[#8B1A1A] hover:text-white">{t('update_profile_btn')}</button>
                 </div>
             ) : null}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <StatCard label="ACTIVE JOBS" value={activeJobs} icon={Briefcase} accentColor="#8B1A1A" />
-                <StatCard label="CLOSED JOBS" value={closedJobs} icon={Archive} accentColor="#6b7280" />
-                <StatCard label="TOTAL POSTED" value={myJobs.length} icon={FileText} accentColor="#E2B325" />
+                <StatCard label={t('active_jobs')} value={activeJobs} icon={Briefcase} accentColor="#8B1A1A" />
+                <StatCard label={t('closed_jobs')} value={closedJobs} icon={Archive} accentColor="#6b7280" />
+                <StatCard label={t('total_posted')} value={myJobs.length} icon={FileText} accentColor="#E2B325" />
             </div>
 
             {/* My Jobs Section */}
-            <SectionCard title="MY JOBS" rightSlot={<Link to="/employer/jobs" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white">View All →</Link>}>
+            <SectionCard title={t('my_jobs')} rightSlot={<Link to="/employer/jobs" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white">{t('view_all')} →</Link>}>
                 {myJobs.length === 0 ? (
                     <div className="flex flex-col items-center py-10 gap-3">
                         <Briefcase className="h-12 w-12 text-gray-200" />
@@ -222,27 +282,27 @@ export const EmployerDashboard = () => {
 
             {/* Recent Activity — 2 column */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <SectionCard title="APPLICATIONS OVERVIEW">
+                <SectionCard title={t('applications_overview')}>
                     {[
-                        { label: 'Pending / Applied', color: '#3b82f6' },
-                        { label: 'Under Review', color: '#E2B325' },
-                        { label: 'Accepted', color: '#16a34a' },
-                        { label: 'Rejected', color: '#8B1A1A' },
+                        { label: t('pending_applied'), color: '#3b82f6' },
+                        { label: t('under_review'), color: '#E2B325' },
+                        { label: t('accepted'), color: '#16a34a' },
+                        { label: t('rejected'), color: '#8B1A1A' },
                     ].map(item => (
                         <div key={item.label} className="flex justify-between border-b border-gray-100 py-2.5">
                             <span className="text-xs uppercase tracking-wider text-gray-500">{item.label}</span>
                             <span className="text-sm font-bold" style={{ color: item.color }}>—</span>
                         </div>
                     ))}
-                    <Link to="/employer/jobs" className="text-[#8B1A1A] text-xs uppercase tracking-wider mt-3 inline-block hover:text-[#E2B325]">View All Applications</Link>
+                    <Link to="/employer/jobs" className="text-[#8B1A1A] text-xs uppercase tracking-wider mt-3 inline-block hover:text-[#E2B325]">{t('all_job_applications')}</Link>
                 </SectionCard>
 
-                <SectionCard title="QUICK ACTIONS">
+                <SectionCard title={t('quick_actions')}>
                     {[
-                        { label: 'Post New Job', desc: 'Create a new job listing', icon: PlusCircle, path: '/employer/post-job' },
-                        { label: 'My Jobs', desc: 'Manage your job postings', icon: Briefcase, path: '/employer/jobs' },
-                        { label: 'Company Profile', desc: 'Update your company details', icon: Building2, path: '/employer/company' },
-                        { label: 'View Applications', desc: 'Review incoming applications', icon: ClipboardList, path: '/employer/jobs' },
+                        { label: t('post_new_job'), desc: 'Create a new job listing', icon: PlusCircle, path: '/employer/post-job' },
+                        { label: t('my_jobs'), desc: 'Manage your job postings', icon: Briefcase, path: '/employer/jobs' },
+                        { label: t('company'), desc: 'Update your company details', icon: Building2, path: '/employer/company' },
+                        { label: t('all_job_applications'), desc: 'Review incoming applications', icon: ClipboardList, path: '/employer/jobs' },
                     ].map(action => (
                         <div key={action.label} onClick={() => navigate(action.path)} className="flex items-center gap-4 p-4 border-b border-gray-100 last:border-0 hover:bg-[#FAF7F2] transition-colors group cursor-pointer">
                             <div className="bg-[#8B1A1A]/10 p-2.5"><action.icon className="h-5 w-5 text-[#8B1A1A]" /></div>
@@ -263,6 +323,7 @@ export const EmployerDashboard = () => {
 // ═══════════════════════════════════════════════════════════════
 // PAGE 2: POST JOB PAGE
 // ═══════════════════════════════════════════════════════════════
+const phoneRegex = /^(?:\+94|0)[0-9]{9}$/;
 
 const postJobSchema = yup.object({
     title: yup.string().required('Job title is required').min(5, 'Title is too short'),
@@ -271,13 +332,14 @@ const postJobSchema = yup.object({
     town: yup.string().required('Town is required'),
     category: yup.string().required('Category is required'),
     jobType: yup.string().required('Job type is required'),
-    contactPhone: yup.string().required('Contact phone is required'),
+    contactPhone: yup.string().required('Contact phone is required').matches(phoneRegex, 'Must be a valid Sri Lankan mobile number'),
     salaryMin: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
     salaryMax: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
     cvRequired: yup.boolean(),
 });
 
 export const PostJobPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -420,6 +482,7 @@ export const PostJobPage = () => {
 // ═══════════════════════════════════════════════════════════════
 
 export const MyJobsPage = () => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
@@ -576,11 +639,13 @@ export const MyJobsPage = () => {
 // ═══════════════════════════════════════════════════════════════
 
 export const JobApplicationsPage = () => {
+    const { t } = useTranslation();
     const { jobId } = useParams();
     const navigate = useNavigate();
     const [job, setJob] = useState(null);
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [viewApplicant, setViewApplicant] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -697,14 +762,19 @@ export const JobApplicationsPage = () => {
                                         <td className="py-3 px-4 border-b border-gray-100">
                                             {app.note ? <span className="text-xs text-gray-500 italic truncate max-w-[150px] block">{app.note}</span> : <span className="text-gray-200 text-xs">—</span>}
                                         </td>
-                                        <td className="py-3 px-4 border-b border-gray-100">
-                                            <select value={app.status} onChange={e => handleStatusChange(app._id, e.target.value)}
-                                                className="border border-gray-300 text-xs px-2 py-1 focus:border-[#8B1A1A] focus:outline-none bg-white">
-                                                <option value="APPLIED">Applied</option>
-                                                <option value="REVIEWED">Reviewed</option>
-                                                <option value="ACCEPTED">Accepted</option>
-                                                <option value="REJECTED">Rejected</option>
-                                            </select>
+                                        <td className="py-3 px-4 border-b border-gray-100 whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                <select value={app.status} onChange={e => handleStatusChange(app._id, e.target.value)}
+                                                    className="border border-gray-300 text-xs px-2 py-1 focus:border-[#8B1A1A] focus:outline-none bg-white">
+                                                    <option value="APPLIED">Applied</option>
+                                                    <option value="REVIEWED">Reviewed</option>
+                                                    <option value="ACCEPTED">Accepted</option>
+                                                    <option value="REJECTED">Rejected</option>
+                                                </select>
+                                                <button onClick={() => setViewApplicant(app.seekerId)} className="text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider bg-[#FAF7F2] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white border border-[#8B1A1A] transition-colors rounded-sm">
+                                                    PROFILE
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -722,6 +792,12 @@ export const JobApplicationsPage = () => {
                 <span className="text-white/70 text-xs uppercase tracking-wider">Accepted <span className="text-[#E2B325] font-bold ml-1">{acceptedCount}</span></span>
                 <span className="text-white/70 text-xs uppercase tracking-wider">Rejected <span className="text-[#E2B325] font-bold ml-1">{rejectedCount}</span></span>
             </div>
+
+            <ApplicantProfileModal
+                isOpen={!!viewApplicant}
+                applicant={viewApplicant}
+                onClose={() => setViewApplicant(null)}
+            />
         </>
     );
 };
@@ -736,11 +812,15 @@ const companySchema = yup.object({
     description: yup.string(),
     district: yup.string().required('District is required'),
     town: yup.string(),
-    contactPhone: yup.string().required('Contact phone is required'),
-    contactWhatsApp: yup.string(),
+    contactPhone: yup.string().required('Contact phone is required').matches(phoneRegex, 'Must be a valid Sri Lankan mobile number'),
+    contactWhatsApp: yup.string().test('is-valid-whatsapp', 'Must be a valid Sri Lankan mobile number', value => {
+        if (!value) return true; // Optional field
+        return phoneRegex.test(value);
+    }),
 });
 
 export const CompanyProfilePage = () => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [company, setCompany] = useState(null);
