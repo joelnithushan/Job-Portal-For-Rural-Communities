@@ -7,6 +7,7 @@ import { JobFilters } from '../../components/jobs/JobFilters';
 import { JobCardSkeleton } from '../../components/jobs/JobCardSkeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
+import { useSavedJobs } from '../../hooks/useSavedJobs';
 
 // Fallback Mock Data
 import { MOCK_JOBS } from '../../utils/mockData';
@@ -15,7 +16,10 @@ export const JobsPage = () => {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+    
+    const { isJobSaved, toggleSaveJob } = useSavedJobs();
 
     const [filters, setFilters] = useState({
         search: '',
@@ -35,42 +39,45 @@ export const JobsPage = () => {
         setLoading(true);
         try {
             let response;
-            if (filters.nearMe && window.lastKnownCoords) {
+            if (filters.nearMe) {
+                if (!filters.coords) {
+                    setJobs([]);
+                    setTotal(0);
+                    setLoading(false);
+                    return; // Wait for JobFilters to supply coords
+                }
                 response = await jobsAPI.getNearbyJobs({
-                    lat: window.lastKnownCoords.lat,
-                    lng: window.lastKnownCoords.lng,
-                    radiusKm: filters.radius,
+                    lat: filters.coords.lat,
+                    lng: filters.coords.lng,
+                    radiusKm: filters.radius || 5,
                 });
             } else {
-                // Only send params the backend accepts
+                // Send all filter params to backend
                 const apiParams = {};
                 if (filters.district) apiParams.district = filters.district;
                 if (filters.category) apiParams.category = filters.category;
                 if (filters.type) apiParams.jobType = filters.type;
+                if (filters.search) apiParams.search = filters.search;
+                if (filters.sort) apiParams.sort = filters.sort;
+                if (filters.salaryMin) apiParams.salaryMin = filters.salaryMin;
+                if (filters.salaryMax) apiParams.salaryMax = filters.salaryMax;
                 apiParams.page = filters.page;
                 apiParams.limit = filters.limit;
                 response = await jobsAPI.getJobs(apiParams);
             }
 
-            let jobsData = response.data?.jobs || response.data || [];
+            const jobsData = response.data?.jobs || response.data || [];
             const totalCount = response.data?.total || jobsData.length || 0;
-
-            // Client-side search filter
-            if (filters.search) {
-                const q = filters.search.toLowerCase();
-                jobsData = jobsData.filter(j =>
-                    j.title?.toLowerCase().includes(q) ||
-                    j.district?.toLowerCase().includes(q) ||
-                    j.category?.toLowerCase().includes(q)
-                );
-            }
+            const totalPagesCount = response.data?.totalPages || Math.ceil(totalCount / filters.limit);
 
             setJobs(jobsData);
             setTotal(totalCount);
+            setTotalPages(totalPagesCount);
         } catch (error) {
             console.error("Failed to fetch jobs", error);
             setJobs([]);
             setTotal(0);
+            setTotalPages(1);
         } finally {
             setLoading(false);
         }
@@ -97,30 +104,39 @@ export const JobsPage = () => {
         !['page', 'limit', 'sort', 'radius'].includes(key) && !!value
     ).length;
 
-    return (
-        <div className="min-h-screen bg-brand-cream/40 py-8 lg:py-12">
-            <div className="max-w-7xl mx-auto px-4">
+    // Generate page numbers for pagination
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisible = 5;
+        let start = Math.max(1, filters.page - Math.floor(maxVisible / 2));
+        let end = Math.min(totalPages, start + maxVisible - 1);
+        if (end - start + 1 < maxVisible) {
+            start = Math.max(1, end - maxVisible + 1);
+        }
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+        return pages;
+    };
 
-                {/* Page Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl md:text-5xl font-heading font-bold text-brand-green mb-4">Find Your Next Job</h1>
-                    <p className="text-brand-muted max-w-2xl text-lg">Browse local opportunities in your district and apply instantly.</p>
-                </div>
+    return (
+        <div className="min-h-screen bg-[#FAF7F2] py-8 lg:py-12">
+            <div className="max-w-7xl mx-auto px-4">
 
                 <div className="flex flex-col lg:flex-row gap-8">
 
                     {/* Mobile Filter Toggle */}
-                    <div className="lg:hidden flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200">
-                        <span className="font-semibold text-brand-dark">Filters</span>
+                    <div className="lg:hidden flex items-center justify-between bg-white p-4 border border-gray-200">
+                        <span className="font-semibold text-[#1A1A1A] uppercase tracking-wider text-xs">Filters</span>
                         <Button
                             variant="outline" size="sm"
                             onClick={() => setIsMobileFiltersOpen(true)}
-                            className="relative"
+                            className="relative border-[#8B1A1A] text-[#8B1A1A] rounded-none hover:bg-[#8B1A1A] hover:text-white"
                         >
                             <Filter size={18} className="mr-2" />
-                            Show Filters
+                            SHOW FILTERS
                             {activeFilterCount > 0 && (
-                                <span className="absolute -top-2 -right-2 w-5 h-5 bg-brand-terra text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#8B1A1A] text-white text-[10px] font-bold rounded-none flex items-center justify-center">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -138,26 +154,33 @@ export const JobsPage = () => {
                     </div>
 
                     {/* Main Content */}
-                    <div className="flex-1 min-w-0 flex flex-col gap-6">
-
-                        {/* Results Header */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                            <p className="font-semibold text-brand-dark">
-                                <span className="text-brand-terra font-bold">{total}</span> Jobs Found
-                            </p>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm text-brand-muted shrink-0">Sort by:</span>
-                                <select
-                                    className="bg-gray-50 border border-gray-200 text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-brand-terra/50 outline-none transition-colors"
-                                    value={filters.sort}
-                                    onChange={(e) => handleFilterChange({ sort: e.target.value })}
-                                >
-                                    <option value="newest">Newest First</option>
-                                    <option value="salaryDesc">Salary: High to Low</option>
-                                    <option value="salaryAsc">Salary: Low to High</option>
-                                </select>
+                    <div className="flex-1 min-w-0">
+                        <div className="bg-white border border-gray-200 overflow-hidden mb-6">
+                            <div className="bg-[#8B1A1A] px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <h2 className="text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                                    AVAILABLE POSITIONS ({total})
+                                    {totalPages > 1 && (
+                                        <span className="text-[10px] text-[#E2B325]/70 font-normal ml-2">
+                                            (PAGE {filters.page} OF {totalPages})
+                                        </span>
+                                    )}
+                                </h2>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-[10px] text-[#E2B325] font-bold uppercase tracking-widest shrink-0">Sort by:</span>
+                                    <select
+                                        className="bg-[#6e1515] border border-[#E2B325]/30 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 block focus:outline-none focus:border-[#E2B325] transition-colors cursor-pointer"
+                                        value={filters.sort}
+                                        onChange={(e) => handleFilterChange({ sort: e.target.value })}
+                                        style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
+                                    >
+                                        <option value="newest">NEWEST FIRST</option>
+                                        <option value="salaryDesc">SALARY: HIGH TO LOW</option>
+                                        <option value="salaryAsc">SALARY: LOW TO HIGH</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                            
+                            <div className="p-5">
 
                         {/* Job List */}
                         <div className="flex flex-col gap-4">
@@ -184,36 +207,85 @@ export const JobsPage = () => {
                                     className="flex flex-col gap-4"
                                 >
                                     {jobs.map(job => (
-                                        <JobCard key={job._id || job.id} job={job} />
+                                        <JobCard 
+                                            key={job._id || job.id} 
+                                            job={job} 
+                                            isSaved={isJobSaved(job._id || job.id)}
+                                            onSaveToggle={toggleSaveJob}
+                                        />
                                     ))}
                                 </motion.div>
                             )}
                         </div>
 
-                        {/* Pagination (Simple Example) */}
-                        {!loading && total > filters.limit && (
+                        {/* Pagination */}
+                        {!loading && totalPages > 1 && (
                             <div className="flex justify-center mt-8">
-                                <div className="flex gap-2">
+                                <div className="flex items-center gap-1">
                                     <Button
                                         variant="outline"
+                                        size="sm"
                                         disabled={filters.page === 1}
-                                        onClick={() => handleFilterChange({ page: filters.page - 1 })}
+                                        onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
                                     >
                                         Previous
                                     </Button>
-                                    <span className="flex items-center justify-center w-10 font-medium text-brand-terra border-b-2 border-brand-terra">
-                                        {filters.page}
-                                    </span>
+
+                                    {getPageNumbers()[0] > 1 && (
+                                        <>
+                                            <button
+                                                onClick={() => setFilters(prev => ({ ...prev, page: 1 }))}
+                                                className="w-9 h-9 rounded-lg text-sm font-medium text-brand-muted hover:bg-brand-cream transition-colors"
+                                            >
+                                                1
+                                            </button>
+                                            {getPageNumbers()[0] > 2 && (
+                                                <span className="w-9 h-9 flex items-center justify-center text-gray-400">...</span>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {getPageNumbers().map(pageNum => (
+                                        <button
+                                            key={pageNum}
+                                            onClick={() => setFilters(prev => ({ ...prev, page: pageNum }))}
+                                            className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                                                filters.page === pageNum
+                                                    ? 'bg-brand-terra text-white shadow-sm'
+                                                    : 'text-brand-muted hover:bg-brand-cream'
+                                            }`}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    ))}
+
+                                    {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
+                                        <>
+                                            {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
+                                                <span className="w-9 h-9 flex items-center justify-center text-gray-400">...</span>
+                                            )}
+                                            <button
+                                                onClick={() => setFilters(prev => ({ ...prev, page: totalPages }))}
+                                                className="w-9 h-9 rounded-lg text-sm font-medium text-brand-muted hover:bg-brand-cream transition-colors"
+                                            >
+                                                {totalPages}
+                                            </button>
+                                        </>
+                                    )}
+
                                     <Button
                                         variant="outline"
-                                        disabled={filters.page * filters.limit >= total}
-                                        onClick={() => handleFilterChange({ page: filters.page + 1 })}
+                                        size="sm"
+                                        disabled={filters.page >= totalPages}
+                                        onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
                                     >
                                         Next
                                     </Button>
                                 </div>
                             </div>
                         )}
+                            </div>
+                        </div>
                     </div>
 
                 </div>

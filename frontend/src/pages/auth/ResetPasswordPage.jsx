@@ -9,8 +9,10 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 
+const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+
 const schema = yup.object({
-    password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
+    password: yup.string().required('Password is required').matches(pwdRegex, 'Password must have min 8 chars, 1 uppercase, 1 number, and 1 special char'),
     confirmPassword: yup.string()
         .oneOf([yup.ref('password'), null], 'Passwords must match')
         .required('Please confirm your password'),
@@ -47,7 +49,7 @@ export const ResetPasswordPage = () => {
 
     return (
         <div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
-            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg">
+            <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-gray-100 p-8 sm:p-10 shadow-xl">
                 {/* Logo */}
                 <div className="text-center mb-6">
                     <Link to="/">

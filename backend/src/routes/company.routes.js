@@ -7,14 +7,20 @@ const requireRole = require('../middlewares/role.middleware');
 
 const router = express.Router();
 
+const phoneRegex = /^(?:\+94|0)[0-9]{9}$/;
+
 const createCompanySchema = {
     body: Joi.object().keys({
         businessName: Joi.string().required(),
         description: Joi.string(),
         district: Joi.string().required(),
         town: Joi.string(),
-        contactPhone: Joi.string().required(),
-        contactWhatsApp: Joi.string(),
+        contactPhone: Joi.string().required().pattern(phoneRegex).messages({
+            'string.pattern.base': 'Must be a valid Sri Lankan mobile number'
+        }),
+        contactWhatsApp: Joi.string().pattern(phoneRegex).messages({
+            'string.pattern.base': 'Must be a valid Sri Lankan mobile number'
+        }).allow(''),
     }),
 };
 
@@ -24,8 +30,12 @@ const updateCompanySchema = {
         description: Joi.string().allow(''),
         district: Joi.string(),
         town: Joi.string().allow(''),
-        contactPhone: Joi.string(),
-        contactWhatsApp: Joi.string().allow(''),
+        contactPhone: Joi.string().pattern(phoneRegex).messages({
+            'string.pattern.base': 'Must be a valid Sri Lankan mobile number'
+        }),
+        contactWhatsApp: Joi.string().pattern(phoneRegex).messages({
+            'string.pattern.base': 'Must be a valid Sri Lankan mobile number'
+        }).allow(''),
     }),
 };
 

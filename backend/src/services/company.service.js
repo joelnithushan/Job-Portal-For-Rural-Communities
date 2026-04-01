@@ -1,4 +1,6 @@
 const Company = require('../models/company.model');
+const Notification = require('../models/notification.model');
+const User = require('../models/user.model');
 
 const createCompany = async (userId, data) => {
     const existing = await Company.findOne({ employerUserId: userId });
@@ -6,6 +8,20 @@ const createCompany = async (userId, data) => {
         throw { statusCode: 400, message: 'Company profile already exists' };
     }
     const company = await Company.create({ ...data, employerUserId: userId });
+
+    try {
+        const admins = await User.find({ role: 'ADMIN' }).select('_id');
+        for (const admin of admins) {
+            await Notification.create({
+                userId: admin._id,
+                title: 'New Company Registered',
+                message: `"${company.businessName}" has been registered and is awaiting verification.`,
+                type: 'INFO',
+                link: '/admin/companies'
+            });
+        }
+    } catch(e) { console.error('Notification error:', e); }
+
     return company;
 };
 

@@ -37,7 +37,7 @@ export const ForgotPasswordPage = () => {
 
     return (
         <div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
-            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg">
+            <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-gray-100 p-8 sm:p-10 shadow-xl">
                 {/* Logo */}
                 <div className="text-center mb-6">
                     <Link to="/">
@@ -73,7 +73,7 @@ export const ForgotPasswordPage = () => {
                             <Input
                                 label="Email Address"
                                 type="email"
-                                placeholder="you@example.com"
+                                placeholder="nimal@gmail.com"
                                 error={errors.email?.message}
                                 {...register('email')}
                             />

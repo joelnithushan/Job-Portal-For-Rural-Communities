@@ -1,113 +1,96 @@
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { MapPin, Clock, Heart } from 'lucide-react';
-import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
-import { getInitials, formatSalary, timeAgo } from '../../utils/formatters';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { MapPin, Clock, Bookmark, Building2, Briefcase } from 'lucide-react';
+import { formatSalary, timeAgo } from '../../utils/formatters';
 import { JOB_TYPE_LABELS } from '../../utils/constants';
+import { useAuth } from '../../context/AuthContext';
 
 export const JobCard = ({ job, isSaved, onSaveToggle }) => {
-    const typeColors = {
-        FULL_TIME: 'border-l-blue-500',
-        PART_TIME: 'border-l-amber-500',
-        CONTRACT: 'border-l-purple-500',
-        CASUAL: 'border-l-brand-terra',
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { isAuthenticated } = useAuth();
+
+    const handleCardClick = (e) => {
+        // Prevent navigation if clicking on the save button
+        if (e.target.closest('.save-btn')) return;
+        navigate(`/jobs/${job._id}`);
     };
 
-    const borderLeftColor = typeColors[job.type] || 'border-l-brand-green';
-
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -2 }}
-            className={`bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 border border-brand-border/40 overflow-hidden flex flex-col md:flex-row p-5 md:items-center gap-6 relative border-l-4 ${borderLeftColor}`}
+        <div
+            onClick={handleCardClick}
+            className="group cursor-pointer bg-white border border-gray-200 hover:border-[#8B1A1A] hover:shadow-md transition-all duration-200 flex flex-col p-4 relative border-l-4 border-l-[#8B1A1A] rounded-none"
         >
-            {/* Company Logo / Initials */}
-            <div className="flex-shrink-0 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-brand-cream border border-brand-border flex items-center justify-center overflow-hidden">
-                    {job.companyId?.logoUrl ? (
-                        <img src={job.companyId.logoUrl} alt={job.companyId.name} className="w-full h-full object-cover" />
-                    ) : (
-                        <span className="text-xl font-heading font-bold text-brand-green">
-                            {getInitials(job.companyId?.name || 'Company')}
+            {/* Header: Title and Save Action */}
+            <div className="flex justify-between items-start mb-2">
+                <div className="flex-1 pr-4">
+                    <h3 className="font-bold text-lg text-[#8B1A1A] group-hover:text-[#6e1515] transition-colors line-clamp-1 uppercase tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+                        {job.title}
+                    </h3>
+                    <div className="flex items-center text-[11px] font-bold text-gray-400 mt-1 uppercase tracking-widest">
+                        <Building2 size={13} className="mr-1.5 text-[#E2B325]" />
+                        {job.employerId?.name || job.employerId?.businessName || 'Confidential Company'}
+                    </div>
+                </div>
+
+                <div className="flex-shrink-0 flex gap-2">
+                    {job.status === 'OPEN' && (
+                        <span className="px-2 py-0.5 bg-green-50 text-green-700 rounded-none text-[10px] uppercase font-bold border border-green-200 tracking-wider h-fit mt-1">
+                            OPEN
                         </span>
                     )}
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col gap-2 min-w-0">
-                <div className="flex flex-col md:flex-row md:items-center gap-2 justify-between">
-                    <Link to={`/jobs/${job._id}`} className="group min-w-0">
-                        <h3 className="font-heading font-semibold text-xl text-brand-green group-hover:text-brand-terra transition-colors truncate">
-                            {job.title}
-                        </h3>
-                    </Link>
-                    <div className="flex-shrink-0">
-                        {job.status === 'OPEN' && <Badge status="OPEN" size="sm" />}
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-brand-muted">
-                    <span className="font-medium text-brand-dark truncate max-w-[200px]">
-                        {job.companyId?.name}
-                    </span>
-                    <span className="hidden md:inline text-gray-300">•</span>
-
-                    <div className="flex items-center gap-1">
-                        <MapPin size={14} className="text-brand-terra" />
-                        <span>{job.district}</span>
-                    </div>
-
-                    <div className="flex gap-2">
-                        <span className="px-2 py-0.5 bg-brand-cream text-brand-dark rounded text-xs font-medium">
-                            {job.category}
-                        </span>
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium border border-gray-200">
-                            {JOB_TYPE_LABELS[job.type] || job.type}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-4 mt-1 text-sm">
-                    <div className="font-semibold text-amber-600">
-                        {formatSalary(job.salary?.min, job.salary?.max)}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-brand-muted">
-                        <Clock size={12} />
-                        <span>{timeAgo(job.createdAt)}</span>
-                    </div>
-
-                    {job.applicationsCount !== undefined && (
-                        <div className="text-xs text-brand-muted ml-auto md:ml-0">
-                            {job.applicationsCount} applicants
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3 md:flex-col md:items-end md:justify-center flex-shrink-0 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-100 md:ml-4">
-                <Link to={`/jobs/${job._id}`} className="flex-1 md:flex-none">
-                    <Button variant="outline" size="sm" fullWidth>
-                        View Job
-                    </Button>
-                </Link>
-
-                {onSaveToggle && (
-                    <button
-                        onClick={() => onSaveToggle(job._id)}
-                        className={`p-2 rounded-lg border transition-all ${isSaved
-                                ? 'bg-red-50 border-red-200 text-red-500 hover:bg-red-100'
-                                : 'bg-white border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200'
+                    
+                    {onSaveToggle && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (!isAuthenticated) {
+                                    navigate('/login', { state: { from: location } });
+                                    return;
+                                }
+                                onSaveToggle(job._id);
+                            }}
+                            className={`save-btn p-1.5 rounded-none text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors ${
+                                isSaved ? 'text-red-500' : ''
                             }`}
-                    >
-                        <Heart size={18} className={isSaved ? "fill-current" : ""} />
-                    </button>
-                )}
+                        >
+                            <Bookmark size={16} className={isSaved ? "fill-current" : ""} />
+                        </button>
+                    )}
+                </div>
             </div>
 
-        </motion.div>
+            {/* Inline Details */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-gray-600 mt-2 mb-3">
+                <div className="flex items-center gap-1.5 font-medium">
+                    <MapPin size={14} className="text-[#8B0000]" />
+                    <span>{job.district}</span>
+                </div>
+                
+                <div className="flex items-center gap-1.5 font-medium">
+                    <Briefcase size={14} className="text-[#8B0000]" />
+                    <span>{JOB_TYPE_LABELS[job.jobType] || job.jobType || job.type}</span>
+                </div>
+                
+                <div className="flex items-center gap-1.5 font-bold text-[#DAB82D]">
+                    {formatSalary(job.salaryMin, job.salaryMax)}
+                </div>
+                
+                <div className="flex items-center gap-1.5 font-medium ml-auto">
+                    <Clock size={14} className="text-gray-400" />
+                    <span>{timeAgo(job.createdAt)}</span>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-auto border-t border-gray-100 pt-3 flex items-center justify-between">
+                <span className="px-2 py-1 bg-[#8B0000]/5 text-[#8B0000] rounded-none text-[11px] font-bold border border-[#8B0000]/10 uppercase tracking-widest">
+                    {job.category || 'General'}
+                </span>
+                
+                <span className="text-[12px] font-bold text-[#DAB82D] group-hover:text-[#8B0000] transition-colors flex items-center gap-1 uppercase tracking-wider">
+                    View Details &rarr;
+                </span>
+            </div>
+        </div>
     );
 };

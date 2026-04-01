@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Eye, EyeOff } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -14,7 +16,7 @@ const loginSchema = yup.object({
 });
 
 export const LoginPage = () => {
-    const { login } = useAuth();
+    const { login, googleLogin } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +25,19 @@ export const LoginPage = () => {
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(loginSchema)
     });
+
+    const onGoogleSuccess = async (credentialResponse) => {
+        try {
+            const user = await googleLogin(credentialResponse.credential);
+            const from = location.state?.from?.pathname ||
+                (user.role === 'EMPLOYER' ? '/employer' :
+                    user.role === 'ADMIN' ? '/admin' : '/dashboard');
+            navigate(from, { replace: true });
+        } catch (error) {
+            // Error is already toasted by the axios interceptor
+            console.error('Google Login error:', error);
+        }
+    };
 
     const onSubmit = async (data) => {
         setIsSubmitting(true);
@@ -43,7 +58,7 @@ export const LoginPage = () => {
         <div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
 
             {/* Card */}
-            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg">
+            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg rounded-2xl">
                 {/* Logo */}
                 <div className="text-center mb-6">
                     <Link to="/">
@@ -56,7 +71,7 @@ export const LoginPage = () => {
                     <Input
                         label="Email Address"
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder="nimal@gmail.com"
                         error={errors.email?.message}
                         {...register('email')}
                     />
@@ -101,15 +116,13 @@ export const LoginPage = () => {
                 </div>
 
                 {/* Social Login */}
-                <div className="flex justify-center gap-3 mb-6">
-                    {['G', 'in', 'f'].map((label, i) => (
-                        <button
-                            key={i}
-                            className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-sm font-semibold text-gray-500 hover:border-brand-green hover:text-brand-green transition-colors"
-                        >
-                            {label}
-                        </button>
-                    ))}
+                <div className="flex justify-center mb-6">
+                    <GoogleLogin
+                        onSuccess={onGoogleSuccess}
+                        onError={() => {
+                            toast.error('Google Login Failed');
+                        }}
+                    />
                 </div>
 
                 <div className="text-center text-sm text-gray-500">
