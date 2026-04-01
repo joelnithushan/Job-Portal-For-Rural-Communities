@@ -18,18 +18,23 @@ const locationSchema = Joi.object().keys({
     coordinates: Joi.array().items(Joi.number()).length(2).required(),
 });
 
+const phoneRegex = /^(?:\+94|0)[0-9]{9}$/;
+
 const createJobSchema = {
     body: Joi.object().keys({
         title: Joi.string().required(),
         description: Joi.string().required(),
         district: Joi.string().required(),
-        contactPhone: Joi.string().required(),
+        contactPhone: Joi.string().required().pattern(phoneRegex).messages({
+            'string.pattern.base': 'Must be a valid Sri Lankan mobile number'
+        }),
         town: Joi.string(),
         category: Joi.string(),
         jobType: Joi.string().valid('FULL_TIME', 'PART_TIME', 'CONTRACT'),
         salaryMin: Joi.number(),
         salaryMax: Joi.number(),
         location: locationSchema,
+        cvRequired: Joi.boolean().default(false),
     }),
 };
 
@@ -41,13 +46,17 @@ const updateJobSchema = {
         title: Joi.string(),
         description: Joi.string(),
         district: Joi.string(),
-        contactPhone: Joi.string(),
+        contactPhone: Joi.string().pattern(phoneRegex).messages({
+            'string.pattern.base': 'Must be a valid Sri Lankan mobile number'
+        }),
         town: Joi.string(),
         category: Joi.string(),
         jobType: Joi.string().valid('FULL_TIME', 'PART_TIME', 'CONTRACT'),
         salaryMin: Joi.number(),
         salaryMax: Joi.number(),
         location: locationSchema,
+        cvRequired: Joi.boolean(),
+        status: Joi.string().valid('OPEN', 'CLOSED'),
     }),
 };
 
@@ -56,6 +65,10 @@ const getJobsSchema = {
         district: Joi.string(),
         category: Joi.string(),
         jobType: Joi.string().valid('FULL_TIME', 'PART_TIME', 'CONTRACT'),
+        search: Joi.string().allow(''),
+        sort: Joi.string().valid('newest', 'salaryDesc', 'salaryAsc'),
+        salaryMin: Joi.number().integer().min(0),
+        salaryMax: Joi.number().integer().min(0),
         page: Joi.number().integer().min(1),
         limit: Joi.number().integer().min(1).max(100),
     }),
@@ -70,7 +83,11 @@ const nearbyJobsSchema = {
 };
 
 router.get('/', validate(getJobsSchema), jobController.getJobs);
+router.get('/stats/categories', jobController.getCategoryStats);
+router.get('/stats/summary', jobController.getSummaryStats);
 router.get('/nearby', validate(nearbyJobsSchema), jobController.getNearbyJobs);
+router.get('/mine', auth, requireRole('EMPLOYER'), jobController.getMyJobs);
+router.get('/:id', validate(paramIdSchema), jobController.getJobById);
 router.post('/', auth, requireRole('EMPLOYER'), validate(createJobSchema), jobController.createJob);
 router.patch('/:id', auth, requireRole('EMPLOYER'), validate(updateJobSchema), jobController.updateJob);
 router.delete('/:id', auth, requireRole('EMPLOYER', 'ADMIN'), validate(paramIdSchema), jobController.deleteJob);

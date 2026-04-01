@@ -4,15 +4,21 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Eye, EyeOff } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 
+const nameRegex = /^[a-zA-Z\s.-]+$/;
+const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+const nicRegex = /^(?:\d{9}[vVxX]|\d{12})$/;
+
 const registerSchema = yup.object({
-    name: yup.string().required('Full name is required').min(2, 'Name is too short'),
+    name: yup.string().required('Full name is required').min(2, 'Name is too short').matches(nameRegex, 'Name can only contain letters, spaces, dots and hyphens'),
     email: yup.string().email('Please enter a valid email address').required('Email is required'),
-    password: yup.string().required('Password is required').min(8, 'Minimum 8 characters'),
+    nic: yup.string().required('National ID is required').matches(nicRegex, 'Enter a valid Sri Lankan NIC'),
+    password: yup.string().required('Password is required').matches(pwdRegex, 'Password must have min 8 chars, 1 uppercase, 1 number, and 1 special char'),
     confirmPassword: yup.string()
         .required('Please confirm your password')
         .oneOf([yup.ref('password')], 'Passwords must match'),
@@ -20,7 +26,7 @@ const registerSchema = yup.object({
 });
 
 export const RegisterPage = () => {
-    const { register: registerUser } = useAuth();
+    const { register: registerUser, googleLogin } = useAuth();
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,6 +35,16 @@ export const RegisterPage = () => {
         resolver: yupResolver(registerSchema),
         defaultValues: { agreeToTerms: false }
     });
+
+    const onGoogleSuccess = async (credentialResponse) => {
+        try {
+            await googleLogin(credentialResponse.credential, 'JOB_SEEKER');
+            toast.success('Account created successfully!');
+            navigate('/dashboard', { replace: true });
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Google Signup failed');
+        }
+    };
 
     const onSubmit = async (data) => {
         setIsSubmitting(true);
@@ -48,7 +64,7 @@ export const RegisterPage = () => {
         <div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
 
             {/* Card */}
-            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg my-8">
+            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg rounded-2xl my-8">
                 <div className="text-center mb-6">
                     <Link to="/">
                         <img src="/logo.png" alt="RuralWork" className="h-20 w-auto object-contain mx-auto mb-4" />
@@ -68,9 +84,16 @@ export const RegisterPage = () => {
                     <Input
                         label="Email Address"
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder="nimal@gmail.com"
                         error={errors.email?.message}
                         {...register('email')}
+                    />
+
+                    <Input
+                        label="National ID (NIC)"
+                        placeholder="e.g. 199912345678 or 987654321V"
+                        error={errors.nic?.message}
+                        {...register('nic')}
                     />
 
                     <div className="relative">
@@ -122,6 +145,16 @@ export const RegisterPage = () => {
                     <div className="flex-1 h-px bg-gray-200" />
                     <span className="text-xs text-gray-400 uppercase tracking-wider">or</span>
                     <div className="flex-1 h-px bg-gray-200" />
+                </div>
+
+                <div className="flex justify-center mb-6">
+                    <GoogleLogin
+                        onSuccess={onGoogleSuccess}
+                        onError={() => {
+                            toast.error('Google Signup Failed');
+                        }}
+                        text="signup_with"
+                    />
                 </div>
 
                 <div className="text-center space-y-3">

@@ -1,15 +1,26 @@
 const service = require("../services/application.service");
 const { successResponse, errorResponse } = require("../utils/response");
 
+exports.uploadCV = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return errorResponse(res, "Please upload a CV document (PDF/DOC)", 400);
+    }
+    return successResponse(res, "CV uploaded successfully", { cvUrl: req.file.path }, 200);
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.apply = async (req, res, next) => {
   try {
-    const { jobId } = req.body;
+    const { jobId, cvUrl } = req.body;
 
     if (!jobId) {
       return errorResponse(res, "jobId is required", 400);
     }
 
-    const application = await service.applyToJob(jobId, req.user.id);
+    const application = await service.applyToJob(jobId, req.user.id, cvUrl);
     return successResponse(res, "Application submitted successfully", { application }, 201);
   } catch (err) {
     if (err.message === "Job not found") {
@@ -17,6 +28,9 @@ exports.apply = async (req, res, next) => {
     }
     if (err.message === "You have already applied for this job") {
       return errorResponse(res, err.message, 409);
+    }
+    if (err.message === "A CV is required to apply for this job") {
+      return errorResponse(res, err.message, 400);
     }
     next(err);
   }
@@ -43,6 +57,15 @@ exports.getApplicantsByJob = async (req, res, next) => {
     if (err.message === "Not authorized to view applicants for this job") {
       return errorResponse(res, err.message, 403);
     }
+    next(err);
+  }
+};
+
+exports.getEmployerApplications = async (req, res, next) => {
+  try {
+    const applications = await service.getEmployerApplications(req.user.id);
+    return successResponse(res, "Employer applications fetched successfully", { applications });
+  } catch (err) {
     next(err);
   }
 };

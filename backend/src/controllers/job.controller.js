@@ -16,16 +16,32 @@ const createJob = async (req, res, next) => {
 
 const getJobs = async (req, res, next) => {
     try {
-        const { district, category, jobType, page, limit } = req.query;
+        const { district, category, jobType, search, sort, salaryMin, salaryMax, page, limit } = req.query;
         const result = await jobService.getJobs({
             district,
             category,
             jobType,
+            search,
+            sort,
+            salaryMin: salaryMin ? parseInt(salaryMin, 10) : undefined,
+            salaryMax: salaryMax ? parseInt(salaryMax, 10) : undefined,
             page: parseInt(page, 10) || 1,
             limit: parseInt(limit, 10) || 10,
         });
         successResponse(res, 'Jobs retrieved successfully', result);
     } catch (error) {
+        next(error);
+    }
+};
+
+const getJobById = async (req, res, next) => {
+    try {
+        const job = await jobService.getJobById(req.params.id);
+        successResponse(res, 'Job retrieved successfully', { job });
+    } catch (error) {
+        if (error.statusCode) {
+            return errorResponse(res, error.message, error.statusCode);
+        }
         next(error);
     }
 };
@@ -71,10 +87,46 @@ const getNearbyJobs = async (req, res, next) => {
     }
 };
 
+const getMyJobs = async (req, res, next) => {
+    try {
+        const { page, limit } = req.query;
+        const result = await jobService.getJobsByEmployer(
+            req.user._id,
+            parseInt(page, 10) || 1,
+            parseInt(limit, 10) || 100
+        );
+        successResponse(res, 'My jobs retrieved successfully', result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getCategoryStats = async (req, res, next) => {
+    try {
+        const stats = await jobService.getCategoryStats();
+        successResponse(res, 'Category stats retrieved successfully', { stats });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getSummaryStats = async (req, res, next) => {
+    try {
+        const stats = await jobService.getSummaryStats();
+        successResponse(res, 'Summary stats retrieved successfully', stats);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createJob,
     getJobs,
+    getJobById,
     updateJob,
     deleteJob,
     getNearbyJobs,
+    getMyJobs,
+    getCategoryStats,
+    getSummaryStats,
 };

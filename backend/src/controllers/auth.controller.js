@@ -23,6 +23,21 @@ const login = async (req, res, next) => {
     }
 };
 
+const google = async (req, res, next) => {
+    try {
+        const { idToken, role } = req.body;
+        if (!idToken) {
+            return res.status(400).json({ success: false, message: 'Google ID token is required' });
+        }
+        
+        const { user, token } = await authService.googleLogin(idToken, role);
+        successResponse(res, 'Google login successful', { user, token });
+    } catch (error) {
+        console.error('Google login error:', error);
+        next(error);
+    }
+};
+
 const me = async (req, res, next) => {
     try {
         const user = await authService.getCurrentUser(req.user);
@@ -94,7 +109,7 @@ const forgotPassword = async (req, res, next) => {
                 html,
             });
         } catch (emailError) {
-            // Clear token on email failure
+            console.error('SMTP Email Error:', emailError);
             user.passwordResetToken = undefined;
             user.passwordResetExpires = undefined;
             await user.save();
@@ -159,6 +174,7 @@ const resetPassword = async (req, res, next) => {
 module.exports = {
     register,
     login,
+    google,
     me,
     forgotPassword,
     resetPassword,

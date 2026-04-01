@@ -17,9 +17,17 @@ const userSchema = mongoose.Schema(
         },
         password: {
             type: String,
-            required: true,
+            required: function() {
+                // Password is required if it's not a Google SSO account
+                return !this.googleId;
+            },
             minlength: 8,
             private: true,
+        },
+        googleId: {
+            type: String,
+            unique: true,
+            sparse: true,
         },
         role: {
             type: String,
@@ -50,7 +58,7 @@ const userSchema = mongoose.Schema(
         },
         profilePicture: {
             type: String,
-            default: null,
+            default: 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png',
         },
         phone: {
             type: String,
@@ -60,6 +68,11 @@ const userSchema = mongoose.Schema(
         district: {
             type: String,
             default: null,
+        },
+        nic: {
+            type: String,
+            default: null,
+            trim: true,
         },
         bio: {
             type: String,

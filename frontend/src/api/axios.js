@@ -34,14 +34,23 @@ api.interceptors.response.use(
             const { status, data } = error.response;
 
             if (status === 401) {
-                // Unauthorized - token expired or invalid
-                localStorage.removeItem('rw_token');
-                if (window.location.pathname !== '/login') {
-                    window.location.href = '/login';
+                // Determine if this was a login attempt or an expired session
+                // Any 401 on auth endpoints is a failure, not an expiration
+                const isAuthRequest = error.config.url.includes('/login') || error.config.url.includes('/google');
+
+                if (!isAuthRequest) {
+                    // Unauthorized - token expired or invalid
+                    localStorage.removeItem('rw_token');
+                    if (window.location.pathname !== '/login') {
+                        window.location.href = '/login';
+                    }
+                    message = 'Session expired. Please log in again.';
+                } else {
+                    // Login failure — the backend message should be used
+                    message = data.message || 'Incorrect email or password.';
                 }
-                message = 'Session expired. Please log in again.';
             } else if (status === 403) {
-                message = "You don't have permission to do that.";
+                message = data?.message || "You don't have permission to do that.";
             } else if (status === 404) {
                 // Don't toast 404 — let each caller handle it
                 return Promise.reject(error);

@@ -10,11 +10,33 @@ import { RoleRoute } from './RoleRoute';
 import { HomePage } from '../pages/public/HomePage';
 import { JobsPage } from '../pages/public/JobsPage';
 import { JobDetailPage, CompaniesPage } from '../pages/public/PublicPages';
+import { CompanyJobsPage } from '../pages/public/CompanyJobsPage';
 import { LoginPage, RegisterPage, RegisterEmployerPage, ForgotPasswordPage, ResetPasswordPage } from '../pages/auth/AuthPages';
-import { SeekerDashboard, MyApplicationsPage, SavedJobsPage, SeekerTabNav } from '../pages/seeker/SeekerPages';
+import { SeekerDashboard, MyApplicationsPage, SavedJobsPage } from '../pages/seeker/SeekerPages';
 import { EmployerDashboard, PostJobPage, MyJobsPage, JobApplicationsPage, CompanyProfilePage } from '../pages/employer/EmployerPages';
 import { AdminDashboard, AdminUsersPage, AdminCompaniesPage, AdminJobsPage } from '../pages/admin/AdminPages';
 import { ProfilePage } from '../pages/profile/ProfilePage';
+
+const ProfileWrapper = () => {
+    const { user } = useAuth();
+    if (user?.role === 'JOB_SEEKER') {
+        return (
+            <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
+                <Navbar />
+                <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><ProfilePage /></main>
+            </div>
+        );
+    }
+    return (
+        <div className="flex min-h-screen bg-[#FAF7F2]">
+            <Sidebar />
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
+                <Navbar />
+                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><ProfilePage /></main>
+            </div>
+        </div>
+    );
+};
 
 export const AppRouter = () => {
     const { user, isAuthenticated } = useAuth();
@@ -71,6 +93,14 @@ export const AppRouter = () => {
                     </>
                 } />
 
+                <Route path="/companies/:id/jobs" element={
+                    <>
+                        <Navbar />
+                        <main className="flex-1"><CompanyJobsPage /></main>
+                        <Footer />
+                    </>
+                } />
+
                 {/* =========================================
             PROTECTED DASHBOARD ROUTES
             ========================================= */}
@@ -78,28 +108,28 @@ export const AppRouter = () => {
                 {/* JOB SEEKER ROUTES */}
                 <Route path="/dashboard" element={
                     <RoleRoute roles={['JOB_SEEKER']}>
-                        <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
+                        <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
                             <Navbar />
-                            <SeekerTabNav />
-                            <main className="max-w-6xl mx-auto px-6 py-8 w-full flex-1"><SeekerDashboard /></main>
+                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><SeekerDashboard /></main>
+                            <Footer />
                         </div>
                     </RoleRoute>
                 } />
                 <Route path="/dashboard/applications" element={
                     <RoleRoute roles={['JOB_SEEKER']}>
-                        <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
+                        <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
                             <Navbar />
-                            <SeekerTabNav />
-                            <main className="max-w-6xl mx-auto px-6 py-8 w-full flex-1"><MyApplicationsPage /></main>
+                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><MyApplicationsPage /></main>
+                            <Footer />
                         </div>
                     </RoleRoute>
                 } />
                 <Route path="/dashboard/saved" element={
                     <RoleRoute roles={['JOB_SEEKER']}>
-                        <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
+                        <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
                             <Navbar />
-                            <SeekerTabNav />
-                            <main className="max-w-6xl mx-auto px-6 py-8 w-full flex-1"><SavedJobsPage /></main>
+                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><SavedJobsPage /></main>
+                            <Footer />
                         </div>
                     </RoleRoute>
                 } />
@@ -107,21 +137,7 @@ export const AppRouter = () => {
                 {/* PROFILE ROUTE — all authenticated users */}
                 <Route path="/profile" element={
                     <ProtectedRoute>
-                        {user?.role === 'JOB_SEEKER' ? (
-                            <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
-                                <Navbar />
-                                <SeekerTabNav />
-                                <main className="max-w-6xl mx-auto px-6 py-8 w-full flex-1"><ProfilePage /></main>
-                            </div>
-                        ) : (
-                            <div className="flex min-h-screen bg-[#FAF7F2]">
-                                <Sidebar />
-                                <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
-                                    <Navbar />
-                                    <main className="flex-1 p-6 md:p-8 overflow-y-auto"><ProfilePage /></main>
-                                </div>
-                            </div>
-                        )}
+                        <ProfileWrapper />
                     </ProtectedRoute>
                 } />
 
@@ -155,6 +171,17 @@ export const AppRouter = () => {
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
                                 <Navbar />
                                 <main className="flex-1 p-6 md:p-8 overflow-y-auto"><MyJobsPage /></main>
+                            </div>
+                        </div>
+                    </RoleRoute>
+                } />
+                <Route path="/employer/applications" element={
+                    <RoleRoute roles={['EMPLOYER']}>
+                        <div className="flex min-h-screen bg-[#FAF7F2]">
+                            <Sidebar />
+                            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
+                                <Navbar />
+                                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><JobApplicationsPage /></main>
                             </div>
                         </div>
                     </RoleRoute>

@@ -1,83 +1,93 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
     Briefcase, CheckCircle, Clock, XCircle, ChevronRight,
-    Heart, FileText, Search, Bookmark, LayoutDashboard,
-    MapPin
+    Heart, FileText, Search, Bookmark, AlertTriangle, User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { applicationsAPI, jobsAPI } from '../../api/services';
-import { formatDate, timeAgo } from '../../utils/formatters';
+import { timeAgo } from '../../utils/formatters';
 import toast from 'react-hot-toast';
 
 // ═══════════════════════════════════════════════════════════════
-// SHARED: STATUS BADGE (maroon/gold theme)
+// SHARED UI COMPONENTS (Match Employer Dashboard)
 // ═══════════════════════════════════════════════════════════════
 
-const STATUS_BADGE = {
-    APPLIED: 'bg-blue-600 text-white',
-    REVIEWED: 'bg-[#E2B325] text-[#8B1A1A]',
-    ACCEPTED: 'bg-green-700 text-white',
-    REJECTED: 'bg-[#8B1A1A] text-white',
-};
-
-const STATUS_INDICATOR = {
-    APPLIED: '#3b82f6',
-    REVIEWED: '#E2B325',
-    ACCEPTED: '#16a34a',
-    REJECTED: '#8B1A1A',
-};
-
-const StatusBadge = ({ status }) => (
-    <span className={`text-xs uppercase tracking-wider px-2.5 py-0.5 font-bold ${STATUS_BADGE[status] || 'bg-gray-200 text-gray-600'}`}>
-        {status}
-    </span>
-);
-
-// ═══════════════════════════════════════════════════════════════
-// SHARED: SEEKER TAB NAVIGATION
-// ═══════════════════════════════════════════════════════════════
-
-export const SeekerTabNav = () => {
-    const { t } = useTranslation();
-    const tabs = [
-        { to: '/dashboard', icon: LayoutDashboard, label: t('dashboard') },
-        { to: '/dashboard/applications', icon: FileText, label: t('my_applications') },
-        { to: '/dashboard/saved', icon: Bookmark, label: t('saved_jobs') },
-        { to: '/profile', icon: User, label: 'Profile' },
-    ];
+const StatusBadge = ({ status }) => {
+    const map = {
+        OPEN: 'bg-[#E2B325] text-[#8B1A1A]',
+        CLOSED: 'bg-gray-200 text-gray-600',
+        APPLIED: 'bg-blue-600 text-white',
+        REVIEWED: 'bg-[#E2B325] text-[#8B1A1A]',
+        ACCEPTED: 'bg-green-700 text-white',
+        REJECTED: 'bg-[#8B1A1A] text-white',
+    };
     return (
-        <div className="bg-white border-b border-gray-200 sticky top-[64px] md:top-[72px] z-40">
-            <div className="max-w-6xl mx-auto px-6">
-                <div className="flex items-center gap-0">
-                    {tabs.map(tab => (
-                        <NavLink
-                            key={tab.to}
-                            to={tab.to}
-                            end={tab.to === '/dashboard'}
-                            className={({ isActive }) =>
-                                `flex items-center gap-2 px-5 py-4 text-sm font-semibold uppercase tracking-wider border-b-2 transition-colors ${isActive
-                                    ? 'border-[#8B1A1A] text-[#8B1A1A]'
-                                    : 'border-transparent text-gray-500 hover:text-[#8B1A1A] hover:border-[#8B1A1A]/30'
-                                }`
-                            }
-                        >
-                            <tab.icon className="h-4 w-4" />
-                            {tab.label}
-                        </NavLink>
-                    ))}
-                </div>
-            </div>
+        <span className={`inline-block px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${map[status] || 'bg-gray-200 text-gray-600'}`}>
+            {status?.replace('_', ' ')}
+        </span>
+    );
+};
+
+const Spinner = () => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
+            <p className="text-sm text-gray-400 uppercase tracking-widest">{t('loading')}</p>
         </div>
     );
 };
 
-// ═══════════════════════════════════════════════════════════════
-// SHARED: CONFIRM MODAL
-// ═══════════════════════════════════════════════════════════════
+const EmptyState = ({ message, subtitle, icon: Icon = Briefcase }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+            <div className="p-4 bg-gray-50 border border-gray-100 mb-2">
+                <Icon className="h-8 w-8 text-gray-300" />
+            </div>
+            <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{message || t('no_records_found')}</p>
+            <p className="text-xs text-gray-300 max-w-xs">{subtitle}</p>
+        </div>
+    );
+};
 
-const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, confirmText = 'CONFIRM' }) => {
+const SectionCard = ({ children, className = '', title, rightSlot }) => (
+    <div className={`bg-white border border-gray-200 overflow-hidden mb-6 ${className}`}>
+        {title && (
+            <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between">
+                <h2 className="text-white text-sm font-bold uppercase tracking-widest">{title}</h2>
+                {rightSlot && <span>{rightSlot}</span>}
+            </div>
+        )}
+        <div className="p-5">{children}</div>
+    </div>
+);
+
+const PageHeader = ({ title, subtitle, rightSlot }) => (
+    <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            {/* Minimal header */}
+        </div>
+        {rightSlot && <div>{rightSlot}</div>}
+    </div>
+);
+
+const StatCard = ({ label, value, icon: Icon, accentColor }) => (
+    <div className="bg-white border border-gray-200 p-5 flex items-start justify-between" style={{ borderLeft: `4px solid ${accentColor}` }}>
+        <div className="flex flex-col">
+            <span className="text-3xl font-bold text-[#1A1A1A] leading-none" style={{ fontFamily: 'DM Sans, sans-serif' }}>{value}</span>
+            <span className="text-xs text-gray-400 uppercase tracking-widest mt-2">{label}</span>
+        </div>
+        <div className="p-3 flex-shrink-0 ml-4" style={{ backgroundColor: accentColor + '18' }}>
+            <Icon className="h-6 w-6" style={{ color: accentColor }} />
+        </div>
+    </div>
+);
+
+const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, confirmText }) => {
+    const { t } = useTranslation();
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center">
@@ -85,11 +95,9 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
                 <h3 className="font-['Playfair_Display'] text-lg text-[#1A1A1A] font-bold">{title}</h3>
                 <p className="text-sm text-gray-500 mt-2 leading-relaxed">{message}</p>
                 <div className="mt-6 flex gap-3 justify-end">
-                    <button onClick={onCancel} className="border border-gray-300 px-4 py-2 text-sm uppercase tracking-wider text-gray-600 hover:bg-gray-50">
-                        CANCEL
-                    </button>
+                    <button onClick={onCancel} className="border border-gray-300 px-4 py-2 text-sm uppercase tracking-wider text-gray-600 hover:bg-gray-50">{t('cancel')}</button>
                     <button onClick={onConfirm} disabled={loading} className="bg-[#8B1A1A] text-white px-4 py-2 text-sm uppercase tracking-wider hover:bg-[#6e1515] disabled:opacity-50">
-                        {loading ? 'WAIT...' : confirmText}
+                        {loading ? t('wait') : (confirmText || t('confirm'))}
                     </button>
                 </div>
             </div>
@@ -110,8 +118,8 @@ const fmtDate = (d) => {
 export const SeekerDashboard = () => {
     const { user } = useAuth();
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [applications, setApplications] = useState([]);
-    const [allApps, setAllApps] = useState([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ total: 0, reviewed: 0, accepted: 0, rejected: 0 });
 
@@ -120,7 +128,6 @@ export const SeekerDashboard = () => {
             try {
                 const res = await applicationsAPI.getMyApplications();
                 const apps = res.data?.applications || res.data || [];
-                setAllApps(apps);
                 setApplications(apps.slice(0, 5));
                 setStats({
                     total: apps.length,
@@ -137,123 +144,70 @@ export const SeekerDashboard = () => {
         fetchData();
     }, []);
 
-    const statCards = [
-        { label: t('total_applications'), value: stats.total, icon: FileText, accent: '#8B1A1A' },
-        { label: t('under_review'), value: stats.reviewed, icon: Clock, accent: '#E2B325' },
-        { label: t('accepted'), value: stats.accepted, icon: CheckCircle, accent: '#16a34a' },
-        { label: t('rejected'), value: stats.rejected, icon: XCircle, accent: '#dc2626' },
-    ];
-
-    const dateString = new Date().toLocaleDateString('en-US', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
+    if (loading) return <Spinner />;
 
     return (
         <>
-            {/* Welcome Banner */}
-            <div className="bg-[#8B1A1A] px-8 py-6 mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">
-                        {t('welcome_back')}, {user?.name?.split(' ')[0] || 'User'} 👋
-                    </h1>
-                    <p className="text-white/70 text-sm mt-1">
-                        {t('you_have')} <span className="text-[#E2B325] font-bold">{stats.total}</span> {t('applications')}
-                    </p>
+            <PageHeader
+                rightSlot={
+                    <button onClick={() => navigate('/jobs')} className="bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420] flex items-center gap-2">
+                        <Search size={16} /> {t('browse_jobs')}
+                    </button>
+                }
+            />
+
+            {/* Profile Banner */}
+            {!user?.phone && (
+                <div className="bg-[#E2B325] border-l-4 border-l-[#8B1A1A] px-5 py-3 mb-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <AlertTriangle className="h-5 w-5 text-[#8B1A1A]" />
+                        <span className="text-[#8B1A1A] text-sm font-semibold">{t('dash_warn_profile')}</span>
+                    </div>
+                    <button onClick={() => navigate('/profile')} className="bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-1.5 hover:bg-[#6e1515]">{t('dash_update_profile')}</button>
                 </div>
-                <div className="bg-white/10 border border-white/20 px-4 py-2 text-right hidden sm:block">
-                    <p className="text-[#E2B325] text-xs uppercase tracking-widest">{dateString}</p>
-                </div>
-            </div>
+            )}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                {statCards.map(s => (
-                    <div
-                        key={s.label}
-                        className="bg-white border border-gray-200 p-5 flex items-start justify-between"
-                        style={{ borderLeft: `4px solid ${s.accent}` }}
-                    >
-                        <div className="flex flex-col justify-between h-full">
-                            <span className="text-3xl font-bold text-[#1A1A1A] leading-none" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                                {s.value}
-                            </span>
-                            <span className="text-xs text-gray-400 uppercase tracking-widest mt-2">
-                                {s.label}
-                            </span>
-                        </div>
-                        <div className="p-3 flex items-center justify-center flex-shrink-0 ml-4" style={{ backgroundColor: s.accent + '20' }}>
-                            <s.icon className="h-6 w-6" style={{ color: s.accent }} />
-                        </div>
-                    </div>
-                ))}
+                <StatCard label={t('dash_stats_apps')} value={stats.total} icon={FileText} accentColor="#8B1A1A" />
+                <StatCard label={t('dash_stats_reviewed')} value={stats.reviewed} icon={Clock} accentColor="#E2B325" />
+                <StatCard label={t('dash_stats_accepted')} value={stats.accepted} icon={CheckCircle} accentColor="#16a34a" />
+                <StatCard label={t('dash_stats_rejected')} value={stats.rejected} icon={XCircle} accentColor="#dc2626" />
             </div>
 
-            {/* Two Column: Recent Applications + Quick Actions */}
+            {/* Main Content */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
                 {/* Recent Applications */}
-                <div className="md:col-span-2 bg-white border border-gray-200 overflow-hidden flex flex-col">
-                    <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between">
-                        <h2 className="text-white text-sm font-bold uppercase tracking-widest">
-                            {t('recent_applications')}
-                        </h2>
-                        <NavLink to="/dashboard/applications" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white transition-colors">
-                            {t('view_all')} →
-                        </NavLink>
-                    </div>
-                    <div className="flex-1">
-                        {loading ? (
-                            <div className="flex flex-col items-center justify-center py-24 gap-3">
-                                <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
-                                <p className="text-sm text-gray-400 uppercase tracking-widest">{t('loading')}</p>
-                            </div>
-                        ) : applications.length === 0 ? (
-                            <div className="flex flex-col items-center py-10 gap-3">
-                                <Briefcase className="h-12 w-12 text-gray-200" />
-                                <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{t('no_applications_yet')}</p>
-                                <p className="text-xs text-gray-300">{t('start_browsing')}</p>
-                                <NavLink to="/jobs" className="mt-2 bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#6e1515]">
-                                    {t('browse_jobs')} →
-                                </NavLink>
-                            </div>
-                        ) : (
-                            <div className="divide-y divide-gray-100">
-                                {applications.map(app => (
-                                    <div key={app._id} className="flex items-center gap-3 py-3 px-5">
-                                        <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: STATUS_INDICATOR[app.status] || '#ccc' }} />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-semibold text-[#1A1A1A] truncate">
-                                                {app.jobId?.title || 'Job Title'}
-                                            </p>
-                                            <p className="text-xs text-gray-400 mt-0.5">
-                                                {app.jobId?.district || ''} · {timeAgo(app.createdAt)}
-                                            </p>
-                                        </div>
-                                        <StatusBadge status={app.status} />
+                <SectionCard className="md:col-span-2 !p-0 border-none" title={t('recent_applications')} rightSlot={<NavLink to="/dashboard/applications" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white">{t('view_all')} →</NavLink>}>
+                    {applications.length === 0 ? (
+                        <EmptyState message={t('no_applications_yet')} subtitle={t('start_browsing')} icon={Briefcase} />
+                    ) : (
+                        <div className="divide-y divide-gray-100 bg-white border border-t-0 border-gray-200">
+                            {applications.map((app, i) => (
+                                <div key={app._id} className="flex items-center gap-3 py-3 px-5 hover:bg-[#FAF7F2] transition-colors">
+                                    <div className="w-1 self-stretch flex-shrink-0" style={{ backgroundColor: app.status === 'APPLIED' ? '#3b82f6' : app.status === 'REVIEWED' ? '#E2B325' : app.status === 'ACCEPTED' ? '#16a34a' : '#8B1A1A' }} />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold text-[#1A1A1A] truncate">{app.jobId?.title || 'Job Title'}</p>
+                                        <p className="text-xs text-gray-400 mt-0.5">{app.jobId?.district || ''} · {timeAgo(app.createdAt)}</p>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
+                                    <StatusBadge status={app.status} />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </SectionCard>
 
                 {/* Quick Actions */}
-                <div className="bg-white border border-gray-200 overflow-hidden flex flex-col">
-                    <div className="bg-[#8B1A1A] px-5 py-3">
-                        <h2 className="text-white text-sm font-bold uppercase tracking-widest">
-                            {t('quick_actions')}
-                        </h2>
-                    </div>
-                    <div className="flex-1">
+                <SectionCard className="!p-0 border-none" title={t('quick_actions')}>
+                    <div className="bg-white border border-t-0 border-gray-200 divide-y divide-gray-100">
                         {[
                             { to: '/jobs', icon: Search, label: t('browse_available_jobs'), desc: t('find_next_opportunity') },
                             { to: '/dashboard/applications', icon: FileText, label: t('view_my_applications'), desc: t('track_application_status') },
                             { to: '/dashboard/saved', icon: Bookmark, label: t('saved_jobs'), desc: t('jobs_you_bookmarked') },
+                            { to: '/profile', icon: User, label: t('dash_my_profile'), desc: t('dash_profile_desc') },
                         ].map(action => (
-                            <NavLink
-                                key={action.to}
-                                to={action.to}
-                                className="flex items-center gap-4 p-4 border-b border-gray-100 last:border-0 hover:bg-[#FAF7F2] transition-colors group"
-                            >
+                            <NavLink key={action.to} to={action.to} className="flex items-center gap-4 p-4 hover:bg-[#FAF7F2] transition-colors group">
                                 <div className="p-2.5 bg-[#8B1A1A]/10 flex-shrink-0">
                                     <action.icon className="h-5 w-5 text-[#8B1A1A]" />
                                 </div>
@@ -265,7 +219,7 @@ export const SeekerDashboard = () => {
                             </NavLink>
                         ))}
                     </div>
-                </div>
+                </SectionCard>
             </div>
         </>
     );
@@ -278,6 +232,7 @@ export const SeekerDashboard = () => {
 
 export const MyApplicationsPage = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -327,25 +282,17 @@ export const MyApplicationsPage = () => {
     const totalAccepted = applications.filter(a => a.status === 'ACCEPTED').length;
     const totalRejected = applications.filter(a => a.status === 'REJECTED').length;
 
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center py-24 gap-3">
-            <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
-            <p className="text-sm text-gray-400 uppercase tracking-widest">{t('loading')}</p>
-        </div>
-    );
+    if (loading) return <Spinner />;
 
     return (
         <>
-            {/* Page Header */}
-            <div className="bg-[#8B1A1A] px-8 py-5 mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">{t('my_applications')}</h1>
-                    <p className="text-white/60 text-sm mt-0.5">{t('my_applications_sub')}</p>
-                </div>
-                <div className="bg-white/10 border border-white/20 px-4 py-2">
-                    <p className="text-[#E2B325] text-sm font-bold">{applications.length}</p>
-                </div>
-            </div>
+            <PageHeader
+                rightSlot={
+                    <button onClick={() => navigate('/jobs')} className="bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420] flex items-center gap-2">
+                        <Search size={16} /> {t('browse_jobs')}
+                    </button>
+                }
+            />
 
             {/* Filter Bar */}
             <div className="bg-white border border-gray-200 border-t-4 border-t-[#E2B325] p-4 mb-4 flex flex-wrap gap-3 items-center">
@@ -376,77 +323,68 @@ export const MyApplicationsPage = () => {
             </div>
 
             {/* Applications Table */}
-            <div className="bg-white border border-gray-200 overflow-hidden">
-                <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between">
-                    <h2 className="text-white text-sm font-bold uppercase tracking-widest">{t('my_applications')}</h2>
-                    <span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{filteredApps.length}</span>
-                </div>
-
-                {filteredApps.length === 0 ? (
-                    <div className="flex flex-col items-center py-16 gap-3">
-                        <Briefcase className="h-12 w-12 text-gray-200" />
-                        <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{t('no_applications_msg')}</p>
-                        <NavLink to="/jobs" className="mt-2 bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#6e1515]">
-                            {t('browse_jobs')} →
-                        </NavLink>
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm border-collapse">
-                            <thead>
-                                <tr className="bg-[#8B1A1A]">
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">#</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('job_title')}</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden md:table-cell">{t('location')}</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden md:table-cell">{t('applied_date')}</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('status')}</th>
-                                    <th className="py-3 px-4 text-right text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap">{t('actions')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredApps.map((app, i) => (
-                                    <tr key={app._id} className={`${i % 2 === 0 ? 'bg-white' : 'bg-[#FAF7F2]/50'} hover:bg-[#FAF7F2] transition-colors`}>
-                                        <td className="py-3 px-4 text-gray-400 text-xs font-mono border-b border-gray-100 align-middle">{i + 1}</td>
-                                        <td className="py-3 px-4 border-b border-gray-100 align-middle">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-semibold text-[#1A1A1A]">{app.jobId?.title || 'Job'}</span>
-                                                <span className="text-xs text-gray-400 mt-0.5">{app.jobId?.category || ''}</span>
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-4 text-sm text-gray-600 border-b border-gray-100 align-middle hidden md:table-cell">
-                                            {app.jobId?.district || '—'}{app.jobId?.town ? `, ${app.jobId.town}` : ''}
-                                        </td>
-                                        <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100 align-middle hidden md:table-cell">
-                                            {fmtDate(app.createdAt)}
-                                        </td>
-                                        <td className="py-3 px-4 border-b border-gray-100 align-middle">
-                                            <StatusBadge status={app.status} />
-                                        </td>
-                                        <td className="py-3 px-4 text-right border-b border-gray-100 align-middle">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <Link to={`/jobs/${app.jobId?._id || app.jobId}`} className="text-xs px-3 py-1 uppercase tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white transition-colors">
-                                                    {t('view_job')}
-                                                </Link>
-                                                {app.status === 'APPLIED' && (
-                                                    <button
-                                                        onClick={() => setWithdrawTarget(app)}
-                                                        className="text-xs px-3 py-1 uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50 ml-1"
-                                                    >
-                                                        {t('withdraw')}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
+            <SectionCard className="!p-0 border-none" title={t('my_applications')} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{filteredApps.length}</span>}>
+                <div className="bg-white border border-t-0 border-gray-200">
+                    {filteredApps.length === 0 ? (
+                        <EmptyState message={t('no_applications_msg')} subtitle="Try searching for jobs that match your skillset" icon={Briefcase} />
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm border-collapse">
+                                <thead>
+                                    <tr className="bg-[#8B1A1A]">
+                                        <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">#</th>
+                                        <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('job_title')}</th>
+                                        <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden md:table-cell">{t('location')}</th>
+                                        <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden md:table-cell">{t('applied_date')}</th>
+                                        <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('status')}</th>
+                                        <th className="py-3 px-4 text-right text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap">{t('actions')}</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
+                                </thead>
+                                <tbody>
+                                    {filteredApps.map((app, i) => (
+                                        <tr key={app._id} className={`${i % 2 === 0 ? 'bg-white' : 'bg-[#FAF7F2]/50'} hover:bg-[#FAF7F2] transition-colors`}>
+                                            <td className="py-3 px-4 text-gray-400 text-xs font-mono border-b border-gray-100 align-middle">{i + 1}</td>
+                                            <td className="py-3 px-4 border-b border-gray-100 align-middle">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-[#1A1A1A]">{app.jobId?.title || 'Job'}</span>
+                                                    <span className="text-xs text-gray-400 mt-0.5">{app.jobId?.category || ''}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-3 px-4 text-sm text-gray-600 border-b border-gray-100 align-middle hidden md:table-cell">
+                                                {app.jobId?.district || '—'}{app.jobId?.town ? `, ${app.jobId.town}` : ''}
+                                            </td>
+                                            <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100 align-middle hidden md:table-cell">
+                                                {fmtDate(app.createdAt)}
+                                            </td>
+                                            <td className="py-3 px-4 border-b border-gray-100 align-middle">
+                                                <StatusBadge status={app.status} />
+                                            </td>
+                                            <td className="py-3 px-4 text-right border-b border-gray-100 align-middle">
+                                                <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                                    <button onClick={() => navigate(`/jobs/${app.jobId?._id || app.jobId}`)} className="text-xs px-2.5 py-1 uppercase tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]">
+                                                        {t('view_job')}
+                                                    </button>
+                                                    {app.status === 'APPLIED' && (
+                                                        <button
+                                                            onClick={() => setWithdrawTarget(app)}
+                                                            className="text-xs px-2.5 py-1 uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50"
+                                                        >
+                                                            {t('withdraw')}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            </SectionCard>
 
             {/* Summary Footer */}
-            <div className="bg-[#8B1A1A] px-5 py-2.5 flex gap-6">
+            <div className="bg-[#8B1A1A] px-5 py-2.5 flex flex-wrap gap-4 md:gap-6">
                 <span className="text-white/70 text-xs uppercase tracking-wider">
                     {t('total')} <span className="text-[#E2B325] font-bold ml-1">{applications.length}</span>
                 </span>
@@ -485,6 +423,7 @@ export const MyApplicationsPage = () => {
 
 export const SavedJobsPage = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [savedJobs, setSavedJobs] = useState([]);
 
@@ -518,77 +457,59 @@ export const SavedJobsPage = () => {
         toast.success(t('unsave'));
     };
 
+    if (loading) return <Spinner />;
+
     return (
         <>
-            {/* Page Header */}
-            <div className="bg-[#8B1A1A] px-8 py-5 mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">{t('saved_jobs_title')}</h1>
-                    <p className="text-white/60 text-sm mt-0.5">{t('saved_jobs_sub')}</p>
-                </div>
-                <div className="bg-white/10 border border-white/20 px-4 py-2">
-                    <p className="text-[#E2B325] text-sm font-bold">{savedJobs.length}</p>
-                </div>
-            </div>
+            <PageHeader
+                rightSlot={
+                    <button onClick={() => navigate('/jobs')} className="bg-[#E2B325] text-[#8B1A1A] text-sm font-bold uppercase tracking-wider px-5 py-2.5 hover:bg-[#d4a420] flex items-center gap-2">
+                        <Search size={16} /> {t('browse_jobs')}
+                    </button>
+                }
+            />
 
-            {loading ? (
-                <div className="flex flex-col items-center justify-center py-24 gap-3">
-                    <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
-                    <p className="text-sm text-gray-400 uppercase tracking-widest">{t('loading')}</p>
-                </div>
-            ) : savedJobs.length === 0 ? (
-                <div className="bg-white border border-gray-200 py-16 text-center">
-                    <Bookmark className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-                    <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{t('no_saved_jobs')}</p>
-                    <p className="text-xs text-gray-300 mt-1">{t('no_saved_jobs_sub')}</p>
-                    <NavLink to="/jobs" className="mt-4 inline-block bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#6e1515]">
-                        {t('browse_jobs')} →
-                    </NavLink>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {savedJobs.map(job => (
-                        <div key={job._id} className="bg-white border border-gray-200 border-l-4 border-l-[#8B1A1A] p-5 flex flex-col gap-3">
-                            {/* Header */}
-                            <div className="flex items-start justify-between gap-2">
-                                <h3 className="text-base font-bold text-[#1A1A1A] leading-tight">{job.title}</h3>
-                                <StatusBadge status={job.status} />
-                            </div>
+            <SectionCard className="!p-0 border-none" title={t('saved_jobs_title')} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{savedJobs.length}</span>}>
+                <div className="bg-[#FAF7F2] p-6 border-x border-b border-gray-200">
+                    {savedJobs.length === 0 ? (
+                        <EmptyState message={t('no_saved_jobs')} subtitle={t('no_saved_jobs_sub')} icon={Bookmark} />
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {savedJobs.map(job => (
+                                <div key={job._id} className="bg-white border border-gray-200 border-l-4 border-l-[#8B1A1A] hover:shadow-md transition-shadow p-5 flex flex-col gap-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <h3 className="text-base font-bold text-[#8B1A1A] leading-tight line-clamp-2">{job.title}</h3>
+                                        <StatusBadge status={job.status} />
+                                    </div>
 
-                            {/* Meta */}
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className="flex items-center gap-1 text-sm text-gray-600">
-                                    <MapPin className="h-3.5 w-3.5" />
-                                    {job.district}{job.town ? `, ${job.town}` : ''}
-                                </span>
-                                {job.category && (
-                                    <span className="bg-[#FAF7F2] text-xs px-2 py-0.5 text-gray-500">{job.category}</span>
-                                )}
-                            </div>
+                                    <div className="flex flex-col gap-1.5 mt-2">
+                                        <span className="flex items-center gap-2 text-[13px] text-gray-700 font-medium">
+                                            <Briefcase className="h-3.5 w-3.5 text-[#DAB82D]" />
+                                            {job.employerId?.name || job.employerId?.businessName || 'Confidential'}
+                                        </span>
+                                        <span className="flex items-center gap-2 text-[13px] text-gray-600">
+                                            <Search className="h-3.5 w-3.5 text-[#8B1A1A]" />
+                                            {job.district}{job.town ? `, ${job.town}` : ''}
+                                        </span>
+                                    </div>
 
-                            {/* Salary */}
-                            {(job.salaryMin || job.salaryMax) && (
-                                <p className="text-sm font-semibold text-[#8B1A1A]">
-                                    Rs. {job.salaryMin?.toLocaleString() || '—'} – {job.salaryMax?.toLocaleString() || '—'}
-                                </p>
-                            )}
-
-                            {/* Actions */}
-                            <div className="border-t border-gray-100 pt-3 mt-auto flex gap-2">
-                                <Link to={`/jobs/${job._id}`} className="flex-1 text-center bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-3 py-1.5 hover:bg-[#6e1515] transition-colors">
-                                    {t('apply_now')}
-                                </Link>
-                                <button
-                                    onClick={() => handleUnsave(job._id)}
-                                    className="border border-gray-300 text-gray-400 text-xs uppercase tracking-wider px-3 py-1.5 hover:border-red-400 hover:text-red-400 transition-colors"
-                                >
-                                    {t('unsave')}
-                                </button>
-                            </div>
+                                    <div className="border-t border-gray-100 pt-3 mt-auto flex gap-2">
+                                        <button onClick={() => navigate(`/jobs/${job._id}`)} className="flex-1 text-center bg-[#8B1A1A] text-white text-[11px] font-bold uppercase tracking-wider px-3 py-2 hover:bg-[#6e1515] transition-colors">
+                                            {t('apply_now')}
+                                        </button>
+                                        <button
+                                            onClick={() => handleUnsave(job._id)}
+                                            className="border border-gray-300 text-gray-400 text-[11px] font-bold uppercase tracking-wider px-3 py-2 hover:border-red-400 hover:text-red-400 transition-colors"
+                                        >
+                                            {t('unsave')}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    )}
                 </div>
-            )}
+            </SectionCard>
         </>
     );
 };

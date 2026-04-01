@@ -75,6 +75,15 @@ const suspendCompany = async (req, res, next) => {
     }
 };
 
+const getAllCompanies = async (req, res, next) => {
+    try {
+        const companies = await adminService.getAllCompanies();
+        successResponse(res, 'Companies retrieved successfully', { companies });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getAdminNotifications = async (req, res, next) => {
     try {
         const notifications = await adminService.getAdminNotifications();
@@ -93,5 +102,6 @@ module.exports = {
     deleteApplication,
     verifyCompany,
     suspendCompany,
+    getAllCompanies,
     getAdminNotifications,
 };
