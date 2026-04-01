@@ -8,7 +8,10 @@ import {
 } from 'lucide-react';
 import { adminAPI } from '../../api/services';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
+import { useTranslation } from 'react-i18next';
 
+const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
 
 // ─── SHARED HELPERS ────────────────────────────────────────────
 
@@ -79,12 +82,11 @@ const SectionCard = ({ children, className = '', title, subtitle }) => (
 );
 
 const PageHeading = ({ title, subtitle, right }) => (
-    <div className="bg-[#8B1A1A] px-8 py-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-            <h1 className="font-['Playfair_Display'] text-2xl font-bold text-white">{title}</h1>
-            {subtitle && <p className="text-white/60 text-sm mt-0.5">{subtitle}</p>}
+            {/* Minimal heading */}
         </div>
-        {right && <div className="bg-white/10 border border-white/20 px-4 py-2">{right}</div>}
+        {right && <div>{right}</div>}
     </div>
 );
 
@@ -126,18 +128,49 @@ const fmtDate = (d) => {
     return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
-const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, confirmText = 'DELETE' }) => {
+const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, confirmText = 'DELETE', requireReason = false }) => {
+    const [reason, setReason] = useState('');
+    
+    // Reset reason when modal opens
+    useEffect(() => {
+        if (isOpen) setReason('');
+    }, [isOpen]);
+
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center">
-            <div className="bg-white border-t-4 border-t-[#8B1A1A] p-6 max-w-sm w-full mx-4">
-                <h3 className="font-['Playfair_Display'] text-lg text-[#1A1A1A] font-bold">{title}</h3>
+        <div className="fixed inset-0 bg-[#1A1A1A]/70 z-[100] flex items-center justify-center p-4">
+            <div className="bg-white border-t-4 border-t-[#8B1A1A] p-6 max-w-sm w-full shadow-2xl">
+                <h3 className="font-heading text-lg text-[#1A1A1A] font-bold">{title}</h3>
                 <p className="text-sm text-gray-500 mt-2 leading-relaxed">{message}</p>
+                
+                {requireReason && (
+                    <div className="mt-4">
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                            Reason for Suspension <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            className="w-full border border-gray-300 p-3 text-sm focus:outline-none focus:border-[#8B1A1A] placeholder-gray-400 resize-none"
+                            rows={3}
+                            placeholder="Please explain why..."
+                            required
+                        />
+                    </div>
+                )}
+                
                 <div className="mt-6 flex gap-3 justify-end">
-                    <button onClick={onCancel} className="border border-gray-300 px-4 py-2 text-sm uppercase tracking-wider text-gray-600 hover:bg-gray-50">
+                    <button 
+                        onClick={onCancel} 
+                        className="bg-transparent border border-gray-300 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
                         CANCEL
                     </button>
-                    <button onClick={onConfirm} disabled={loading} className="bg-[#8B1A1A] text-white px-4 py-2 text-sm uppercase tracking-wider hover:bg-[#6e1515] disabled:opacity-50">
+                    <button 
+                        onClick={() => onConfirm(reason)} 
+                        disabled={loading || (requireReason && !reason.trim())} 
+                        className="bg-[#8B1A1A] border border-[#8B1A1A] text-white px-4 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-[#6e1515] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
                         {loading ? 'WAIT...' : confirmText}
                     </button>
                 </div>
@@ -152,6 +185,7 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
 // ═══════════════════════════════════════════════════════════════
 
 export const AdminDashboard = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState([]);
@@ -215,14 +249,14 @@ export const AdminDashboard = () => {
     const dateString = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     const statCards = [
-        { label: 'Users', value: totalUsers, icon: Users, accent: '#8B1A1A' },
-        { label: 'Employers', value: totalEmployers, icon: Briefcase, accent: '#1e40af' },
+        { label: t('total_users'), value: totalUsers, icon: Users, accent: '#8B1A1A' },
+        { label: t('employers'), value: totalEmployers, icon: Briefcase, accent: '#1e40af' },
         { label: 'Job Seekers', value: totalSeekers, icon: UserCheck, accent: '#E2B325' },
-        { label: 'Active Jobs', value: openJobs, icon: FileText, accent: '#8B1A1A' },
-        { label: 'Applications', value: totalApplications, icon: ClipboardList, accent: '#E2B325' },
-        { label: 'Companies', value: totalCompanies, icon: Building2, accent: '#1e40af' },
+        { label: t('active_jobs'), value: openJobs, icon: FileText, accent: '#8B1A1A' },
+        { label: t('total_applications'), value: totalApplications, icon: ClipboardList, accent: '#E2B325' },
+        { label: t('all_companies'), value: totalCompanies, icon: Building2, accent: '#1e40af' },
         { label: 'Pending Verify', value: pendingVerify, icon: Clock, accent: '#f97316' },
-        { label: 'Suspended', value: suspendedUsers, icon: ShieldOff, accent: '#dc2626' },
+        { label: t('suspend'), value: suspendedUsers, icon: ShieldOff, accent: '#dc2626' },
     ];
 
     const recentUsers = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
@@ -232,7 +266,7 @@ export const AdminDashboard = () => {
 
     return (
         <>
-            <PageHeading title="Admin Dashboard" subtitle="Platform overview and management" right={
+            <PageHeading title={t('admin_dashboard')} subtitle="Platform overview and management" right={
                 <p className="text-[#E2B325] text-xs uppercase tracking-wider">{dateString}</p>
             } />
 
@@ -249,7 +283,7 @@ export const AdminDashboard = () => {
                         onClick={() => navigate('/admin/companies')}
                         className="bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-1.5 hover:bg-[#6e1515] sharp edges"
                     >
-                        REVIEW NOW
+                        {t('review_now')}
                     </button>
                 </div>
             )}
@@ -265,10 +299,10 @@ export const AdminDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Recent Users */}
                 <SectionCard
-                    title="Recent Registrations"
+                    title={t('recent_registrations')}
                     subtitle={
                         <Link to="/admin/users" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white transition-colors">
-                            View All Users
+                            {t('view_all_users')}
                         </Link>
                     }
                 >
@@ -278,16 +312,23 @@ export const AdminDashboard = () => {
                         <div className="divide-y divide-gray-100">
                             {recentUsers.map(u => (
                                 <div key={u._id} className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0">
-                                    <div className="w-9 h-9 bg-[#8B1A1A] text-white flex items-center justify-center text-xs font-bold rounded-full shrink-0">
-                                        {getInitials(u.name)}
-                                    </div>
+                                    {u.profilePicture ? (
+                                        <img src={u.profilePicture} alt={u.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+                                    ) : (
+                                        <img src={defaultAvatar} alt="Default Avatar" className="w-9 h-9 rounded-full object-cover shrink-0 bg-white" />
+                                    )}
                                     <div>
                                         <p className="font-semibold text-[#1A1A1A] text-sm">{u.name}</p>
                                         <p className="text-xs text-gray-400">{u.email}</p>
                                     </div>
                                     <div className="ml-auto flex flex-col items-end gap-1">
                                         <RoleBadge role={u.role} />
-                                        <StatusBadge status={u.status} />
+                                        <div className="flex flex-col items-end">
+                                            <StatusBadge status={u.status} />
+                                            {u.status === 'SUSPENDED' && u.suspensionReason && (
+                                                <span className="text-[9px] text-[#8B1A1A] font-bold mt-0.5" title={u.suspensionReason}>Reason attached</span>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-gray-300">{fmtDate(u.createdAt)}</p>
                                     </div>
                                 </div>
@@ -298,8 +339,8 @@ export const AdminDashboard = () => {
 
                 {/* Recent Jobs */}
                 <SectionCard
-                    title="Recent Job Posts"
-                    subtitle={<Link to="/admin/jobs" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white transition-colors">All Jobs</Link>}
+                    title={t('recent_job_posts')}
+                    subtitle={<Link to="/admin/jobs" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white transition-colors">{t('all_jobs')}</Link>}
                 >
                     {recentJobs.length === 0 ? (
                         <p className="text-gray-400 text-sm py-4 text-center pb-0">No jobs posted yet.</p>
@@ -323,28 +364,28 @@ export const AdminDashboard = () => {
             </div>
 
             {/* Quick Actions */}
-            <SectionCard title="QUICK ACTIONS">
+            <SectionCard title={t('quick_actions_admin')}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-[#FAF7F2] border border-gray-200 border-t-4 border-t-[#8B1A1A] p-4 text-center">
                         <Users className="h-8 w-8 mb-3 mx-auto text-[#8B1A1A]" />
-                        <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-1">Manage Users</h3>
+                        <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-1">{t('manage_users')}</h3>
                         <p className="text-xs text-gray-400 mt-1 mb-4">View, suspend, or activate accounts</p>
                         <button onClick={() => navigate('/admin/users')} className="w-full bg-[#8B1A1A] text-white text-xs uppercase tracking-wider py-2 hover:bg-[#6e1515]">
-                            MANAGE USERS
+                            {t('manage_users')}
                         </button>
                     </div>
                     <div className="bg-[#FAF7F2] border border-gray-200 border-t-4 border-t-[#E2B325] p-4 text-center">
                         <Building2 className="h-8 w-8 mb-3 mx-auto text-[#E2B325]" />
-                        <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-1">Verify Companies</h3>
+                        <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-1">{t('verify_companies')}</h3>
                         <p className="text-xs text-gray-400 mt-1 mb-4">Review pending company verifications</p>
                         <button onClick={() => navigate('/admin/companies')} className="w-full bg-[#8B1A1A] text-white text-xs uppercase tracking-wider py-2 hover:bg-[#6e1515]">
-                            VERIFY COMPANIES
+                            {t('verify_companies')}
                         </button>
                     </div>
                     <div className="bg-[#FAF7F2] border border-gray-200 border-t-4 border-t-[#1e40af] p-4 text-center flex flex-col justify-between">
                         <div>
                             <BarChart2 className="h-8 w-8 mb-3 mx-auto text-[#1e40af]" />
-                            <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-1">Platform Stats</h3>
+                            <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-1">{t('platform_stats')}</h3>
                             <p className="text-xs text-gray-400 mt-1 mb-4">Application processing summary</p>
                         </div>
                         <div className="text-left w-full mt-auto">
@@ -370,6 +411,7 @@ export const AdminDashboard = () => {
 // ═══════════════════════════════════════════════════════════════
 
 export const AdminUsersPage = () => {
+    const { t } = useTranslation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -378,6 +420,7 @@ export const AdminUsersPage = () => {
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [actionLoading, setActionLoading] = useState({});
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, userId: null, newStatus: null, userName: '' });
+    const [viewUserModal, setViewUserModal] = useState({ isOpen: false, user: null });
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -407,11 +450,11 @@ export const AdminUsersPage = () => {
         });
     }, [users, searchTerm, roleFilter, statusFilter]);
 
-    const handleUserStatus = async (userId, newStatus) => {
+    const handleUserStatus = async (userId, newStatus, reason) => {
         setActionLoading(prev => ({ ...prev, [userId]: true }));
         try {
-            await adminAPI.updateUserStatus(userId, { status: newStatus });
-            setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: newStatus } : u));
+            await adminAPI.updateUserStatus(userId, { status: newStatus, reason });
+            setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: newStatus, suspensionReason: reason || null } : u));
             toast.success(newStatus === 'SUSPENDED' ? 'User suspended.' : 'User activated.');
             setConfirmModal({ isOpen: false, userId: null, newStatus: null, userName: '' });
         } catch (err) {
@@ -437,15 +480,6 @@ export const AdminUsersPage = () => {
             <PageHeading
                 title="User Management"
                 subtitle={`${users.length} total users`}
-                right={
-                    <p className="text-white text-xs uppercase tracking-wider">
-                        Employers: <span className="text-[#E2B325] font-bold">{totalEmployers}</span>
-                        &nbsp;|&nbsp;
-                        Seekers: <span className="text-[#E2B325] font-bold">{totalSeekers}</span>
-                        &nbsp;|&nbsp;
-                        Suspended: <span className="text-[#E2B325] font-bold">{suspendedCount}</span>
-                    </p>
-                }
             />
 
             {/* Filter Bar */}
@@ -515,9 +549,11 @@ export const AdminUsersPage = () => {
                                         <td className="py-3 px-4 text-gray-400 text-xs font-mono border-b border-gray-100 align-middle">{i + 1}</td>
                                         <td className="py-3 px-4 border-b border-gray-100 align-middle">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-[#8B1A1A] text-white flex items-center justify-center text-xs font-bold rounded-full shrink-0">
-                                                    {getInitials(user.name)}
-                                                </div>
+                                                {user.profilePicture ? (
+                                                    <img src={user.profilePicture} alt={user.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                                                ) : (
+                                                    <img src={defaultAvatar} alt="Default Avatar" className="w-8 h-8 rounded-full object-cover shrink-0 bg-white" />
+                                                )}
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-semibold text-[#1A1A1A]">{user.name}</span>
                                                     <span className="text-xs text-gray-400">{user.email}</span>
@@ -525,32 +561,47 @@ export const AdminUsersPage = () => {
                                             </div>
                                         </td>
                                         <td className="py-3 px-4 border-b border-gray-100 align-middle"><RoleBadge role={user.role} /></td>
-                                        <td className="py-3 px-4 border-b border-gray-100 align-middle"><StatusBadge status={user.status} /></td>
+                                        <td className="py-3 px-4 border-b border-gray-100 align-middle">
+                                            <StatusBadge status={user.status} />
+                                            {user.status === 'SUSPENDED' && user.suspensionReason && (
+                                                <div className="text-[10px] text-[#8B1A1A] font-semibold mt-1 max-w-[120px] leading-tight" title={user.suspensionReason}>
+                                                    Reason: {user.suspensionReason}
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="py-3 px-4 text-gray-500 text-xs font-mono hidden md:table-cell border-b border-gray-100 align-middle">{fmtDate(user.createdAt)}</td>
                                         <td className="py-3 px-4 text-right border-b border-gray-100 align-middle">
-                                            {user.role === 'ADMIN' ? (
-                                                <span className="text-gray-300 text-xs flex items-center justify-end gap-1 font-bold uppercase tracking-wider">
-                                                    <Lock size={12} /> Protected
-                                                </span>
-                                            ) : (
-                                                user.status === 'ACTIVE' ? (
-                                                    <button
-                                                        onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'SUSPENDED', userName: user.name })}
-                                                        disabled={actionLoading[user._id]}
-                                                        className="px-3 py-1 text-xs uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50 disabled:opacity-50"
-                                                    >
-                                                        {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-red-500 border-t-transparent rounded-full" /> : 'SUSPEND'}
-                                                    </button>
+                                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                                <button
+                                                    onClick={() => setViewUserModal({ isOpen: true, user })}
+                                                    className="px-3 py-1 text-xs uppercase tracking-wider border border-gray-300 text-gray-600 hover:bg-gray-50"
+                                                >
+                                                    VIEW
+                                                </button>
+                                                {user.role === 'ADMIN' ? (
+                                                    <span className="text-gray-300 text-xs flex items-center justify-end gap-1 font-bold uppercase tracking-wider ml-1">
+                                                        <Lock size={12} /> Protected
+                                                    </span>
                                                 ) : (
-                                                    <button
-                                                        onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'ACTIVE', userName: user.name })}
-                                                        disabled={actionLoading[user._id]}
-                                                        className="px-3 py-1 text-xs uppercase tracking-wider border border-green-600 text-green-600 hover:bg-green-50 disabled:opacity-50"
-                                                    >
-                                                        {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-green-600 border-t-transparent rounded-full" /> : 'ACTIVATE'}
-                                                    </button>
-                                                )
-                                            )}
+                                                    user.status === 'ACTIVE' ? (
+                                                        <button
+                                                            onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'SUSPENDED', userName: user.name })}
+                                                            disabled={actionLoading[user._id]}
+                                                            className="px-3 py-1 text-xs uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50 disabled:opacity-50"
+                                                        >
+                                                            {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-red-500 border-t-transparent rounded-full" /> : 'SUSPEND'}
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'ACTIVE', userName: user.name })}
+                                                            disabled={actionLoading[user._id]}
+                                                            className="px-3 py-1 text-xs uppercase tracking-wider border border-green-600 text-green-600 hover:bg-green-50 disabled:opacity-50"
+                                                        >
+                                                            {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-green-600 border-t-transparent rounded-full" /> : 'ACTIVATE'}
+                                                        </button>
+                                                    )
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -582,9 +633,71 @@ export const AdminUsersPage = () => {
                 message={`Are you sure you want to ${confirmModal.newStatus === 'SUSPENDED' ? 'suspend' : 'activate'} ${confirmModal.userName}?`}
                 confirmText={confirmModal.newStatus === 'SUSPENDED' ? 'SUSPEND' : 'ACTIVATE'}
                 loading={confirmModal.userId ? actionLoading[confirmModal.userId] : false}
+                requireReason={confirmModal.newStatus === 'SUSPENDED'}
                 onCancel={() => setConfirmModal({ isOpen: false, userId: null, newStatus: null, userName: '' })}
-                onConfirm={() => handleUserStatus(confirmModal.userId, confirmModal.newStatus)}
+                onConfirm={(reason) => handleUserStatus(confirmModal.userId, confirmModal.newStatus, reason)}
             />
+
+            <Modal
+                isOpen={viewUserModal.isOpen}
+                onClose={() => setViewUserModal({ isOpen: false, user: null })}
+                title="User Profile Details"
+                size="md"
+            >
+                {viewUserModal.user && (
+                    <div className="flex flex-col py-2">
+                        <div className="flex items-start gap-4 mb-6">
+                            {viewUserModal.user.profilePicture ? (
+                                <img src={viewUserModal.user.profilePicture} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200" />
+                            ) : (
+                                <img src={defaultAvatar} alt="Default Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 bg-white" />
+                            )}
+                            <div>
+                                <h3 className="text-lg font-bold text-[#1A1A1A]">{viewUserModal.user.name}</h3>
+                                <p className="text-sm text-gray-500 mb-2">{viewUserModal.user.email}</p>
+                                <div className="flex gap-2">
+                                    <RoleBadge role={viewUserModal.user.role} />
+                                    <StatusBadge status={viewUserModal.user.status} />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {viewUserModal.user.status === 'SUSPENDED' && viewUserModal.user.suspensionReason && (
+                            <div className="mb-4 p-4 border border-red-200 bg-red-50 flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-[#8B1A1A]">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <span className="font-bold text-xs uppercase tracking-wider">Suspension Reason</span>
+                                </div>
+                                <p className="text-sm text-red-900 leading-relaxed font-medium">
+                                    {viewUserModal.user.suspensionReason}
+                                </p>
+                            </div>
+                        )}
+                        
+                        <div className="border-t border-gray-100 pt-4 space-y-3">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Joined Date</span>
+                                <span className="font-medium text-[#1A1A1A]">{fmtDate(viewUserModal.user.createdAt)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">User ID</span>
+                                <span className="font-mono text-xs text-gray-400">{viewUserModal.user._id}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Authentication</span>
+                                <span className="font-medium text-[#1A1A1A]">
+                                    {viewUserModal.user.googleId ? 'Google Account' : 'Email / Password'}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="mt-8 flex justify-end">
+                            <Button variant="outline" onClick={() => setViewUserModal({ isOpen: false, user: null })}>
+                                CLOSE
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 };
@@ -595,6 +708,7 @@ export const AdminUsersPage = () => {
 // ═══════════════════════════════════════════════════════════════
 
 export const AdminCompaniesPage = () => {
+    const { t } = useTranslation();
     const [companies, setCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -653,11 +767,11 @@ export const AdminCompaniesPage = () => {
         }
     };
 
-    const handleSuspendToggle = async (id, isSuspended) => {
+    const handleSuspendToggle = async (id, isSuspended, reason) => {
         setActionLoading(prev => ({ ...prev, [id]: true }));
         try {
-            await adminAPI.suspendCompany(id);
-            setCompanies(prev => prev.map(c => c._id === id ? { ...c, isSuspended: !c.isSuspended } : c));
+            await adminAPI.suspendCompany(id, reason);
+            setCompanies(prev => prev.map(c => c._id === id ? { ...c, isSuspended: !c.isSuspended, suspensionReason: reason || null } : c));
             toast.success(isSuspended ? 'Company unsuspended.' : 'Company suspended.');
             setConfirmModal({ isOpen: false, companyId: null, isCurrentlySuspended: false, companyName: '' });
         } catch (err) {
@@ -674,15 +788,6 @@ export const AdminCompaniesPage = () => {
             <PageHeading
                 title="Company Management"
                 subtitle={`${companies.length} companies registered`}
-                right={
-                    <p className="text-white text-xs uppercase tracking-wider">
-                        Pending: <span className="text-[#E2B325] font-bold">{pendingCount}</span>
-                        &nbsp;|&nbsp;
-                        Verified: <span className="text-[#E2B325] font-bold">{verifiedCount}</span>
-                        &nbsp;|&nbsp;
-                        Suspended: <span className="text-[#E2B325] font-bold">{suspendedCount}</span>
-                    </p>
-                }
             />
 
             {/* Pending Alert */}
@@ -787,7 +892,14 @@ export const AdminCompaniesPage = () => {
                                             {company.district}
                                             {company.town && <div className="text-xs text-gray-400">{company.town}</div>}
                                         </td>
-                                        <td className="py-3 px-4 border-b border-gray-100 align-middle"><StatusBadge status={company.verificationStatus} /></td>
+                                        <td className="py-3 px-4 border-b border-gray-100 align-middle">
+                                            <StatusBadge status={company.isSuspended ? 'SUSPENDED' : 'ACTIVE'} />
+                                            {company.isSuspended && company.suspensionReason && (
+                                                <div className="text-[10px] text-[#8B1A1A] font-semibold mt-1 max-w-[120px] leading-tight" title={company.suspensionReason}>
+                                                    Reason: {company.suspensionReason}
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="py-3 px-4 hidden sm:table-cell border-b border-gray-100 align-middle">
                                             {company.isSuspended ? (
                                                 <span className="text-xs font-bold text-[#8B1A1A] uppercase tracking-wider">YES</span>
@@ -909,6 +1021,18 @@ export const AdminCompaniesPage = () => {
                             )}
                         </div>
 
+                        {selectedCompany.isSuspended && selectedCompany.suspensionReason && (
+                            <div className="mx-6 mb-4 p-4 border border-red-200 bg-red-50 flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-[#8B1A1A]">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <span className="font-bold text-xs uppercase tracking-wider">Suspension Reason</span>
+                                </div>
+                                <p className="text-sm text-red-900 leading-relaxed font-medium">
+                                    {selectedCompany.suspensionReason}
+                                </p>
+                            </div>
+                        )}
+
                         <div className="border-t border-gray-100 px-6 py-4 bg-[#FAF7F2] flex gap-3 justify-end">
                             <button className="border border-gray-300 text-gray-600 text-xs px-4 py-2 uppercase tracking-wider hover:bg-gray-100" onClick={() => setSelectedCompany(null)}>CANCEL</button>
                             {selectedCompany.verificationStatus === 'PENDING' && (
@@ -931,8 +1055,9 @@ export const AdminCompaniesPage = () => {
                 message={`Are you sure you want to ${confirmModal.isCurrentlySuspended ? 'unsuspend' : 'suspend'} ${confirmModal.companyName}?`}
                 confirmText={confirmModal.isCurrentlySuspended ? 'UNSUSPEND' : 'SUSPEND'}
                 loading={confirmModal.companyId ? actionLoading[confirmModal.companyId] : false}
+                requireReason={!confirmModal.isCurrentlySuspended}
                 onCancel={() => setConfirmModal({ isOpen: false, companyId: null, isCurrentlySuspended: false, companyName: '' })}
-                onConfirm={() => handleSuspendToggle(confirmModal.companyId, confirmModal.isCurrentlySuspended)}
+                onConfirm={(reason) => handleSuspendToggle(confirmModal.companyId, confirmModal.isCurrentlySuspended, reason)}
             />
         </div>
     );
@@ -943,6 +1068,7 @@ export const AdminCompaniesPage = () => {
 // ═══════════════════════════════════════════════════════════════
 
 export const AdminJobsPage = () => {
+    const { t } = useTranslation();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -1024,15 +1150,6 @@ export const AdminJobsPage = () => {
             <PageHeading
                 title="Job Management"
                 subtitle={`${jobs.length} total jobs`}
-                right={
-                    <div className="bg-white/10 border border-white/20 px-4 py-2">
-                        <p className="text-white text-xs uppercase tracking-wider">
-                            Open: <span className="text-[#E2B325] font-bold">{openCount}</span>
-                            &nbsp;|&nbsp;
-                            Closed: <span className="text-[#E2B325] font-bold">{closedCount}</span>
-                        </p>
-                    </div>
-                }
             />
 
             {/* Filter Bar */}
