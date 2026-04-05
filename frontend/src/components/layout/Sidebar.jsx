@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/formatters';
-import { LayoutDashboard, FileText, Heart, User, LogOut, PlusCircle, Briefcase, Users, Building, ClipboardList, Building2 } from 'lucide-react';
+import { LayoutDashboard, FileText, Heart, User, LogOut, PlusCircle, Briefcase, Users, Building, ClipboardList, Building2, Globe } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
@@ -27,6 +27,7 @@ export const Sidebar = () => {
     const navItems = {
         JOB_SEEKER: [
             { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+            { label: 'Discover Jobs', path: '/dashboard/discover', icon: Globe },
             { label: 'My Applications', path: '/dashboard/applications', icon: FileText },
             { label: 'Saved Jobs', path: '/dashboard/saved', icon: Heart },
             { label: 'My Profile', path: '/profile', icon: User },

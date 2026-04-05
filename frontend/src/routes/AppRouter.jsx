@@ -10,6 +10,7 @@ import { RoleRoute } from './RoleRoute';
 import { HomePage } from '../pages/public/HomePage';
 import { JobsPage } from '../pages/public/JobsPage';
 import { JobDetailPage, CompaniesPage } from '../pages/public/PublicPages';
+import { DiscoverJobsPage } from '../pages/seeker/DiscoverJobsPage';
 import { CompanyJobsPage } from '../pages/public/CompanyJobsPage';
 import { LoginPage, RegisterPage, RegisterEmployerPage, ForgotPasswordPage, ResetPasswordPage } from '../pages/auth/AuthPages';
 import { SeekerDashboard, MyApplicationsPage, SavedJobsPage } from '../pages/seeker/SeekerPages';
@@ -111,6 +112,15 @@ export const AppRouter = () => {
                         <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
                             <Navbar />
                             <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><SeekerDashboard /></main>
+                            <Footer />
+                        </div>
+                    </RoleRoute>
+                } />
+                <Route path="/dashboard/discover" element={
+                    <RoleRoute roles={['JOB_SEEKER']}>
+                        <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
+                            <Navbar />
+                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><DiscoverJobsPage /></main>
                             <Footer />
                         </div>
                     </RoleRoute>

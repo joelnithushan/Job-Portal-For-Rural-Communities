@@ -25,6 +25,9 @@ const registerSchema = {
         nic: Joi.string().pattern(nicRegex).messages({
             'string.pattern.base': 'Enter a valid Sri Lankan NIC'
         }).optional(),
+        phone: Joi.string().pattern(phoneRegex).messages({
+            'string.pattern.base': 'Enter a valid Sri Lankan phone number'
+        }).optional(),
     }),
 };
 

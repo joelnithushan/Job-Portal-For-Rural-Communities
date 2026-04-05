@@ -81,6 +81,10 @@ const updateProfile = async (req, res) => {
 
         return successResponse(res, 'Profile updated successfully.', { user });
     } catch (error) {
+        if (error.code === 11000) {
+            const field = Object.keys(error.keyPattern)[0];
+            return errorResponse(res, `This ${field} is already in use by another account.`, 400);
+        }
         return errorResponse(res, 'Failed to update profile', 500);
     }
 };

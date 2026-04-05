@@ -131,7 +131,7 @@ export const ProfilePage = () => {
             toast.success("Account permanently deleted.");
             if (logout) logout();
         } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to delete account");
+            console.error('Account deletion error:', error);
             setIsDeletingAccount(false);
         }
     };
@@ -397,24 +397,25 @@ export const ProfilePage = () => {
             </div>
 
             {/* DANGER ZONE */}
-            <div className="mt-8 border border-red-200 bg-red-50 overflow-hidden">
-                <div className="bg-red-600 px-5 py-3 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-white" />
-                    <h2 className="text-white text-sm font-bold uppercase tracking-widest">Danger Zone</h2>
+            <div className="mt-12 border border-red-100 bg-[#FFF9F9] overflow-hidden rounded-sm">
+                <div className="bg-[#FEE2E2]/50 px-5 py-3 flex items-center gap-2 border-b border-red-100">
+                    <AlertTriangle className="h-4 w-4 text-red-500" />
+                    <h2 className="text-red-800 text-xs font-bold uppercase tracking-widest">Danger Zone</h2>
                 </div>
-                <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                     <div>
-                        <h3 className="text-red-900 font-bold mb-1">Delete Account</h3>
-                        <p className="text-sm text-red-700 max-w-xl">
+                        <h3 className="text-gray-900 font-bold mb-1">Delete Account</h3>
+                        <p className="text-sm text-gray-500 max-w-xl leading-relaxed">
                             Permanently delete your account and all associated data. For Employers, this removes your company and all posted jobs. For Job Seekers, this removes all your applications. This action cannot be reversed.
                         </p>
                     </div>
                     <button 
                         onClick={handleDeleteAccount}
                         disabled={isDeletingAccount}
-                        className="shrink-0 bg-red-600 text-white font-bold uppercase tracking-wider text-sm px-6 py-3 hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 transition-colors focus:ring-4 focus:ring-red-200"
+                        className="shrink-0 border border-red-200 text-red-600 bg-white font-bold uppercase tracking-wider text-xs px-6 py-3 hover:bg-red-600 hover:text-white hover:border-red-600 disabled:opacity-50 flex items-center gap-2 transition-all focus:ring-4 focus:ring-red-50"
                     >
-                        {isDeletingAccount ? "DELETING..." : "DELETE ACCOUNT"}
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {isDeletingAccount ? "Deleting..." : "Delete Account"}
                     </button>
                 </div>
             </div>

@@ -18,6 +18,7 @@ const registerSchema = yup.object({
     name: yup.string().required('Full name is required').min(2, 'Name is too short').matches(nameRegex, 'Name can only contain letters, spaces, dots and hyphens'),
     email: yup.string().email('Please enter a valid email address').required('Email is required'),
     nic: yup.string().required('National ID is required').matches(nicRegex, 'Enter a valid Sri Lankan NIC'),
+    phone: yup.string().required('Phone number is required').matches(/^(?:\+94|0)[0-9]{9}$/, 'Enter a valid Sri Lankan phone number'),
     password: yup.string().required('Password is required').matches(pwdRegex, 'Password must have min 8 chars, 1 uppercase, 1 number, and 1 special char'),
     confirmPassword: yup.string()
         .required('Please confirm your password')
@@ -42,7 +43,7 @@ export const RegisterPage = () => {
             toast.success('Account created successfully!');
             navigate('/dashboard', { replace: true });
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Google Signup failed');
+            console.error('Google Signup error:', error);
         }
     };
 
@@ -94,6 +95,13 @@ export const RegisterPage = () => {
                         placeholder="e.g. 199912345678 or 987654321V"
                         error={errors.nic?.message}
                         {...register('nic')}
+                    />
+
+                    <Input
+                        label="Phone Number"
+                        placeholder="e.g. 0712345678 or +94712345678"
+                        error={errors.phone?.message}
+                        {...register('phone')}
                     />
 
                     <div className="relative">

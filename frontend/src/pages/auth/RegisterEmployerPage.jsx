@@ -40,7 +40,7 @@ export const RegisterEmployerPage = () => {
             toast.success('Employer account created!');
             navigate('/employer', { replace: true });
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Google Signup failed');
+            console.error('Google Signup error:', error);
         }
     };
 

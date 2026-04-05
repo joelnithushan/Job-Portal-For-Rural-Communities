@@ -29,7 +29,7 @@ export const ForgotPasswordPage = () => {
             setSentEmail(data.email);
             setEmailSent(true);
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Something went wrong');
+            console.error('Forgot password error:', error);
         } finally {
             setIsSubmitting(false);
         }

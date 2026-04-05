@@ -39,8 +39,6 @@ export const ResetPasswordPage = () => {
         } catch (error) {
             if (error.response?.status === 400) {
                 setTokenExpired(true);
-            } else {
-                toast.error(error.response?.data?.message || 'Something went wrong');
             }
         } finally {
             setIsSubmitting(false);

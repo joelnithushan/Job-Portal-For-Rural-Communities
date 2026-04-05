@@ -94,7 +94,7 @@ export const JobDetailPage = () => {
             setHasApplied(true);
             setShowApplyModal(false);
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to apply. Please try again.');
+            console.error('Application submission error:', error);
         } finally {
             setIsApplying(false);
         }

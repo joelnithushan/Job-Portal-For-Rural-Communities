@@ -64,6 +64,8 @@ const userSchema = mongoose.Schema(
             type: String,
             default: null,
             trim: true,
+            unique: true,
+            sparse: true,
         },
         district: {
             type: String,
@@ -73,6 +75,8 @@ const userSchema = mongoose.Schema(
             type: String,
             default: null,
             trim: true,
+            unique: true,
+            sparse: true,
         },
         bio: {
             type: String,

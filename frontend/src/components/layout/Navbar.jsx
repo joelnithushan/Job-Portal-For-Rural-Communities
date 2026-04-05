@@ -81,6 +81,7 @@ export const Navbar = () => {
         ...(!isAuthenticated ? [{ label: t('nav_home'), path: '/' }] : []),
         ...(isSeeker ? [
             { label: t('dashboard'), path: '/dashboard' },
+            { label: 'Discover Jobs', path: '/dashboard/discover' },
             { label: t('my_applications'), path: '/dashboard/applications' },
             { label: t('saved_jobs'), path: '/dashboard/saved' }
         ] : []),
@@ -93,6 +94,7 @@ export const Navbar = () => {
         ...(!isAuthenticated ? [{ label: t('nav_home'), path: '/' }] : []),
         ...(isSeeker ? [
             { label: t('dashboard'), path: '/dashboard' },
+            { label: 'Discover Jobs', path: '/dashboard/discover' },
             { label: t('my_applications'), path: '/dashboard/applications' },
             { label: t('saved_jobs'), path: '/dashboard/saved' }
         ] : []),

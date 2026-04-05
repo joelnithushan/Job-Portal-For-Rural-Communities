@@ -514,7 +514,7 @@ export const MyJobsPage = () => {
             toast.success('Job deleted');
             setDeleteTarget(null);
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to delete');
+            console.error('Job deletion error:', error);
         } finally {
             setDeleteLoading(false);
         }
@@ -865,7 +865,7 @@ export const CompanyProfilePage = () => {
                 setEditing(false);
             }
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to save');
+            console.error('Company save error:', error);
         } finally {
             setSubmitting(false);
         }

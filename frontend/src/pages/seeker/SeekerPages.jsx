@@ -271,7 +271,7 @@ export const MyApplicationsPage = () => {
             setWithdrawTarget(null);
             toast.success(t('withdrawn_success'));
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to withdraw');
+            console.error('Withdrawal error:', error);
         } finally {
             setWithdrawLoading(false);
         }

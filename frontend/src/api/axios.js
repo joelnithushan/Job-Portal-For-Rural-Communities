@@ -20,6 +20,16 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+// Helper to map technical error codes to friendly messages
+const ERROR_MAP = {
+    'INCOMPLETE_PROFILE': 'Please complete your profile (NIC, Phone, District, Bio) to perform this action.',
+    'SUSPENDED': 'Your account has been suspended. Please contact support for more information.',
+    'ALREADY_APPLIED': 'You have already applied for this job.',
+    'CV_REQUIRED': 'A CV is required for this application.',
+    'NOT_AUTHORIZED': 'You do not have permission to perform this action.',
+    'NOT_FOUND': 'The requested resource was not found.',
+};
+
 // Response Interceptor: extract data directly, handle global errors
 api.interceptors.response.use(
     (response) => {
@@ -32,8 +42,12 @@ api.interceptors.response.use(
 
         if (error.response) {
             const { status, data } = error.response;
+            const backendMessage = data?.message || data?.error || '';
 
-            if (status === 401) {
+            // 1. Check if the message is a technical code we should map
+            if (ERROR_MAP[backendMessage]) {
+                message = ERROR_MAP[backendMessage];
+            } else if (status === 401) {
                 // Determine if this was a login attempt or an expired session
                 // Any 401 on auth endpoints is a failure, not an expiration
                 const isAuthRequest = error.config.url.includes('/login') || error.config.url.includes('/google');
@@ -41,26 +55,27 @@ api.interceptors.response.use(
                 if (!isAuthRequest) {
                     // Unauthorized - token expired or invalid
                     localStorage.removeItem('rw_token');
-                    if (window.location.pathname !== '/login') {
+                    if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
                         window.location.href = '/login';
                     }
                     message = 'Session expired. Please log in again.';
                 } else {
-                    // Login failure — the backend message should be used
-                    message = data.message || 'Incorrect email or password.';
+                    // Login failure — use backend message or default
+                    message = backendMessage || 'Incorrect email or password.';
                 }
             } else if (status === 403) {
-                message = data?.message || "You don't have permission to do that.";
+                // For 403, prioritize the backend message (e.g., "Your account is suspended: [reason]")
+                message = backendMessage || ERROR_MAP['NOT_AUTHORIZED'];
             } else if (status === 404) {
-                // Don't toast 404 — let each caller handle it
+                // Don't toast 404 by default — let callers handle it if they want
                 return Promise.reject(error);
-            } else if (data && data.message) {
-                // Backend provided a specific error message
-                message = data.message;
+            } else if (backendMessage) {
+                // Fallback to whatever string the backend provided
+                message = backendMessage;
             }
         } else if (error.request) {
             // Network error (no response received)
-            message = 'Cannot connect to server. Check your internet.';
+            message = 'Cannot connect to server. Please check your internet connection.';
         }
 
         // Show toast for error
