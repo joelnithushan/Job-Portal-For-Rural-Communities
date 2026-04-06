@@ -4,6 +4,7 @@ const authController = require('../controllers/auth.controller');
 const validate = require('../middlewares/validate.middleware');
 const auth = require('../middlewares/auth.middleware');
 const { authLimiter } = require('../middlewares/rateLimit.middleware');
+const verifyCaptcha = require('../middlewares/captcha.middleware');
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ const registerSchema = {
         phone: Joi.string().pattern(phoneRegex).messages({
             'string.pattern.base': 'Enter a valid Sri Lankan phone number'
         }).optional(),
+        captchaToken: Joi.string().optional(),
     }),
 };
 
@@ -35,6 +37,7 @@ const loginSchema = {
     body: Joi.object().keys({
         email: Joi.string().required(),
         password: Joi.string().required(),
+        captchaToken: Joi.string().optional(),
     }),
 };
 
@@ -52,8 +55,8 @@ const resetPasswordSchema = {
     }),
 };
 
-router.post('/register', authLimiter, validate(registerSchema), authController.register);
-router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/register', authLimiter, verifyCaptcha, validate(registerSchema), authController.register);
+router.post('/login', authLimiter, verifyCaptcha, validate(loginSchema), authController.login);
 router.post('/google', authController.google);
 router.get('/me', auth, authController.me);
 router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword);

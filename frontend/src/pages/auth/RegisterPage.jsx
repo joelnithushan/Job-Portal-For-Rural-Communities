@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 const nameRegex = /^[a-zA-Z\s.-]+$/;
 const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
@@ -29,6 +30,7 @@ const registerSchema = yup.object({
 export const RegisterPage = () => {
     const { register: registerUser, googleLogin } = useAuth();
     const navigate = useNavigate();
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,14 +50,20 @@ export const RegisterPage = () => {
     };
 
     const onSubmit = async (data) => {
+        if (!executeRecaptcha) {
+            toast.error('Security check not ready, please try again.');
+            return;
+        }
+
         setIsSubmitting(true);
         try {
+            const captchaToken = await executeRecaptcha('register_seeker');
             const { confirmPassword, agreeToTerms, ...rest } = data;
-            await registerUser({ ...rest, role: 'JOB_SEEKER' });
+            await registerUser({ ...rest, role: 'JOB_SEEKER', captchaToken });
             toast.success('Account created successfully!');
             navigate('/dashboard', { replace: true });
         } catch (error) {
-            console.error(error);
+            console.error('Registration error:', error);
         } finally {
             setIsSubmitting(false);
         }

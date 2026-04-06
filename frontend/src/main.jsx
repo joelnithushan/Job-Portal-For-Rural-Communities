@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { AppRouter } from './routes/AppRouter';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 // Add leaflet CSS natively
 import 'leaflet/dist/leaflet.css';
@@ -16,7 +17,9 @@ createRoot(document.getElementById('root')).render(
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID'}>
       <BrowserRouter>
         <AuthProvider>
-          <AppRouter />
+          <GoogleReCaptchaProvider reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''}>
+            <AppRouter />
+          </GoogleReCaptchaProvider>
           <Toaster
             position="top-right"
             toastOptions={{

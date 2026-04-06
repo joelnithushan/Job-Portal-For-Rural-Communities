@@ -12,6 +12,7 @@ import { Spinner } from '../../components/ui/Spinner';
 import { getInitials, formatSalary, timeAgo, formatDate } from '../../utils/formatters';
 import { JOB_TYPE_LABELS } from '../../utils/constants';
 import toast from 'react-hot-toast';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 // Fallback Mock Data
 import { MOCK_JOBS } from '../../utils/mockData';
@@ -19,6 +20,7 @@ import { MOCK_JOBS } from '../../utils/mockData';
 export const JobDetailPage = () => {
     const { id } = useParams();
     const { user, isAuthenticated } = useAuth();
+    const { executeRecaptcha } = useGoogleReCaptcha();
 
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -78,9 +80,16 @@ export const JobDetailPage = () => {
             toast.error('A CV is required to apply for this job.');
             return;
         }
+        
+        if (!executeRecaptcha) {
+            toast.error('Security check not ready, please try again.');
+            return;
+        }
 
         setIsApplying(true);
         try {
+            const captchaToken = await executeRecaptcha('apply_job');
+            
             let cvUrlStr = null;
             if (cvFile) {
                 const formData = new FormData();
@@ -89,7 +98,7 @@ export const JobDetailPage = () => {
                 cvUrlStr = uploadRes.data?.data?.cvUrl || uploadRes.data?.cvUrl || uploadRes.data?.data?.profilePicture; // fallback if needed
             }
 
-            await applicationsAPI.applyToJob({ jobId: id, cvUrl: cvUrlStr });
+            await applicationsAPI.applyToJob({ jobId: id, cvUrl: cvUrlStr, captchaToken });
             toast.success('Successfully applied for this job!');
             setHasApplied(true);
             setShowApplyModal(false);
@@ -414,6 +423,8 @@ export const JobDetailPage = () => {
                                 )}
                             </div>
                         </div>
+
+
 
                         <div className="flex gap-3 justify-end items-center">
                             <Button variant="outline" onClick={() => setShowApplyModal(false)}>Cancel</Button>

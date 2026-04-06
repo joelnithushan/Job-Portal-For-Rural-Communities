@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 const nameRegex = /^[a-zA-Z\s.-]+$/;
 const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
@@ -26,6 +27,7 @@ const registerSchema = yup.object({
 export const RegisterEmployerPage = () => {
     const { register: registerUser, googleLogin } = useAuth();
     const navigate = useNavigate();
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,14 +47,20 @@ export const RegisterEmployerPage = () => {
     };
 
     const onSubmit = async (data) => {
+        if (!executeRecaptcha) {
+            toast.error('Security check not ready, please try again.');
+            return;
+        }
+
         setIsSubmitting(true);
         try {
+            const captchaToken = await executeRecaptcha('register_employer');
             const { confirmPassword, agreeToTerms, ...rest } = data;
-            await registerUser({ ...rest, role: 'EMPLOYER' });
+            await registerUser({ ...rest, role: 'EMPLOYER', captchaToken });
             toast.success('Employer account created!');
             navigate('/employer', { replace: true });
         } catch (error) {
-            console.error(error);
+            console.error('Employer registration error:', error);
         } finally {
             setIsSubmitting(false);
         }
@@ -125,6 +133,8 @@ export const RegisterEmployerPage = () => {
                         </label>
                         {errors.agreeToTerms && <p className="mt-1 text-sm text-red-500">{errors.agreeToTerms.message}</p>}
                     </div>
+
+
 
                     <Button type="submit" variant="primary" fullWidth size="lg" loading={isSubmitting}>
                         CREATE EMPLOYER ACCOUNT

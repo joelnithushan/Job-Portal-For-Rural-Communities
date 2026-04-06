@@ -27,7 +27,8 @@ export const AuthProvider = ({ children }) => {
     }, [token]);
 
     const login = async (credentials) => {
-        const response = await authAPI.login(credentials);
+        const { captchaToken, ...loginData } = credentials;
+        const response = await authAPI.login({ ...loginData, captchaToken });
         const { token: newToken, user: userData } = response.data || response;
 
         // Save to local storage and state
@@ -39,8 +40,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (userData) => {
-        // API should return the token and user just like login on successful registration
-        const response = await authAPI.register(userData);
+        const { captchaToken, ...regData } = userData;
+        const response = await authAPI.register({ ...regData, captchaToken });
         const { token: newToken, user: newUserData } = response.data || response;
 
         localStorage.setItem('rw_token', newToken);

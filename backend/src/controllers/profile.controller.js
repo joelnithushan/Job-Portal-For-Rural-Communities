@@ -174,6 +174,11 @@ const deleteAccount = async (req, res) => {
             return errorResponse(res, 'User not found', 404);
         }
 
+        // Prevent ADMIN from deleting their own account
+        if (user.role === 'ADMIN') {
+            return errorResponse(res, 'Administrator accounts cannot be deleted directly from the profile. Contact system support if this is required.', 403);
+        }
+
         // ROLE-SPECIFIC CASCADE DELETION
         if (user.role === 'JOB_SEEKER') {
             // Delete all applications made by the seeker

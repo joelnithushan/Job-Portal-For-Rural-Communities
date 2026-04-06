@@ -5,6 +5,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
@@ -19,6 +21,7 @@ export const LoginPage = () => {
     const { login, googleLogin } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,15 +43,21 @@ export const LoginPage = () => {
     };
 
     const onSubmit = async (data) => {
+        if (!executeRecaptcha) {
+            toast.error('Security check not ready, please try again.');
+            return;
+        }
+
         setIsSubmitting(true);
         try {
-            const user = await login(data);
+            const captchaToken = await executeRecaptcha('login');
+            const user = await login({ ...data, captchaToken });
             const from = location.state?.from?.pathname ||
                 (user.role === 'EMPLOYER' ? '/employer' :
                     user.role === 'ADMIN' ? '/admin' : '/dashboard');
             navigate(from, { replace: true });
         } catch (error) {
-            console.error(error);
+            console.error('Login error:', error);
         } finally {
             setIsSubmitting(false);
         }
@@ -102,6 +111,8 @@ export const LoginPage = () => {
                             Forgot password?
                         </Link>
                     </div>
+
+
 
                     <Button type="submit" variant="primary" fullWidth size="lg" loading={isSubmitting}>
                         LOG IN
