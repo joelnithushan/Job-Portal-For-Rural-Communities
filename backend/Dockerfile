@@ -13,12 +13,12 @@ RUN npm install --omit=dev
 # Copy the rest of the application files to the working directory
 COPY . .
 
-# Set the PORT environment variable (default 8080)
-# Cloud Run will override this automatically
-ENV PORT=8080
+# Set the PORT environment variable (default 5000)
+# Cloud Run or Northflank will override this if configured
+ENV PORT=5000
 
 # Expose the configured PORT
-EXPOSE ${PORT}
+EXPOSE 5000
 
 # Run the command to start the application
 CMD ["npm", "start"]

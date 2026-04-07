@@ -208,7 +208,16 @@ router.get('/:id', validate(paramIdSchema), jobController.getJobById);
  *                 type: string
  *     responses:
  *       201:
- *         description: Created job
+ *         description: Job Created Successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id: { type: string, example: "65c2b1a2..." }
+ *                 title: { type: string, example: "Software Engineer" }
+ *                 district: { type: string, example: "Colombo" }
+ *                 status: { type: string, example: "OPEN" }
  */
 router.post('/', auth, requireRole('EMPLOYER'), validate(createJobSchema), jobController.createJob);
 

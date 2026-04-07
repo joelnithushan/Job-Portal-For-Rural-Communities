@@ -66,7 +66,16 @@ router.post(
  *                 type: string
  *     responses:
  *       201:
- *         description: Application submitted
+ *         description: Application submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id: { type: string, example: "60f1b2c3d..." }
+ *                 jobId: { type: string, example: "jobId123" }
+ *                 applicantId: { type: string, example: "applicantId456" }
+ *                 status: { type: string, example: "APPLIED" }
  */
 router.post(
   "/",
@@ -87,7 +96,17 @@ router.post(
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Applications list
+ *         description: Applications list for the current job seeker
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id: { type: string, example: "60f1b2c3d..." }
+ *                   jobId: { type: object, properties: { title: {type: string, example: "Frontend Dev"}, district: {type: string, example: "Colombo"} } }
+ *                   status: { type: string, example: "REVIEWED" }
  */
 router.get(
   "/me",
@@ -185,7 +204,15 @@ const updateStatusSchema = {
  *                 type: string
  *     responses:
  *       200:
- *         description: Status updated
+ *         description: Status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id: { type: string, example: "60f1b2c3d..." }
+ *                 status: { type: string, example: "ACCEPTED" }
+ *                 note: { type: string, example: "Great interview!" }
  */
 router.patch(
   "/:id/status",

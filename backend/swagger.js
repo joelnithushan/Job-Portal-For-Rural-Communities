@@ -14,7 +14,7 @@ const options = {
         description: 'Local Development Server',
       },
       {
-        url: 'https://[YOUR_BACKEND_URL_HERE]',
+        url: 'https://p01--job-portal-for-rural-communities--5y9vrpzyym7x.code.run',
         description: 'Production Server',
       }
     ],

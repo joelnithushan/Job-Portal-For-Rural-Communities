@@ -73,7 +73,16 @@ router.get('/notifications', adminController.getAdminNotifications);
  *         required: true
  *     responses:
  *       200:
- *         description: System report generated
+ *         description: System report generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 jobsCount: { type: number, example: 15 }
+ *                 employersCount: { type: number, example: 3 }
+ *                 districtsCount: { type: number, example: 5 }
+ *                 placementRate: { type: number, example: 85 }
  */
 router.get('/reports', validate(reportQuerySchema), adminController.getSystemReport);
 
@@ -105,7 +114,15 @@ router.get('/users', adminController.getAllUsers);
  *         required: true
  *     responses:
  *       200:
- *         description: User status updated
+ *         description: User status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id: { type: string, example: "60f1b2c3d..." }
+ *                 name: { type: string, example: "Jane Employer" }
+ *                 status: { type: string, example: "SUSPENDED" }
  */
 router.patch('/users/:id/status', validate(updateStatusSchema), adminController.updateUserStatus);
 

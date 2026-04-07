@@ -85,6 +85,19 @@ const resetPasswordSchema = {
  *     responses:
  *       201:
  *         description: User successfully registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token: { type: string, example: "eyJhbGciOiJIUzI1NiIsIn..." }
+ *                 user: 
+ *                   type: object
+ *                   properties:
+ *                     _id: { type: string, example: "12345acf..." }
+ *                     name: { type: string, example: "John Doe" }
+ *                     email: { type: string, example: "john@example.com" }
+ *                     role: { type: string, example: "JOB_SEEKER" }
  *       400:
  *         description: Validation error
  */
@@ -111,6 +124,19 @@ router.post('/register', authLimiter, verifyCaptcha, validate(registerSchema), a
  *     responses:
  *       200:
  *         description: Successful login, returns token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token: { type: string, example: "eyJhbGciOiJIUzI1NiIsIn..." }
+ *                 user: 
+ *                   type: object
+ *                   properties:
+ *                     _id: { type: string, example: "12345acf..." }
+ *                     name: { type: string, example: "John Doe" }
+ *                     email: { type: string, example: "john@example.com" }
+ *                     role: { type: string, example: "JOB_SEEKER" }
  *       401:
  *         description: Invalid credentials
  */
