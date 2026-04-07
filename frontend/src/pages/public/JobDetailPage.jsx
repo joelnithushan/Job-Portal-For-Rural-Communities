@@ -14,7 +14,6 @@ import { JOB_TYPE_LABELS } from '../../utils/constants';
 import toast from 'react-hot-toast';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
-// Fallback Mock Data
 import { MOCK_JOBS } from '../../utils/mockData';
 
 export const JobDetailPage = () => {
@@ -39,10 +38,7 @@ export const JobDetailPage = () => {
                 const jobData = response.data || response;
                 setJob(jobData);
 
-                // Also check if user has already applied/saved if logged in
                 if (isAuthenticated && user?.role === 'JOB_SEEKER') {
-                    // We might ordinarily call a specific endpoint like GET /applications/me/?jobId=X
-                    // or check a local context store. Mocking this state for now:
                     setHasApplied(false);
                 }
 

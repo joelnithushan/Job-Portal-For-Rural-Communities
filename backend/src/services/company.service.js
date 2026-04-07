@@ -38,6 +38,11 @@ const updateCompany = async (userId, data) => {
     if (!company) {
         throw { statusCode: 404, message: 'Company profile not found' };
     }
+    
+    if (data.businessName && data.businessName !== company.businessName) {
+        data.verificationStatus = 'PENDING';
+    }
+    
     Object.assign(company, data);
     await company.save();
     return company;

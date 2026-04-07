@@ -15,7 +15,6 @@ export const Badge = ({ status, size = 'md', className = '' }) => {
         DRAFT: 'bg-yellow-100 text-yellow-700',
         PENDING: 'bg-amber-100 text-amber-700',
         VERIFIED: 'bg-green-100 text-green-700',
-        // Fallback classes
         DEFAULT: 'bg-gray-100 text-gray-700'
     };
 

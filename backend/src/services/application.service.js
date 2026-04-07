@@ -22,6 +22,19 @@ exports.applyToJob = async (jobId, seekerId, cvUrl) => {
     throw new Error("A CV is required to apply for this job");
   }
 
+  if (job.employerId.toString() === seekerId.toString()) {
+    const error = new Error("You cannot apply to your own job listing");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const employerForCheck = await User.findById(job.employerId).select('status');
+  if (!employerForCheck || employerForCheck.status !== 'ACTIVE') {
+    const error = new Error("The employer for this job is currently unavailable");
+    error.statusCode = 400;
+    throw error;
+  }
+
   const existing = await Application.findOne({ jobId, seekerId });
   if (existing) {
     throw new Error("You have already applied for this job");
@@ -52,7 +65,6 @@ exports.applyToJob = async (jobId, seekerId, cvUrl) => {
           link: '/employer/applications'
       });
 
-      // Send confirmation email to the Job Seeker
       await sendEmail({
           to: seeker.email,
           subject: `Application Submitted: ${job.title}`,
@@ -158,7 +170,6 @@ exports.updateStatus = async (applicationId, employerId, status, note) => {
           link: '/dashboard/applications'
       });
 
-      // Send status update email to the Job Seeker
       await sendEmail({
           to: seeker.email,
           subject: `Status Update: Your application for ${jobTitle} at ${companyName}`,
@@ -195,7 +206,6 @@ exports.updateStatus = async (applicationId, employerId, status, note) => {
           `
       });
 
-      // Send SMS notification if status is ACCEPTED and user has a valid phone number
       if (status === 'ACCEPTED' && seeker.phone) {
           try {
               await sendSms({

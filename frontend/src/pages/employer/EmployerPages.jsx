@@ -16,7 +16,6 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
 
-// ─── SHARED HELPERS ────────────────────────────────────────────
 
 const StatusBadge = ({ status }) => {
     const { t } = useTranslation();
@@ -182,9 +181,6 @@ const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 1: EMPLOYER DASHBOARD
-// ═══════════════════════════════════════════════════════════════
 
 export const EmployerDashboard = () => {
     const { t } = useTranslation();
@@ -328,9 +324,6 @@ export const EmployerDashboard = () => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 2: POST JOB PAGE
-// ═══════════════════════════════════════════════════════════════
 const phoneRegex = /^(?:\+94|0)[0-9]{9}$/;
 
 export const PostJobPage = () => {
@@ -484,9 +477,6 @@ export const PostJobPage = () => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 3: MY JOBS PAGE
-// ═══════════════════════════════════════════════════════════════
 
 export const MyJobsPage = () => {
     const { t } = useTranslation();
@@ -641,9 +631,6 @@ export const MyJobsPage = () => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 4: JOB APPLICATIONS PAGE
-// ═══════════════════════════════════════════════════════════════
 
 export const JobApplicationsPage = () => {
     const { t, i18n } = useTranslation();
@@ -810,9 +797,6 @@ export const JobApplicationsPage = () => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 5: COMPANY PROFILE PAGE
-// ═══════════════════════════════════════════════════════════════
 
 export const CompanyProfilePage = () => {
     const { t } = useTranslation();
@@ -908,7 +892,6 @@ export const CompanyProfilePage = () => {
         </div>
     );
 
-    // Verification banner component
     const VerificationBanner = () => {
         if (!company) return (
             <div className="bg-[#E2B325] border-l-4 border-l-[#8B1A1A] px-5 py-3 mb-5 flex items-center gap-3">
@@ -937,7 +920,6 @@ export const CompanyProfilePage = () => {
         return null;
     };
 
-    // ─── CREATE / EDIT FORM MODE ───────────────────────────────
     if (editing || !company) {
         return (
             <>
@@ -991,7 +973,6 @@ export const CompanyProfilePage = () => {
         );
     }
 
-    // ─── VIEW MODE ─────────────────────────────────────────────
     const vBadge = { PENDING: 'bg-orange-500 text-white', VERIFIED: 'bg-green-700 text-white', REJECTED: 'bg-[#8B1A1A] text-white' };
 
     return (

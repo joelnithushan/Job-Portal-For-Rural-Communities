@@ -18,7 +18,6 @@ const userSchema = mongoose.Schema(
         password: {
             type: String,
             required: function() {
-                // Password is required if it's not a Google SSO account
                 return !this.googleId;
             },
             minlength: 8,

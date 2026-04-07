@@ -12,12 +12,10 @@ export const JobFilters = ({ filters, onFilterChange, onClear, isLoading }) => {
     const { t } = useTranslation();
     const { coords, error: geoError, loading: geoLoading, getLocation } = useGeolocation();
 
-    // Local state for debounced inputs
     const [localSearch, setLocalSearch] = useState(filters.search || '');
     const [localMin, setLocalMin] = useState(filters.salaryMin || '');
     const [localMax, setLocalMax] = useState(filters.salaryMax || '');
 
-    // Handle Search Input (could add debounce here)
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         onFilterChange({ search: localSearch });

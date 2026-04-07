@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 export const StatCard = ({ label, value, icon: Icon, trend, color = 'green' }) => {
     const [count, setCount] = useState(0);
 
-    // Animate count up
     useEffect(() => {
         if (typeof value !== 'number') return;
 
@@ -15,7 +14,6 @@ export const StatCard = ({ label, value, icon: Icon, trend, color = 'green' }) =
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
 
-            // Easing out sine
             const easeProgress = Math.sin((progress * Math.PI) / 2);
 
             setCount(Math.floor(easeProgress * value));

@@ -13,7 +13,6 @@ const sendSms = async ({ to, body }) => {
 
         const client = twilio(accountSid, authToken);
 
-        // Format number to E.164 (Assuming Sri Lankan +94 for numbers starting with 0)
         let formattedNumber = to.trim();
         if (formattedNumber.startsWith('0')) {
             formattedNumber = '+94' + formattedNumber.substring(1);

@@ -6,7 +6,6 @@ const Company = require('../models/company.model');
 const Notification = require('../models/notification.model');
 const { successResponse, errorResponse } = require('../utils/response');
 
-// Valid Sri Lanka districts
 const VALID_DISTRICTS = [
     'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo',
     'Galle', 'Gampaha', 'Hambantota', 'Jaffna', 'Kalutara', 'Kandy',
@@ -15,7 +14,6 @@ const VALID_DISTRICTS = [
     'Polonnaruwa', 'Puttalam', 'Ratnapura', 'Trincomalee', 'Vavuniya',
 ];
 
-// GET /profile/me
 const getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
@@ -28,13 +26,11 @@ const getProfile = async (req, res) => {
     }
 };
 
-// PATCH /profile/me
 const updateProfile = async (req, res) => {
     try {
         const { name, phone, district, bio, nic } = req.body;
         const errors = [];
 
-        // Validation
         if (name !== undefined) {
             const trimmed = String(name).trim();
             if (trimmed.length < 2) errors.push('Name must be at least 2 characters.');
@@ -65,7 +61,6 @@ const updateProfile = async (req, res) => {
             return errorResponse(res, errors.join(' '), 400);
         }
 
-        // Build update object — only provided fields
         const updates = {};
         if (name !== undefined) updates.name = String(name).trim();
         if (phone !== undefined) updates.phone = phone ? String(phone).trim() : null;
@@ -89,7 +84,6 @@ const updateProfile = async (req, res) => {
     }
 };
 
-// POST /profile/me/picture
 const uploadProfilePicture = async (req, res) => {
     try {
         if (!req.file) {
@@ -101,7 +95,6 @@ const uploadProfilePicture = async (req, res) => {
             return errorResponse(res, 'User not found', 404);
         }
 
-        // Delete old image from Cloudinary if exists
         if (user.profilePicture) {
             try {
                 const oldPublicId = user.profilePicture
@@ -114,7 +107,6 @@ const uploadProfilePicture = async (req, res) => {
             }
         }
 
-        // Update user with new picture URL
         user.profilePicture = req.file.path;
         await user.save();
 
@@ -126,7 +118,6 @@ const uploadProfilePicture = async (req, res) => {
     }
 };
 
-// DELETE /profile/me/picture
 const deleteProfilePicture = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
@@ -141,11 +132,9 @@ const deleteProfilePicture = async (req, res) => {
             return res.status(200).json({ success: true, message: 'Profile picture is already set to default.', user });
         }
 
-        // Delete from Cloudinary if it's a user-uploaded image
         try {
             const oldPublicId = user.profilePicture
                 .split('/').slice(-1)[0].split('.')[0];
-            // Only destroy if it belongs to the user-uploaded folder/prefix
             if (oldPublicId && (oldPublicId.startsWith('user_') || user.profilePicture.includes('/profiles/'))) {
                 await cloudinary.uploader.destroy(`ruralwork/profiles/${oldPublicId}`);
             }
@@ -164,7 +153,6 @@ const deleteProfilePicture = async (req, res) => {
     }
 };
 
-// DELETE /profile/me
 const deleteAccount = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -174,38 +162,28 @@ const deleteAccount = async (req, res) => {
             return errorResponse(res, 'User not found', 404);
         }
 
-        // Prevent ADMIN from deleting their own account
         if (user.role === 'ADMIN') {
             return errorResponse(res, 'Administrator accounts cannot be deleted directly from the profile. Contact system support if this is required.', 403);
         }
 
-        // ROLE-SPECIFIC CASCADE DELETION
         if (user.role === 'JOB_SEEKER') {
-            // Delete all applications made by the seeker
             await Application.deleteMany({ seekerId: userId });
             
         } else if (user.role === 'EMPLOYER') {
-            // Find all jobs posted by the employer
             const employerJobs = await Job.find({ employerId: userId });
             const jobIds = employerJobs.map(job => job._id);
 
-            // Delete all applications linked to those jobs
             if (jobIds.length > 0) {
                 await Application.deleteMany({ jobId: { $in: jobIds } });
             }
 
-            // Delete actual jobs
             await Job.deleteMany({ employerId: userId });
 
-            // Delete employer company profile
             await Company.findOneAndDelete({ employerId: userId });
         }
 
-        // SHARED DELETION LOGIC
-        // 1. Terminate all Notifications belonging to this user
         await Notification.deleteMany({ userId: userId });
 
-        // 2. Eradicate Cloudinary Avatar (if not default and not Google external)
         const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
         if (user.profilePicture && user.profilePicture !== defaultAvatar) {
             try {
@@ -218,7 +196,6 @@ const deleteAccount = async (req, res) => {
             }
         }
 
-        // 3. Purge the User Record
         await User.findByIdAndDelete(userId);
 
         return successResponse(res, 'Account and all associated data permanently deleted.', null, 200);

@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next';
 
 const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
 
-// ─── SHARED HELPERS ────────────────────────────────────────────
 
 const StatusBadge = ({ status }) => {
     const map = {
@@ -141,7 +140,6 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
     
     const { t } = useTranslation();
     
-    // Reset reason when modal opens
     useEffect(() => {
         if (isOpen) setReason('');
     }, [isOpen]);
@@ -190,9 +188,6 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 1: ADMIN DASHBOARD
-// ═══════════════════════════════════════════════════════════════
 
 export const AdminDashboard = () => {
     const { t, i18n } = useTranslation();
@@ -214,25 +209,21 @@ export const AdminDashboard = () => {
                 adminAPI.getAdminCompanies(),
             ]);
 
-            // Users
             if (results[0].status === 'fulfilled') {
                 const d = results[0].value;
                 setUsers(d?.data?.users || d?.users || []);
             }
 
-            // Jobs
             if (results[1].status === 'fulfilled') {
                 const d = results[1].value;
                 setJobs(d?.data?.jobs || d?.jobs || []);
             }
 
-            // Applications — silently ignore if endpoint doesn't exist
             if (results[2].status === 'fulfilled') {
                 const d = results[2].value;
                 setApplications(d?.data?.applications || d?.applications || []);
             }
 
-            // Companies — silently ignore if endpoint doesn't exist
             if (results[3].status === 'fulfilled') {
                 const d = results[3].value;
                 setCompanies(d?.data?.companies || d?.companies || []);
@@ -244,7 +235,6 @@ export const AdminDashboard = () => {
         fetchDashboardData();
     }, []);
 
-    // Derived stats
     const totalUsers = users.length;
     const totalEmployers = users.filter(u => u.role === 'EMPLOYER').length;
     const totalSeekers = users.filter(u => u.role === 'JOB_SEEKER').length;
@@ -416,9 +406,6 @@ export const AdminDashboard = () => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 2: ADMIN USERS PAGE
-// ═══════════════════════════════════════════════════════════════
 
 export const AdminUsersPage = () => {
     const { t, i18n } = useTranslation();
@@ -716,9 +703,6 @@ export const AdminUsersPage = () => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 3: ADMIN COMPANIES PAGE
-// ═══════════════════════════════════════════════════════════════
 
 export const AdminCompaniesPage = () => {
     const { t, i18n } = useTranslation();
@@ -1076,9 +1060,6 @@ export const AdminCompaniesPage = () => {
     );
 };
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 4: ADMIN JOBS
-// ═══════════════════════════════════════════════════════════════
 
 export const AdminJobsPage = () => {
     const { t } = useTranslation();
@@ -1295,9 +1276,6 @@ export const AdminJobsPage = () => {
     );
 };
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 5: ADMIN REPORTS
-// ═══════════════════════════════════════════════════════════════
 
 export const AdminReportsPage = () => {
     const { t } = useTranslation();
@@ -1308,7 +1286,6 @@ export const AdminReportsPage = () => {
     const today = new Date().toISOString().split('T')[0];
 
     const fetchReport = async () => {
-        // Validation
         if (new Date(startDate) > new Date(endDate)) {
             toast.error(t('error_start_end_date', { defaultValue: 'Start date cannot be after the end date.' }));
             return;

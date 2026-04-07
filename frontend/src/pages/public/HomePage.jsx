@@ -41,7 +41,6 @@ export const HomePage = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                // Fetch Category Stats
                 const catResponse = await api.get('/jobs/stats/categories');
                 if (catResponse.success) {
                     const stats = catResponse.data.stats;
@@ -52,7 +51,6 @@ export const HomePage = () => {
                     setCategories(updatedCategories);
                 }
 
-                // Fetch Summary Stats
                 const summaryResponse = await api.get('/jobs/stats/summary');
                 if (summaryResponse.success) {
                     const { jobsCount, employersCount, districtsCount, placementRate } = summaryResponse.data;

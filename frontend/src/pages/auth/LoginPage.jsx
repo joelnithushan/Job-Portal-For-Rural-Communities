@@ -13,7 +13,6 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useTranslation } from 'react-i18next';
 
-// Schema moved inside component to use translation hook
 
 export const LoginPage = () => {
     const { t } = useTranslation();
@@ -42,7 +41,6 @@ export const LoginPage = () => {
                     user.role === 'ADMIN' ? '/admin' : '/dashboard');
             navigate(from, { replace: true });
         } catch (error) {
-            // Error is already toasted by the axios interceptor
             console.error('Google Login error:', error);
         }
     };

@@ -31,7 +31,6 @@ const login = async (email, password) => {
 };
 
 const googleLogin = async (idToken, role = 'JOB_SEEKER') => {
-    // 1. Verify Google token
     const ticket = await googleClient.verifyIdToken({
         idToken,
         audience: process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
@@ -39,20 +38,17 @@ const googleLogin = async (idToken, role = 'JOB_SEEKER') => {
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
 
-    // 2. Check if user already exists (by googleId or email)
     let user = await User.findOne({ 
         $or: [{ googleId }, { email }] 
     });
 
     if (user) {
         let needsSave = false;
-        // If user exists but doesn't have googleId linked, link it now
         if (!user.googleId) {
             user.googleId = googleId;
             needsSave = true;
         }
 
-        // If user already has a default/missing/external picture, sync with fresh Google sync to Cloudinary
         const isDefault = user.profilePicture?.includes('/defaults/default_avatar');
         const isExternal = !user.profilePicture || user.profilePicture.includes('googleusercontent.com');
 
@@ -70,7 +66,6 @@ const googleLogin = async (idToken, role = 'JOB_SEEKER') => {
             }
         }
         
-        // Upgrade role if they use the Employer SSO flow
         if (role === 'EMPLOYER' && user.role === 'JOB_SEEKER') {
             user.role = 'EMPLOYER';
             needsSave = true;
@@ -80,7 +75,6 @@ const googleLogin = async (idToken, role = 'JOB_SEEKER') => {
             await user.save();
         }
     } else {
-        // 3. Create new user if they don't exist
         const userObj = {
             name,
             email,
@@ -91,7 +85,6 @@ const googleLogin = async (idToken, role = 'JOB_SEEKER') => {
 
         const newUser = new User(userObj);
 
-        // Upload Google profile picture to Cloudinary if available
         if (picture) {
             try {
                 const uploadResult = await cloudinary.uploader.upload(picture, {
@@ -102,7 +95,6 @@ const googleLogin = async (idToken, role = 'JOB_SEEKER') => {
                 newUser.profilePicture = uploadResult.secure_url;
             } catch (err) {
                 console.error('Failed to upload Google profile picture to Cloudinary:', err.message);
-                // default will be used by the model
             }
         }
 
@@ -113,7 +105,6 @@ const googleLogin = async (idToken, role = 'JOB_SEEKER') => {
         throw { statusCode: 403, message: 'Your account is suspended' };
     }
 
-    // 4. Generate app JWT
     const token = generateToken(user._id, user.role);
     return { user, token };
 };

@@ -10,9 +10,6 @@ import { applicationsAPI, jobsAPI } from '../../api/services';
 import { timeAgo, formatDate } from '../../utils/formatters';
 import toast from 'react-hot-toast';
 
-// ═══════════════════════════════════════════════════════════════
-// SHARED UI COMPONENTS (Match Employer Dashboard)
-// ═══════════════════════════════════════════════════════════════
 
 const StatusBadge = ({ status }) => {
     const { t } = useTranslation();
@@ -111,9 +108,6 @@ const fmtDate = (d, i18n) => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 1: SEEKER DASHBOARD
-// ═══════════════════════════════════════════════════════════════
 
 export const SeekerDashboard = () => {
     const { user } = useAuth();
@@ -226,9 +220,6 @@ export const SeekerDashboard = () => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 2: MY APPLICATIONS
-// ═══════════════════════════════════════════════════════════════
 
 export const MyApplicationsPage = () => {
     const { t, i18n } = useTranslation();
@@ -417,9 +408,6 @@ export const MyApplicationsPage = () => {
 };
 
 
-// ═══════════════════════════════════════════════════════════════
-// PAGE 3: SAVED JOBS
-// ═══════════════════════════════════════════════════════════════
 
 export const SavedJobsPage = () => {
     const { t } = useTranslation();

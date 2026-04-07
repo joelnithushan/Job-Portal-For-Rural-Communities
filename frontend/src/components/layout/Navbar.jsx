@@ -76,12 +76,10 @@ export const Navbar = () => {
 
     const isSeeker = isAuthenticated && user?.role === 'JOB_SEEKER';
 
-    // Build nav items for desktop
     const navItems = [
         ...(!isAuthenticated ? [{ label: t('nav_home'), path: '/' }] : []),
         ...(isSeeker ? [
             { label: t('dashboard'), path: '/dashboard' },
-            { label: t('browse_available_jobs'), path: '/dashboard/discover' },
             { label: t('my_applications'), path: '/dashboard/applications' },
             { label: t('saved_jobs'), path: '/dashboard/saved' }
         ] : []),
@@ -89,12 +87,10 @@ export const Navbar = () => {
         { label: t('nav_companies'), path: '/companies' },
     ];
 
-    // Build nav items for mobile
     const mobileNavItems = [
         ...(!isAuthenticated ? [{ label: t('nav_home'), path: '/' }] : []),
         ...(isSeeker ? [
             { label: t('dashboard'), path: '/dashboard' },
-            { label: t('browse_available_jobs'), path: '/dashboard/discover' },
             { label: t('my_applications'), path: '/dashboard/applications' },
             { label: t('saved_jobs'), path: '/dashboard/saved' }
         ] : []),

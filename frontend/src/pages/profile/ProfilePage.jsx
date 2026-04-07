@@ -72,7 +72,6 @@ export const ProfilePage = () => {
         },
     });
 
-    // Watch bio for character counter
     const bioValue = watch('bio');
     useEffect(() => {
         setBioLength(bioValue?.length || 0);
@@ -281,7 +280,6 @@ export const ProfilePage = () => {
                     </div>
                     <div className="p-6">
                         {!isEditing ? (
-                            /* VIEW MODE */
                             <div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
                                     {[
@@ -306,7 +304,6 @@ export const ProfilePage = () => {
                                 </div>
                             </div>
                         ) : (
-                            /* EDIT MODE */
                             <form onSubmit={handleSubmit(onSubmit)}>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     {/* Name */}

@@ -10,7 +10,6 @@ import toast from 'react-hot-toast';
 import { useSavedJobs } from '../../hooks/useSavedJobs';
 import { useTranslation } from 'react-i18next';
 
-// ─── JOB DETAIL PAGE ──────────────────────────────────────────
 export const JobDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -29,7 +28,6 @@ export const JobDetailPage = () => {
                 const jobData = res.data?.job || res.data || res;
                 setJob(jobData);
 
-                // Check if current user already applied
                 if (user?.role === 'JOB_SEEKER') {
                     try {
                         const appsRes = await applicationsAPI.getMyApplications();
@@ -203,7 +201,6 @@ export const JobDetailPage = () => {
 };
 
 
-// ─── COMPANIES PAGE ────────────────────────────────────────────
 export const CompaniesPage = () => {
     const { t } = useTranslation();
     const [companies, setCompanies] = useState([]);

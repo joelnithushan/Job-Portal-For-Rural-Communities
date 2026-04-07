@@ -29,7 +29,6 @@ export const Sidebar = () => {
     const navItems = {
         JOB_SEEKER: [
             { label: t('dashboard'), path: '/dashboard', icon: LayoutDashboard },
-            { label: t('browse_available_jobs'), path: '/dashboard/discover', icon: Globe },
             { label: t('my_applications'), path: '/dashboard/applications', icon: FileText },
             { label: t('saved_jobs'), path: '/dashboard/saved', icon: Heart },
             { label: t('my_profile'), path: '/profile', icon: User },
@@ -110,7 +109,6 @@ export const Sidebar = () => {
             {/* Nav Links Section */}
             <nav className="flex-1 flex flex-col overflow-y-auto">
                 {currentNav.map((item) => {
-                    // Specific path matching to prevent false positives for shorter prefixes
                     const isActive = location.pathname === item.path || (item.path !== '/dashboard' && item.path !== '/employer' && item.path !== '/admin' && location.pathname.startsWith(item.path));
                     const Icon = item.icon;
 

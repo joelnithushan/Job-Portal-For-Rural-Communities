@@ -12,10 +12,12 @@ const router = express.Router();
 const applySchema = {
   body: Joi.object().keys({
     jobId: Joi.string()
-      .pattern(/^[0-9a-fA-F]{24}$/)
+      .hex()
+      .length(24)
       .required()
       .messages({
-        "string.pattern.base": "jobId must be a vaid ObjectId",
+        "string.hex": "jobId must be a valid hex string",
+        "string.length": "jobId must be exactly 24 characters",
       }),
     cvUrl: Joi.string().uri().optional(),
     captchaToken: Joi.string().optional(),

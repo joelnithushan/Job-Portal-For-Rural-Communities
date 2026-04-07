@@ -16,7 +16,6 @@ const nameRegex = /^[a-zA-Z\s.-]+$/;
 const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
 const nicRegex = /^(?:\d{9}[vVxX]|\d{12})$/;
 
-// Schema moved inside component to use translation hook
 
 export const RegisterPage = () => {
     const { t } = useTranslation();

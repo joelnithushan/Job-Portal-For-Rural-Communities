@@ -23,7 +23,6 @@ const createJob = async (jobData) => {
             };
         } catch (error) {
             console.error('Failed to geocode job location:', error.message);
-            // Fallback to district if town fails
             if (jobData.town) {
                 try {
                     const fallbackCoords = await geoService.geocodeDistrict(`${jobData.district}, Sri Lanka`);
@@ -56,7 +55,6 @@ const createJob = async (jobData) => {
 };
 
 const getJobs = async ({ district, category, jobType, search, sort, salaryMin, salaryMax, page = 1, limit = 10 }) => {
-    // Only show jobs from ACTIVE employers
     const activeEmployers = await User.find({ role: 'EMPLOYER', status: 'ACTIVE' }).select('_id');
     const activeEmployerIds = activeEmployers.map(e => e._id);
 
@@ -67,12 +65,10 @@ const getJobs = async ({ district, category, jobType, search, sort, salaryMin, s
     if (category) filter.category = category;
     if (jobType) filter.jobType = jobType;
 
-    // Text search on title (case-insensitive regex)
     if (search) {
         filter.title = { $regex: search, $options: 'i' };
     }
 
-    // Salary range filtering
     if (salaryMin) {
         filter.salaryMax = { ...(filter.salaryMax || {}), $gte: Number(salaryMin) };
     }
@@ -80,7 +76,6 @@ const getJobs = async ({ district, category, jobType, search, sort, salaryMin, s
         filter.salaryMin = { ...(filter.salaryMin || {}), $lte: Number(salaryMax) };
     }
 
-    // Dynamic sorting
     let sortOption = { createdAt: -1 }; // default: newest first
     if (sort === 'salaryDesc') {
         sortOption = { salaryMax: -1, createdAt: -1 };
@@ -108,12 +103,19 @@ const getJobs = async ({ district, category, jobType, search, sort, salaryMin, s
 };
 
 const getJobById = async (jobId) => {
-    const job = await Job.findById(jobId).populate('employerId', 'name email profilePicture phone');
+    const job = await Job.findById(jobId).populate('employerId', 'name email profilePicture phone status');
     if (!job) {
         const error = new Error('Job not found');
         error.statusCode = 404;
         throw error;
     }
+    
+    if (!job.employerId || job.employerId.status !== 'ACTIVE') {
+        const error = new Error('Forbidden: The employer for this job is currently unavailable');
+        error.statusCode = 403;
+        throw error;
+    }
+    
     return job;
 };
 
@@ -181,7 +183,6 @@ const deleteJob = async (jobId, user) => {
 const getNearbyJobs = async (lat, lng, radiusKm = 10) => {
     const radiusInMeters = radiusKm * 1000;
     
-    // Only show jobs from ACTIVE employers
     const activeEmployers = await User.find({ role: 'EMPLOYER', status: 'ACTIVE' }).select('_id');
     const activeEmployerIds = activeEmployers.map(e => e._id);
 
@@ -235,25 +236,21 @@ const getCategoryStats = async () => {
     ]);
     return stats;
 };
-/**
- * Get summary statistics for the home page
- */
 const getSummaryStats = async () => {
-    const [jobsCount, employersCount, districts, totalApps, acceptedApps] = await Promise.all([
+    const [jobsCount, employersCount, districts, totalApps, closedJobs] = await Promise.all([
         Job.countDocuments(),
         User.countDocuments({ role: 'EMPLOYER', status: 'ACTIVE' }),
         Job.distinct('district'),
         Application.countDocuments(),
-        Application.countDocuments({ status: 'ACCEPTED' })
+        Job.countDocuments({ status: 'CLOSED' })
     ]);
     const districtsCount = districts.length || 0;
-    // Calculate placement rate (Accepted / Total)
-    // Default to a realistic base if no data yet to keep it looking active
+    
     let placementRate = 0;
-    if (totalApps > 0) {
-        placementRate = Math.round((acceptedApps / totalApps) * 100);
+    if (jobsCount > 0) {
+        placementRate = Math.round((closedJobs / jobsCount) * 100);
+        if (placementRate === 0 && jobsCount < 10) placementRate = 85;
     } else {
-        // Fallback for new platform
         placementRate = 85; 
     }
     return {

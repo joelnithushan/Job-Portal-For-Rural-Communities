@@ -10,7 +10,6 @@ import { Button } from '../../components/ui/Button';
 import { useSavedJobs } from '../../hooks/useSavedJobs';
 import { useTranslation } from 'react-i18next';
 
-// Fallback Mock Data
 import { MOCK_JOBS } from '../../utils/mockData';
 
 export const JobsPage = () => {
@@ -54,7 +53,6 @@ export const JobsPage = () => {
                     radiusKm: filters.radius || 5,
                 });
             } else {
-                // Send all filter params to backend
                 const apiParams = {};
                 if (filters.district) apiParams.district = filters.district;
                 if (filters.category) apiParams.category = filters.category;
@@ -87,7 +85,6 @@ export const JobsPage = () => {
 
     useEffect(() => {
         fetchJobs();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters]);
 
     const handleFilterChange = (newFilters) => {
@@ -106,7 +103,6 @@ export const JobsPage = () => {
         !['page', 'limit', 'sort', 'radius'].includes(key) && !!value
     ).length;
 
-    // Generate page numbers for pagination
     const getPageNumbers = () => {
         const pages = [];
         const maxVisible = 5;

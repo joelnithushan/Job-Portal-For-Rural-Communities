@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 const nameRegex = /^[a-zA-Z\s.-]+$/;
 const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
 
-// Schema moved inside component to use translation hook
 
 export const RegisterEmployerPage = () => {
     const { t } = useTranslation();

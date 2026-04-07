@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 export const Modal = ({ isOpen, onClose, title, size = 'md', children }) => {
-    // Prevent scrolling when modal is open
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -13,7 +12,6 @@ export const Modal = ({ isOpen, onClose, title, size = 'md', children }) => {
         return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen]);
 
-    // Handle escape key
     useEffect(() => {
         const handleEsc = (e) => {
             if (e.key === 'Escape') onClose();

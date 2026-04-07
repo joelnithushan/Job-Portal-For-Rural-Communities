@@ -18,7 +18,6 @@ export const RoleRoute = ({ children, roles = [] }) => {
     }
 
     if (roles.length > 0 && !roles.includes(user?.role)) {
-        // User doesn't have the required role, redirect based on their actual role
         switch (user?.role) {
             case 'EMPLOYER':
                 return <Navigate to="/employer" replace />;

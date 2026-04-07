@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
 
 const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
 
-// Schema moved inside component
 
 export const ResetPasswordPage = () => {
     const { t } = useTranslation();
@@ -61,7 +60,6 @@ export const ResetPasswordPage = () => {
                 </div>
 
                 {tokenExpired ? (
-                    /* ─── Expired Token State ─── */
                     <div className="text-center py-4">
                         <XCircle size={48} className="mx-auto mb-4" style={{ color: '#ef4444' }} />
                         <h2 className="text-xl font-heading font-semibold text-brand-dark mb-3">{t('reset_expired_title')}</h2>
@@ -75,7 +73,6 @@ export const ResetPasswordPage = () => {
                         </Link>
                     </div>
                 ) : (
-                    /* ─── Form State ─── */
                     <>
                         <div className="text-center mb-6">
                             <h2 className="text-xl font-heading font-semibold text-brand-dark mb-2">{t('reset_title')}</h2>

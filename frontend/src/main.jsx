@@ -8,7 +8,6 @@ import { AppRouter } from './routes/AppRouter';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
-// Add leaflet CSS natively
 import 'leaflet/dist/leaflet.css';
 import './index.css';
 

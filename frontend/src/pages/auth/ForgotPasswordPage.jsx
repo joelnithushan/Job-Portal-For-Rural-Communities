@@ -10,7 +10,6 @@ import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
-// Schema moved inside component
 
 export const ForgotPasswordPage = () => {
     const { t } = useTranslation();
@@ -51,7 +50,6 @@ export const ForgotPasswordPage = () => {
                 </div>
 
                 {emailSent ? (
-                    /* ─── Success State ─── */
                     <div className="text-center py-4">
                         <CheckCircle size={48} className="mx-auto mb-4" style={{ color: '#22c55e' }} />
                         <h2 className="text-xl font-heading font-semibold text-brand-dark mb-3">{t('forgot_pwd_success_title')}</h2>
@@ -65,7 +63,6 @@ export const ForgotPasswordPage = () => {
                         </Link>
                     </div>
                 ) : (
-                    /* ─── Form State ─── */
                     <>
                         <div className="text-center mb-6">
                             <h2 className="text-xl font-heading font-semibold text-brand-dark mb-2">{t('forgot_pwd_title')}</h2>

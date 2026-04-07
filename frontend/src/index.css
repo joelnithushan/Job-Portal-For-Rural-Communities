@@ -46,7 +46,6 @@
   }
 }
 
-/* ── i18n: Sinhala & Tamil overflow safeties ── */
 :lang(si), :lang(ta) {
   word-break: break-word;
   line-height: 1.6;

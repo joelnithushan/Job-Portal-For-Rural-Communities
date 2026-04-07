@@ -6,11 +6,9 @@ import { Sidebar } from '../components/layout/Sidebar';
 import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRoute } from './RoleRoute';
 
-// Pages
 import { HomePage } from '../pages/public/HomePage';
 import { JobsPage } from '../pages/public/JobsPage';
 import { JobDetailPage, CompaniesPage } from '../pages/public/PublicPages';
-import { DiscoverJobsPage } from '../pages/seeker/DiscoverJobsPage';
 import { CompanyJobsPage } from '../pages/public/CompanyJobsPage';
 import { useTranslation } from 'react-i18next';
 import { LoginPage, RegisterPage, RegisterEmployerPage, ForgotPasswordPage, ResetPasswordPage } from '../pages/auth/AuthPages';
@@ -44,7 +42,6 @@ export const AppRouter = () => {
     const { t } = useTranslation();
     const { user, isAuthenticated } = useAuth();
 
-    // Redirect authenticated users from home to their dashboard
     const getDashboardPath = () => {
         if (!user) return '/';
         if (user.role === 'ADMIN') return '/admin';
@@ -114,15 +111,6 @@ export const AppRouter = () => {
                         <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
                             <Navbar />
                             <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><SeekerDashboard /></main>
-                            <Footer />
-                        </div>
-                    </RoleRoute>
-                } />
-                <Route path="/dashboard/discover" element={
-                    <RoleRoute roles={['JOB_SEEKER']}>
-                        <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
-                            <Navbar />
-                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><DiscoverJobsPage /></main>
                             <Footer />
                         </div>
                     </RoleRoute>

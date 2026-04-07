@@ -20,8 +20,6 @@ export const CompanyJobsPage = () => {
     useEffect(() => {
         const fetchCompanyJobs = async () => {
             try {
-                // Fetch all jobs and filter on the frontend to guarantee we get the active jobs
-                // (Assuming backend doesn't have a direct /companies/:id/jobs endpoint)
                 const res = await jobsAPI.getJobs({ limit: 100 });
                 const allJobs = res.data?.jobs || res.data || [];
                 
@@ -31,7 +29,6 @@ export const CompanyJobsPage = () => {
                 
                 setJobs(companyJobs);
 
-                // Extract company info from the first matched job
                 if (companyJobs.length > 0 && companyJobs[0].employerId) {
                     setCompanyInfo({
                         name: companyJobs[0].employerId.name || companyJobs[0].employerId.businessName,

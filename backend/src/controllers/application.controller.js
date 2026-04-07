@@ -20,7 +20,7 @@ exports.apply = async (req, res, next) => {
       return errorResponse(res, "jobId is required", 400);
     }
 
-    const application = await service.applyToJob(jobId, req.user.id, cvUrl);
+    const application = await service.applyToJob(jobId, req.user._id, cvUrl);
     return successResponse(res, "Application submitted successfully", { application }, 201);
   } catch (err) {
     if (err.message === "Job not found") {
@@ -38,7 +38,7 @@ exports.apply = async (req, res, next) => {
 
 exports.getMyApplications = async (req, res, next) => {
   try {
-    const applications = await service.getMyApplications(req.user.id);
+    const applications = await service.getMyApplications(req.user._id);
     return successResponse(res, "Applications fetched successfully", { applications });
   } catch (err) {
     next(err);
@@ -48,7 +48,7 @@ exports.getMyApplications = async (req, res, next) => {
 exports.getApplicantsByJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const applications = await service.getApplicantsByJob(jobId, req.user.id);
+    const applications = await service.getApplicantsByJob(jobId, req.user._id);
     return successResponse(res, "Applicants fetched successfully", { applications });
   } catch (err) {
     if (err.message === "Job not found") {
@@ -63,7 +63,7 @@ exports.getApplicantsByJob = async (req, res, next) => {
 
 exports.getEmployerApplications = async (req, res, next) => {
   try {
-    const applications = await service.getEmployerApplications(req.user.id);
+    const applications = await service.getEmployerApplications(req.user._id);
     return successResponse(res, "Employer applications fetched successfully", { applications });
   } catch (err) {
     next(err);
@@ -75,7 +75,7 @@ exports.updateStatus = async (req, res, next) => {
     const { id } = req.params;
     const { status, note } = req.body;
 
-    const application = await service.updateStatus(id, req.user.id, status, note);
+    const application = await service.updateStatus(id, req.user._id, status, note);
     return successResponse(res, "Application status updated", { application });
   } catch (err) {
     if (err.message === "Application not found") {
@@ -92,7 +92,7 @@ exports.withdrawApplication = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    await service.withdrawApplication(id, req.user.id);
+    await service.withdrawApplication(id, req.user._id);
     return successResponse(res, "Application withdrawn successfully");
   } catch (err) {
     if (err.message === "Application not found") {

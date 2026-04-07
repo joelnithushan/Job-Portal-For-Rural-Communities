@@ -8,7 +8,6 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('rw_token') || null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Initialize Auth state
     useEffect(() => {
         const initializeAuth = async () => {
             if (token) {
@@ -31,7 +30,6 @@ export const AuthProvider = ({ children }) => {
         const response = await authAPI.login({ ...loginData, captchaToken });
         const { token: newToken, user: userData } = response.data || response;
 
-        // Save to local storage and state
         localStorage.setItem('rw_token', newToken);
         setToken(newToken);
         setUser(userData);
@@ -73,7 +71,6 @@ export const AuthProvider = ({ children }) => {
         setUser(updatedUser);
     };
 
-    // Provide state and actions
     const value = {
         user,
         token,

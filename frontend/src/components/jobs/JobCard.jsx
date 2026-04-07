@@ -12,7 +12,6 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
     const { t } = useTranslation();
 
     const handleCardClick = (e) => {
-        // Prevent navigation if clicking on the save button
         if (e.target.closest('.save-btn')) return;
         navigate(`/jobs/${job._id}`);
     };

@@ -52,7 +52,6 @@ const forgotPassword = async (req, res, next) => {
         const { email } = req.body;
         const user = await User.findOne({ email: email.toLowerCase() });
 
-        // Always return success (don't reveal if email exists)
         if (!user) {
             return res.status(200).json({
                 success: true,
@@ -60,19 +59,15 @@ const forgotPassword = async (req, res, next) => {
             });
         }
 
-        // Generate token
         const token = crypto.randomBytes(32).toString('hex');
         const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-        // Save hashed token to user
         user.passwordResetToken = hashedToken;
         user.passwordResetExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
         await user.save();
 
-        // Build reset URL (send raw token)
         const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
-        // Email HTML
         const html = `
         <div style="max-width:520px;margin:0 auto;font-family:'DM Sans',Arial,sans-serif;color:#1a1a1a;">
             <div style="background:#8B1A1A;padding:28px;text-align:center;">
@@ -133,7 +128,6 @@ const resetPassword = async (req, res, next) => {
         const { token } = req.params;
         const { password } = req.body;
 
-        // Hash incoming token to compare with DB
         const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
         const user = await User.findOne({
@@ -148,7 +142,6 @@ const resetPassword = async (req, res, next) => {
             });
         }
 
-        // Validate password length
         if (!password || password.length < 8) {
             return res.status(400).json({
                 success: false,
@@ -156,7 +149,6 @@ const resetPassword = async (req, res, next) => {
             });
         }
 
-        // Update password (pre-save hook will hash it)
         user.password = password;
         user.passwordResetToken = undefined;
         user.passwordResetExpires = undefined;

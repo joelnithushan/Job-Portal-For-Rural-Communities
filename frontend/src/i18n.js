@@ -5,7 +5,6 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
     en: {
         translation: {
-            // Navbar
             nav_home: "HOME",
             nav_jobs: "JOBS",
             nav_companies: "COMPANIES",
@@ -26,7 +25,6 @@ const resources = {
             sidebar_logout_cancel: "Stay",
             sidebar_logout_confirm: "Sign Out",
 
-            // Footer
             footer_tagline: "Connecting skilled rural workers with verified local employers across Sri Lanka.",
             footer_seekers: "For Job Seekers",
             footer_employers: "For Employers",
@@ -38,7 +36,6 @@ const resources = {
             footer_terms: "Terms",
             footer_copyright: "© {{year}} NextEra. All rights reserved.",
 
-            // Home Page
             home_hero_explore: "EXPLORE JOBS",
             home_hero_post: "POST A JOB",
             home_stats_jobs: "Jobs Posted",
@@ -79,7 +76,6 @@ const resources = {
             home_cta_subtitle: "Post job openings, manage applications, and connect with verified local talent. Supporting the rural workforce.",
             home_cta_btn: "START HIRING TODAY",
 
-            // Jobs Page
             jobs_available: "AVAILABLE POSITIONS",
             jobs_page: "PAGE",
             jobs_of: "OF",
@@ -93,7 +89,6 @@ const resources = {
             pagination_prev: "Previous",
             pagination_next: "Next",
             
-            // Job Filters
             filter_mobile_btn: "SHOW FILTERS",
             filter_title: "FILTER JOBS",
             filter_clear_all: "CLEAR ALL",
@@ -120,12 +115,10 @@ const resources = {
             filter_view_results: "VIEW RESULTS",
             all_categories: "All Categories",
 
-            // Job Card
             job_confidential: "Confidential Company",
             job_open: "OPEN",
             job_view_details: "View Details",
 
-            // Job Details
             job_back: "BACK TO JOBS",
             job_details_title: "JOB DETAILS",
             job_apply_now: "APPLY NOW",
@@ -171,7 +164,6 @@ const resources = {
             no_open_positions: "No open positions",
             no_active_listings: "This company doesn't have any active job listings right now.",
 
-            // Companies
             companies_title: "REGISTERED COMPANIES",
             companies_search_ph: "SEARCH COMPANIES...",
             companies_empty_title: "No companies found",
@@ -179,7 +171,6 @@ const resources = {
             companies_verified: "Verified",
             companies_open_positions: "OPEN POSITIONS",
 
-            // Authentication & Registration
             auth_login_title: "Log in",
             auth_email_address: "Email Address",
             auth_email_ph: "e.g. nimal@gmail.com",
@@ -269,7 +260,6 @@ const resources = {
             reset_btn: "RESET PASSWORD",
             auth_new_password: "New Password",
 
-            // Dashboard & Others
             welcome_back: "Welcome back",
             you_have: "You have",
             applications: "applications",
@@ -393,7 +383,7 @@ const resources = {
             dash_my_profile: "My Profile",
             dash_profile_desc: "Update your personal details",
 
-            // Phase 5 - Employer & Profile
+
             company: "Company Profile",
             post_new_job: "POST NEW JOB",
             my_jobs: "MY JOBS",
@@ -431,14 +421,12 @@ const resources = {
             description_label: "Description",
             create_emp_acc: "CREATE EMPLOYER ACCOUNT",
             
-            // Phase 5 - Seeker Profile
             personal_details: "Personal Details",
             upload_resume: "Upload Resume",
             skills: "Skills",
             add_skill: "Add Skill",
             save_changes: "Save Changes",
             
-            // Phase 5 - Admin
             admin_dashboard: "Admin Dashboard",
             total_users: "Total Users",
             employers: "Employers",
@@ -507,7 +495,6 @@ const resources = {
                 JOB_SEEKER: "Job Seeker",
             },
 
-            // Admin Detail Additions
             company_verifications_pending: "{{count}} company verification awaiting review",
             company_verifications_pending_plural: "{{count}} company verifications awaiting review",
             all_suspension: "All Suspension",
@@ -767,7 +754,6 @@ const resources = {
             footer_terms: "விதிமுறைகள்",
             footer_copyright: "© {{year}} NextEra. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
 
-            // (Previous entries mapped perfectly)
             home_hero_explore: "வேலைகளை தேடுக",
             home_hero_post: "வேலையை பதிவிடுக",
             home_stats_jobs: "வேலைகள் பதிவிடப்பட்டன",
@@ -903,7 +889,6 @@ const resources = {
             companies_verified: "உறுதிப்படுத்தப்பட்டது",
             companies_open_positions: "திறந்த பதவிகள்",
 
-            // Auth Mappings - Tamil
             auth_login_title: "உள்நுழைய",
             auth_email_address: "மின்னஞ்சல் முகவரி",
             auth_email_ph: "உ-ம்: nimal@gmail.com",
@@ -1175,7 +1160,6 @@ const resources = {
                 JOB_SEEKER: "வேலை தேடுபவர்",
             },
 
-            // Admin Detail Additions - Tamil
             company_verifications_pending: "{{count}} நிறுவன உறுதிப்படுத்தல் காத்திருக்கிறது",
             company_verifications_pending_plural: "{{count}} நிறுவன உறுதிப்படுத்தல்கள் காத்திருக்கின்றன",
             all_suspension: "அனைத்து இடைநிறுத்தங்கள்",
@@ -1416,7 +1400,9 @@ const resources = {
             hours_ago: "{{count}} மணிநேரங்களுக்கு முன்பு",
             days_ago: "{{count}} நாட்களுக்கு முன்பு",
             months_ago: "{{count}} மாதங்களுக்கு முன்பு",
-            years_ago: "{{count}} ஆண்டுகளுக்கு முன்பு"
+            years_ago: "{{count}} ஆண்டுகளுக்கு முன்பு",
+
+            years_ago: "{{count}} ஆண்டுகளுக்கு முன்பு",
         }
     },
     si: {
@@ -1452,7 +1438,6 @@ const resources = {
             footer_terms: "නියමයන්",
             footer_copyright: "© {{year}} NextEra. සියලුම හිමිකම් ඇවිරිණි.",
 
-            // (Previous entries mapped perfectly)
             home_hero_explore: "රැකියා ගවේෂණය කරන්න",
             home_hero_post: "රැකියාවක් පළ කරන්න",
             home_stats_jobs: "දැමූ රැකියා",
@@ -1588,7 +1573,6 @@ const resources = {
             companies_verified: "තහවුරු කර ඇත",
             companies_open_positions: "විවෘත රැකියා",
 
-            // Auth Mappings - Sinhala
             auth_login_title: "ඇතුල් වන්න",
             auth_email_address: "ඊමේල් ලිපිනය",
             auth_email_ph: "නිමල්@gmail.com",
@@ -1860,7 +1844,6 @@ const resources = {
                 JOB_SEEKER: "රැකියා සොයන්නා",
             },
 
-            // Admin Detail Additions - Sinhala
             company_verifications_pending: "{{count}} සමාගම් තහවුරු කිරීමක් බලාපොරොත්තුවෙන්",
             company_verifications_pending_plural: "{{count}} සමාගම් තහවුරු කිරීම් බලාපොරොත්තුවෙන්",
             all_suspension: "සියලු අත්හිටුවීම්",
@@ -2102,7 +2085,9 @@ const resources = {
             hours_ago: "පැය {{count}} කට පෙර",
             days_ago: "දින {{count}} කට පෙර",
             months_ago: "මාස {{count}} කට පෙර",
-            years_ago: "වසර {{count}} කට පෙර"
+            years_ago: "වසර {{count}} කට පෙර",
+
+            years_ago: "වසර {{count}} කට පෙර",
         }
     }
 };
@@ -2121,7 +2106,6 @@ i18n
         }
     });
 
-// Sync HTML lang attribute for CSS :lang() selectors (i18n overflow safeties)
 document.documentElement.lang = i18n.language || 'en';
 i18n.on('languageChanged', (lng) => {
     document.documentElement.lang = lng;

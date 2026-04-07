@@ -18,7 +18,6 @@ const updateUserStatus = async (userId, status, reason = null) => {
     user.suspensionReason = status === 'SUSPENDED' ? reason : null;
     await user.save();
 
-    // -- CASCADE TO COMPANY (IF EMPLOYER) --
     if (user.role === 'EMPLOYER') {
         const company = await Company.findOne({ employerUserId: userId });
         if (company) {
@@ -114,12 +113,10 @@ const suspendCompany = async (companyId, reason = null) => {
         throw { statusCode: 404, message: 'Company not found' };
     }
     
-    // Toggle suspension
     company.isSuspended = !company.isSuspended;
     company.suspensionReason = company.isSuspended ? reason : null;
     await company.save();
 
-    // -- CASCADE TO EMPLOYER --
     const employer = await User.findById(company.employerUserId);
     if (employer) {
         employer.status = company.isSuspended ? 'SUSPENDED' : 'ACTIVE';
@@ -165,7 +162,6 @@ const getSystemReport = async (startDate, endDate) => {
         createdAt: { $gte: start, $lte: end }
     };
 
-    // Fetch data in parallel
     const [users, jobs, applications, companies] = await Promise.all([
         User.find(query).select('name email role createdAt status'),
         Job.find(query).select('title category district status createdAt'),
