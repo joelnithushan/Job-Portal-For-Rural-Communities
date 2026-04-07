@@ -8,17 +8,22 @@ import { authAPI } from '../../api/services';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
 
-const schema = yup.object({
-    password: yup.string().required('Password is required').matches(pwdRegex, 'Password must have min 8 chars, 1 uppercase, 1 number, and 1 special char'),
-    confirmPassword: yup.string()
-        .oneOf([yup.ref('password'), null], 'Passwords must match')
-        .required('Please confirm your password'),
-});
+// Schema moved inside component
 
 export const ResetPasswordPage = () => {
+    const { t } = useTranslation();
+
+    const schema = yup.object({
+        password: yup.string().required(t('auth_err_pass_req')).matches(pwdRegex, t('auth_err_pass_invalid')),
+        confirmPassword: yup.string()
+            .oneOf([yup.ref('password'), null], t('auth_err_confirm_pass_match'))
+            .required(t('auth_err_confirm_pass_req')),
+    });
+
     const { token } = useParams();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +39,7 @@ export const ResetPasswordPage = () => {
         setIsSubmitting(true);
         try {
             await authAPI.resetPassword(token, { password: data.password });
-            toast.success('Password reset successfully! Please log in.');
+            toast.success(t('auth_reset_success'));
             setTimeout(() => navigate('/login'), 1500);
         } catch (error) {
             if (error.response?.status === 400) {
@@ -59,13 +64,13 @@ export const ResetPasswordPage = () => {
                     /* ─── Expired Token State ─── */
                     <div className="text-center py-4">
                         <XCircle size={48} className="mx-auto mb-4" style={{ color: '#ef4444' }} />
-                        <h2 className="text-xl font-heading font-semibold text-brand-dark mb-3">Link Expired</h2>
+                        <h2 className="text-xl font-heading font-semibold text-brand-dark mb-3">{t('reset_expired_title')}</h2>
                         <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                            This password reset link is invalid or has expired. Reset links are only valid for 15 minutes.
+                            {t('reset_expired_desc')}
                         </p>
                         <Link to="/forgot-password">
                             <Button variant="primary" fullWidth>
-                                REQUEST NEW LINK
+                                {t('reset_req_new_link')}
                             </Button>
                         </Link>
                     </div>
@@ -73,14 +78,14 @@ export const ResetPasswordPage = () => {
                     /* ─── Form State ─── */
                     <>
                         <div className="text-center mb-6">
-                            <h2 className="text-xl font-heading font-semibold text-brand-dark mb-2">Reset Password</h2>
-                            <p className="text-sm text-gray-500">Enter your new password below.</p>
+                            <h2 className="text-xl font-heading font-semibold text-brand-dark mb-2">{t('reset_title')}</h2>
+                            <p className="text-sm text-gray-500">{t('reset_desc')}</p>
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div className="relative">
                                 <Input
-                                    label="New Password"
+                                    label={t('auth_new_password')}
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder="••••••••"
                                     error={errors.password?.message}
@@ -97,7 +102,7 @@ export const ResetPasswordPage = () => {
 
                             <div className="relative">
                                 <Input
-                                    label="Confirm Password"
+                                    label={t('auth_confirm_password')}
                                     type={showConfirm ? 'text' : 'password'}
                                     placeholder="••••••••"
                                     error={errors.confirmPassword?.message}
@@ -113,7 +118,7 @@ export const ResetPasswordPage = () => {
                             </div>
 
                             <Button type="submit" variant="primary" fullWidth size="lg" loading={isSubmitting}>
-                                {isSubmitting ? 'RESETTING...' : 'RESET PASSWORD'}
+                                {isSubmitting ? t('reset_resetting') : t('reset_btn')}
                             </Button>
                         </form>
                     </>
@@ -123,7 +128,7 @@ export const ResetPasswordPage = () => {
                 {!tokenExpired && (
                     <div className="text-center mt-6">
                         <Link to="/login" className="text-sm text-gray-500 hover:text-brand-dark transition-colors">
-                            ← Back to Login
+                            ← {t('forgot_pwd_back_link')}
                         </Link>
                     </div>
                 )}

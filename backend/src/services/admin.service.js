@@ -156,6 +156,67 @@ const getAllCompanies = async () => {
     return companies;
 };
 
+const getSystemReport = async (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const query = {
+        createdAt: { $gte: start, $lte: end }
+    };
+
+    // Fetch data in parallel
+    const [users, jobs, applications, companies] = await Promise.all([
+        User.find(query).select('name email role createdAt status'),
+        Job.find(query).select('title category district status createdAt'),
+        Application.find(query).select('status createdAt'),
+        Company.find(query).select('businessName verificationStatus isSuspended createdAt'),
+    ]);
+
+    const userStats = {
+        total: users.length,
+        seekers: users.filter(u => u.role === 'JOB_SEEKER').length,
+        employers: users.filter(u => u.role === 'EMPLOYER').length,
+        admins: users.filter(u => u.role === 'ADMIN').length,
+    };
+
+    const jobStats = {
+        total: jobs.length,
+        open: jobs.filter(j => j.status === 'OPEN').length,
+        closed: jobs.filter(j => j.status === 'CLOSED').length,
+    };
+
+    const applicationStats = {
+        total: applications.length,
+        accepted: applications.filter(a => a.status === 'ACCEPTED').length,
+        rejected: applications.filter(a => a.status === 'REJECTED').length,
+        pending: applications.filter(a => a.status === 'PENDING').length + applications.filter(a => a.status === 'APPLIED').length,
+    };
+
+    const companyStats = {
+        total: companies.length,
+        verified: companies.filter(c => c.verificationStatus === 'VERIFIED').length,
+        pending: companies.filter(c => c.verificationStatus === 'PENDING').length,
+        suspended: companies.filter(c => c.isSuspended).length,
+    };
+
+    return {
+        range: { start, end },
+        summary: {
+            users: userStats,
+            jobs: jobStats,
+            applications: applicationStats,
+            companies: companyStats
+        },
+        data: {
+            users,
+            jobs,
+            applications,
+            companies
+        }
+    };
+};
+
 module.exports = {
     getAllUsers,
     updateUserStatus,
@@ -167,4 +228,5 @@ module.exports = {
     suspendCompany,
     getAdminNotifications,
     getAllCompanies,
+    getSystemReport,
 };

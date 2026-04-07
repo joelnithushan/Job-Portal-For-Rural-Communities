@@ -7,8 +7,10 @@ import { formatSalary } from '../../utils/formatters';
 import { JOB_TYPE_LABELS } from '../../utils/constants';
 import { JobCard } from '../../components/jobs/JobCard';
 import { useSavedJobs } from '../../hooks/useSavedJobs';
+import { useTranslation } from 'react-i18next';
 
 export const CompanyJobsPage = () => {
+    const { t } = useTranslation();
     const { id } = useParams();
     const [jobs, setJobs] = useState([]);
     const [companyInfo, setCompanyInfo] = useState(null);
@@ -57,13 +59,13 @@ export const CompanyJobsPage = () => {
     return (
         <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
             <Link to="/companies" className="inline-flex items-center gap-2 text-xs text-[#8B1A1A] font-bold uppercase tracking-widest hover:underline mb-8">
-                <ArrowLeft size={16} /> BACK TO COMPANIES
+                <ArrowLeft size={16} /> {t('back_to_companies')}
             </Link>
 
             {companyInfo && (
                 <div className="bg-white border border-gray-200 overflow-hidden mb-8">
                     <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between">
-                        <h2 className="text-white text-sm font-bold uppercase tracking-widest">COMPANY PROFILE</h2>
+                        <h2 className="text-white text-sm font-bold uppercase tracking-widest">{t('company_profile_title')}</h2>
                     </div>
                     <div className="p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6">
                     {companyInfo.logo ? (
@@ -76,7 +78,7 @@ export const CompanyJobsPage = () => {
                     <div className="text-center md:text-left">
                         <h1 className="text-2xl font-bold text-[#1A1A1A] uppercase tracking-tight mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>{companyInfo.name}</h1>
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center justify-center md:justify-start gap-1">
-                            <MapPin size={14} className="text-[#E2B325]" /> {companyInfo.district || 'Multiple Locations'}
+                            <MapPin size={14} className="text-[#E2B325]" /> {companyInfo.district || t('filter_all_districts')}
                         </p>
                     </div>
                     </div>
@@ -87,7 +89,7 @@ export const CompanyJobsPage = () => {
                 <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between">
                     <h2 className="text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2">
                         <Briefcase size={16} className="text-[#E2B325]" />
-                        OPEN POSITIONS ({jobs.length})
+                        {t('open_positions_count', { count: jobs.length })}
                     </h2>
                 </div>
                 <div className="p-6 md:p-8">
@@ -95,8 +97,8 @@ export const CompanyJobsPage = () => {
             {jobs.length === 0 ? (
                 <div className="text-center py-16 bg-white border border-gray-100">
                     <Briefcase size={40} className="mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-500">No open positions</h3>
-                    <p className="text-gray-400 mt-1">This company doesn't have any active job listings right now.</p>
+                    <h3 className="text-lg font-semibold text-gray-500">{t('no_open_positions')}</h3>
+                    <p className="text-gray-400 mt-1">{t('no_active_listings')}</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,0 +1,25 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 20
+      arrivalRate: 5
+      name: Warm up phase
+    - duration: 30
+      arrivalRate: 20
+      name: Sustained load phase
+    - duration: 10
+      arrivalRate: 50
+      name: Spike phase
+scenarios:
+  - name: "Fetch jobs and basic health checks"
+    flow:
+      - get:
+          url: "/api/health"
+      - get:
+          url: "/api/jobs"
+          expect:
+            - statusCode: 200
+  - name: "Random job fetch"
+    flow:
+      - get:
+          url: "/api/jobs?page=1&limit=5"

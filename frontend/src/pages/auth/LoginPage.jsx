@@ -11,13 +11,18 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { useTranslation } from 'react-i18next';
 
-const loginSchema = yup.object({
-    email: yup.string().email('Please enter a valid email address').required('Email is required'),
-    password: yup.string().required('Password is required'),
-});
+// Schema moved inside component to use translation hook
 
 export const LoginPage = () => {
+    const { t } = useTranslation();
+
+    const loginSchema = yup.object({
+        email: yup.string().email(t('auth_err_email_invalid')).required(t('auth_err_email_req')),
+        password: yup.string().required(t('auth_err_pass_req')),
+    });
+
     const { login, googleLogin } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -44,7 +49,7 @@ export const LoginPage = () => {
 
     const onSubmit = async (data) => {
         if (!executeRecaptcha) {
-            toast.error('Security check not ready, please try again.');
+            toast.error(t('auth_security_err'));
             return;
         }
 
@@ -71,25 +76,25 @@ export const LoginPage = () => {
                 {/* Logo */}
                 <div className="text-center mb-6">
                     <Link to="/">
-                        <img src="/logo.png" alt="RuralWork" className="h-20 w-auto object-contain mx-auto mb-4" />
+                        <img src="/logo.png" alt="NextEra" className="h-20 w-auto object-contain mx-auto mb-4" />
                     </Link>
-                    <h2 className="text-xl font-heading font-semibold text-brand-dark">Log in</h2>
+                    <h2 className="text-xl font-heading font-semibold text-brand-dark">{t('auth_login_title')}</h2>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <Input
-                        label="Email Address"
+                        label={t('auth_email_address')}
                         type="email"
-                        placeholder="nimal@gmail.com"
+                        placeholder={t('auth_email_ph')}
                         error={errors.email?.message}
                         {...register('email')}
                     />
 
                     <div className="relative">
                         <Input
-                            label="Password"
+                            label={t('auth_password')}
                             type={showPassword ? "text" : "password"}
-                            placeholder="••••••••"
+                            placeholder={t('auth_password_ph')}
                             error={errors.password?.message}
                             {...register('password')}
                         />
@@ -105,24 +110,24 @@ export const LoginPage = () => {
                     <div className="flex items-center justify-between pt-1 pb-2">
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" className="text-brand-green focus:ring-brand-green" />
-                            <span className="text-sm text-gray-600">Remember me</span>
+                            <span className="text-sm text-gray-600">{t('auth_remember_me')}</span>
                         </label>
                         <Link to="/forgot-password" className="text-sm font-medium text-brand-green hover:underline">
-                            Forgot password?
+                            {t('auth_forgot_password')}
                         </Link>
                     </div>
 
 
 
                     <Button type="submit" variant="primary" fullWidth size="lg" loading={isSubmitting}>
-                        LOG IN
+                        {t('auth_login_btn')}
                     </Button>
                 </form>
 
                 {/* Divider */}
                 <div className="flex items-center gap-4 my-6">
                     <div className="flex-1 h-px bg-gray-200" />
-                    <span className="text-xs text-gray-400 uppercase tracking-wider">or</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wider">{t('auth_or')}</span>
                     <div className="flex-1 h-px bg-gray-200" />
                 </div>
 
@@ -131,16 +136,16 @@ export const LoginPage = () => {
                     <GoogleLogin
                         onSuccess={onGoogleSuccess}
                         onError={() => {
-                            toast.error('Google Login Failed');
+                            toast.error(t('auth_login_failed_msg'));
                         }}
                     />
                 </div>
 
                 <div className="text-center text-sm text-gray-500">
-                    Don't have an account?{' '}
+                    {t('auth_no_account')}{' '}
                     <Link to="/register" className="inline-flex items-center gap-1">
                         <span className="font-semibold text-white bg-brand-green px-3 py-1 text-xs hover:bg-brand-greenLight transition-colors">
-                            Sign up
+                            {t('auth_signup_link')}
                         </span>
                     </Link>
                 </div>

@@ -9,6 +9,7 @@ import {
 import { adminAPI } from '../../api/services';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
+import { formatDate } from '../../utils/formatters';
 import { useTranslation } from 'react-i18next';
 
 const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
@@ -28,9 +29,10 @@ const StatusBadge = ({ status }) => {
         PENDING: 'bg-orange-500 text-white',
         VERIFIED: 'bg-green-700 text-white',
     };
+    const { t } = useTranslation();
     return (
         <span className={`inline-block px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${map[status] || 'bg-gray-200 text-gray-600'}`}>
-            {status}
+            {t(`status_labels.${status}`, { defaultValue: status })}
         </span>
     );
 };
@@ -41,31 +43,38 @@ const RoleBadge = ({ role }) => {
         EMPLOYER: 'bg-[#1A1A1A] text-white',
         JOB_SEEKER: 'bg-[#E2B325] text-[#8B1A1A]',
     };
+    const { t } = useTranslation();
     return (
         <span className={`inline-block px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${map[role] || 'bg-gray-200 text-gray-600'}`}>
-            {role?.replace('_', ' ')}
+            {t(`role_labels.${role}`, { defaultValue: role?.replace('_', ' ') })}
         </span>
     );
 };
 
-const Spinner = () => (
-    <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
-        <p className="text-sm text-gray-400 uppercase tracking-widest">Loading...</p>
-    </div>
-);
-
-const EmptyState = ({ message }) => (
-    <div className="flex flex-col items-center justify-center py-16 gap-2">
-        <div className="h-12 w-12 border-2 border-dashed border-gray-300 flex items-center justify-center">
-            <span className="text-gray-300 text-2xl">—</span>
+const Spinner = () => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
+            <p className="text-sm text-gray-400 uppercase tracking-widest">{t('loading', { defaultValue: 'Loading...' })}</p>
         </div>
-        <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mt-2">
-            {message || 'No Records Found'}
-        </p>
-        <p className="text-xs text-gray-300">Try adjusting your search or filters</p>
-    </div>
-);
+    );
+};
+
+const EmptyState = ({ message }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center justify-center py-16 gap-2">
+            <div className="h-12 w-12 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <span className="text-gray-300 text-2xl">—</span>
+            </div>
+            <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mt-2">
+                {message || t('no_records_found')}
+            </p>
+            <p className="text-xs text-gray-300">{t('jobs_empty_desc')}</p>
+        </div>
+    );
+};
 
 const SectionCard = ({ children, className = '', title, subtitle }) => (
     <div className={`bg-white border border-gray-200 border-l-4 border-l-[#8B1A1A] p-0 mb-6 overflow-hidden ${className}`}>
@@ -123,13 +132,14 @@ const getInitials = (name) => {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
-const fmtDate = (d) => {
-    if (!d) return '—';
-    return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+const fmtDate = (d, i18n) => {
+    return formatDate(d, i18n);
 };
 
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, confirmText = 'DELETE', requireReason = false }) => {
     const [reason, setReason] = useState('');
+    
+    const { t } = useTranslation();
     
     // Reset reason when modal opens
     useEffect(() => {
@@ -146,14 +156,14 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
                 {requireReason && (
                     <div className="mt-4">
                         <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                            Reason for Suspension <span className="text-red-500">*</span>
+                            {t('reason_suspension', { defaultValue: 'Reason for Suspension' })} <span className="text-red-500">*</span>
                         </label>
                         <textarea
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             className="w-full border border-gray-300 p-3 text-sm focus:outline-none focus:border-[#8B1A1A] placeholder-gray-400 resize-none"
                             rows={3}
-                            placeholder="Please explain why..."
+                            placeholder={t('explain_why', { defaultValue: 'Please explain why...' })}
                             required
                         />
                     </div>
@@ -162,16 +172,16 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
                 <div className="mt-6 flex gap-3 justify-end">
                     <button 
                         onClick={onCancel} 
-                        className="bg-transparent border border-gray-300 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-colors"
+                        className="bg-gray-100 border border-gray-300 px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-gray-200 transition-colors"
                     >
-                        CANCEL
+                        {t('cancel')}
                     </button>
                     <button 
                         onClick={() => onConfirm(reason)} 
                         disabled={loading || (requireReason && !reason.trim())} 
-                        className="bg-[#8B1A1A] border border-[#8B1A1A] text-white px-4 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-[#6e1515] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="bg-[#8B1A1A] border border-[#8B1A1A] text-white px-6 py-2 text-sm font-bold uppercase tracking-widest hover:bg-[#6e1515] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                     >
-                        {loading ? 'WAIT...' : confirmText}
+                        {loading ? t('wait') : (confirmText === 'DELETE' ? t('delete') : confirmText).toUpperCase()}
                     </button>
                 </div>
             </div>
@@ -185,7 +195,7 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
 // ═══════════════════════════════════════════════════════════════
 
 export const AdminDashboard = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState([]);
@@ -246,16 +256,16 @@ export const AdminDashboard = () => {
     const totalCompanies = companies.length;
     const pendingVerify = companies.filter(c => c.verificationStatus === 'PENDING').length;
 
-    const dateString = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const dateString = new Date().toLocaleDateString(document.documentElement.lang === 'si' ? 'si-LK' : document.documentElement.lang === 'ta' ? 'ta-LK' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     const statCards = [
         { label: t('total_users'), value: totalUsers, icon: Users, accent: '#8B1A1A' },
         { label: t('employers'), value: totalEmployers, icon: Briefcase, accent: '#1e40af' },
-        { label: 'Job Seekers', value: totalSeekers, icon: UserCheck, accent: '#E2B325' },
+        { label: t('job_seekers'), value: totalSeekers, icon: UserCheck, accent: '#E2B325' },
         { label: t('active_jobs'), value: openJobs, icon: FileText, accent: '#8B1A1A' },
         { label: t('total_applications'), value: totalApplications, icon: ClipboardList, accent: '#E2B325' },
         { label: t('all_companies'), value: totalCompanies, icon: Building2, accent: '#1e40af' },
-        { label: 'Pending Verify', value: pendingVerify, icon: Clock, accent: '#f97316' },
+        { label: t('pending_verify', { defaultValue: 'Pending Verify' }), value: pendingVerify, icon: Clock, accent: '#f97316' },
         { label: t('suspend'), value: suspendedUsers, icon: ShieldOff, accent: '#dc2626' },
     ];
 
@@ -266,7 +276,7 @@ export const AdminDashboard = () => {
 
     return (
         <>
-            <PageHeading title={t('admin_dashboard')} subtitle="Platform overview and management" right={
+            <PageHeading title={t('admin_dashboard')} subtitle={t('platform_overview_desc', { defaultValue: 'Platform overview and management' })} right={
                 <p className="text-[#E2B325] text-xs uppercase tracking-wider">{dateString}</p>
             } />
 
@@ -276,14 +286,14 @@ export const AdminDashboard = () => {
                     <div className="flex items-center gap-3">
                         <AlertTriangle className="text-[#8B1A1A] h-5 w-5" />
                         <p className="text-[#8B1A1A] text-sm font-semibold">
-                            {pendingVerify} company verification{pendingVerify > 1 ? 's' : ''} awaiting review
+                            {pendingVerify} {t('companies_awaiting', { defaultValue: 'company verifications awaiting review' })}
                         </p>
                     </div>
                     <button
                         onClick={() => navigate('/admin/companies')}
-                        className="bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-1.5 hover:bg-[#6e1515] sharp edges"
+                        className="bg-[#8B1A1A] text-white text-xs font-bold uppercase tracking-widest px-6 py-2 hover:bg-[#6e1515] transition-colors shadow-sm"
                     >
-                        {t('review_now')}
+                        {t('review_now').toUpperCase()}
                     </button>
                 </div>
             )}
@@ -301,13 +311,13 @@ export const AdminDashboard = () => {
                 <SectionCard
                     title={t('recent_registrations')}
                     subtitle={
-                        <Link to="/admin/users" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white transition-colors">
-                            {t('view_all_users')}
+                        <Link to="/admin/users" className="bg-[#E2B325] text-[#8B1A1A] text-[10px] font-bold uppercase tracking-widest px-3 py-1 hover:bg-[#d1a620] transition-colors">
+                            {t('view_all_users').toUpperCase()}
                         </Link>
                     }
                 >
                     {recentUsers.length === 0 ? (
-                        <p className="text-gray-400 text-sm py-4 text-center pb-0">No users yet.</p>
+                        <p className="text-gray-400 text-sm py-4 text-center pb-0">{t('no_users_yet', { defaultValue: 'No users yet.' })}</p>
                     ) : (
                         <div className="divide-y divide-gray-100">
                             {recentUsers.map(u => (
@@ -326,10 +336,10 @@ export const AdminDashboard = () => {
                                         <div className="flex flex-col items-end">
                                             <StatusBadge status={u.status} />
                                             {u.status === 'SUSPENDED' && u.suspensionReason && (
-                                                <span className="text-[9px] text-[#8B1A1A] font-bold mt-0.5" title={u.suspensionReason}>Reason attached</span>
+                                                <span className="text-[9px] text-[#8B1A1A] font-bold mt-0.5" title={u.suspensionReason}>{t('reason_attached', { defaultValue: 'Reason attached' })}</span>
                                             )}
                                         </div>
-                                        <p className="text-xs text-gray-300">{fmtDate(u.createdAt)}</p>
+                                        <p className="text-xs text-gray-300">{fmtDate(u.createdAt, i18n)}</p>
                                     </div>
                                 </div>
                             ))}
@@ -340,10 +350,10 @@ export const AdminDashboard = () => {
                 {/* Recent Jobs */}
                 <SectionCard
                     title={t('recent_job_posts')}
-                    subtitle={<Link to="/admin/jobs" className="text-[#E2B325] text-xs font-bold uppercase tracking-wider hover:text-white transition-colors">{t('all_jobs')}</Link>}
+                    subtitle={<Link to="/admin/jobs" className="bg-[#E2B325] text-[#8B1A1A] text-[10px] font-bold uppercase tracking-widest px-3 py-1 hover:bg-[#d1a620] transition-colors">{t('all_jobs').toUpperCase()}</Link>}
                 >
                     {recentJobs.length === 0 ? (
-                        <p className="text-gray-400 text-sm py-4 text-center pb-0">No jobs posted yet.</p>
+                        <p className="text-gray-400 text-sm py-4 text-center pb-0">{t('no_jobs_posted_yet', { defaultValue: 'No jobs posted yet.' })}</p>
                     ) : (
                         <div className="divide-y divide-gray-100">
                             {recentJobs.map(j => (
@@ -354,7 +364,7 @@ export const AdminDashboard = () => {
                                     </div>
                                     <div className="text-right flex flex-col items-end gap-1">
                                         <StatusBadge status={j.status} />
-                                        <p className="text-xs text-gray-300">{fmtDate(j.createdAt)}</p>
+                                        <p className="text-xs text-gray-300">{fmtDate(j.createdAt, i18n)}</p>
                                     </div>
                                 </div>
                             ))}
@@ -369,32 +379,32 @@ export const AdminDashboard = () => {
                     <div className="bg-[#FAF7F2] border border-gray-200 border-t-4 border-t-[#8B1A1A] p-4 text-center">
                         <Users className="h-8 w-8 mb-3 mx-auto text-[#8B1A1A]" />
                         <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-1">{t('manage_users')}</h3>
-                        <p className="text-xs text-gray-400 mt-1 mb-4">View, suspend, or activate accounts</p>
-                        <button onClick={() => navigate('/admin/users')} className="w-full bg-[#8B1A1A] text-white text-xs uppercase tracking-wider py-2 hover:bg-[#6e1515]">
-                            {t('manage_users')}
+                        <p className="text-xs text-gray-400 mt-1 mb-4">{t('manage_users_desc', { defaultValue: 'View, suspend, or activate accounts' })}</p>
+                        <button onClick={() => navigate('/admin/users')} className="w-full bg-[#8B1A1A] text-white text-xs font-bold uppercase tracking-widest py-2.5 hover:bg-[#6e1515] transition-colors shadow-sm">
+                            {t('manage_users').toUpperCase()}
                         </button>
                     </div>
                     <div className="bg-[#FAF7F2] border border-gray-200 border-t-4 border-t-[#E2B325] p-4 text-center">
                         <Building2 className="h-8 w-8 mb-3 mx-auto text-[#E2B325]" />
                         <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-1">{t('verify_companies')}</h3>
-                        <p className="text-xs text-gray-400 mt-1 mb-4">Review pending company verifications</p>
-                        <button onClick={() => navigate('/admin/companies')} className="w-full bg-[#8B1A1A] text-white text-xs uppercase tracking-wider py-2 hover:bg-[#6e1515]">
-                            {t('verify_companies')}
+                        <p className="text-xs text-gray-400 mt-1 mb-4">{t('verify_companies_desc', { defaultValue: 'Review pending company verifications' })}</p>
+                        <button onClick={() => navigate('/admin/companies')} className="w-full bg-[#8B1A1A] text-white text-xs font-bold uppercase tracking-widest py-2.5 hover:bg-[#6e1515] transition-colors shadow-sm">
+                            {t('verify_companies').toUpperCase()}
                         </button>
                     </div>
                     <div className="bg-[#FAF7F2] border border-gray-200 border-t-4 border-t-[#1e40af] p-4 text-center flex flex-col justify-between">
                         <div>
                             <BarChart2 className="h-8 w-8 mb-3 mx-auto text-[#1e40af]" />
                             <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-1">{t('platform_stats')}</h3>
-                            <p className="text-xs text-gray-400 mt-1 mb-4">Application processing summary</p>
+                            <p className="text-xs text-gray-400 mt-1 mb-4">{t('platform_stats_desc', { defaultValue: 'Application processing summary' })}</p>
                         </div>
                         <div className="text-left w-full mt-auto">
                             <div className="flex justify-between border-b border-gray-100 py-2 text-xs">
-                                <span className="text-gray-600">Accepted Applications</span>
+                                <span className="text-gray-600">{t('accepted_apps', { defaultValue: 'Accepted Applications' })}</span>
                                 <span className="text-green-700 font-bold">{acceptedApps}</span>
                             </div>
                             <div className="flex justify-between py-2 text-xs">
-                                <span className="text-gray-600">Rejected Applications</span>
+                                <span className="text-gray-600">{t('rejected_apps', { defaultValue: 'Rejected Applications' })}</span>
                                 <span className="text-[#8B1A1A] font-bold">{rejectedApps}</span>
                             </div>
                         </div>
@@ -411,7 +421,7 @@ export const AdminDashboard = () => {
 // ═══════════════════════════════════════════════════════════════
 
 export const AdminUsersPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -429,7 +439,7 @@ export const AdminUsersPage = () => {
                 setUsers(res?.data?.users || res?.users || []);
             } catch (err) {
                 if (err.response?.status !== 404) {
-                    toast.error(err.response?.data?.message || 'Failed to load users.');
+                    toast.error(err.response?.data?.message || t('error_load_users', { defaultValue: 'Failed to load users.' }));
                 }
                 setError(true);
             } finally {
@@ -455,10 +465,10 @@ export const AdminUsersPage = () => {
         try {
             await adminAPI.updateUserStatus(userId, { status: newStatus, reason });
             setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: newStatus, suspensionReason: reason || null } : u));
-            toast.success(newStatus === 'SUSPENDED' ? 'User suspended.' : 'User activated.');
+            toast.success(newStatus === 'SUSPENDED' ? t('user_suspended_success', { defaultValue: 'User suspended.' }) : t('user_activated_success', { defaultValue: 'User activated.' }));
             setConfirmModal({ isOpen: false, userId: null, newStatus: null, userName: '' });
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to update status.');
+            toast.error(err.response?.data?.message || t('error_status_update'));
         } finally {
             setActionLoading(prev => ({ ...prev, [userId]: false }));
         }
@@ -471,15 +481,15 @@ export const AdminUsersPage = () => {
     if (loading) return <Spinner />;
     if (error) return (
         <div className="flex-1 flex items-center justify-center">
-            <p className="text-lg font-bold text-[#8B1A1A] uppercase tracking-wider">Failed to load users. Try refreshing.</p>
+            <p className="text-lg font-bold text-[#8B1A1A] uppercase tracking-wider">{t('error_load_users', { defaultValue: 'Failed to load users. Try refreshing.' })}</p>
         </div>
     );
 
     return (
         <div className="flex flex-col flex-1">
             <PageHeading
-                title="User Management"
-                subtitle={`${users.length} total users`}
+                title={t('user_management')}
+                subtitle={`${users.length} ${t('total_users')}`}
             />
 
             {/* Filter Bar */}
@@ -488,7 +498,7 @@ export const AdminUsersPage = () => {
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Search by name or email..."
+                        placeholder={t('search_users_ph', { defaultValue: 'Search by name or email...' })}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
@@ -499,29 +509,29 @@ export const AdminUsersPage = () => {
                     onChange={e => setRoleFilter(e.target.value)}
                     className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#8B1A1A] bg-white cursor-pointer"
                 >
-                    <option value="ALL">All Roles</option>
-                    <option value="ADMIN">Admin</option>
-                    <option value="EMPLOYER">Employer</option>
-                    <option value="JOB_SEEKER">Job Seeker</option>
+                    <option value="ALL">{t('all_roles', { defaultValue: 'All Roles' })}</option>
+                    <option value="ADMIN">{t('role_labels.ADMIN')}</option>
+                    <option value="EMPLOYER">{t('role_labels.EMPLOYER')}</option>
+                    <option value="JOB_SEEKER">{t('role_labels.JOB_SEEKER')}</option>
                 </select>
                 <select
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value)}
                     className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#8B1A1A] bg-white cursor-pointer"
                 >
-                    <option value="ALL">All Status</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="SUSPENDED">Suspended</option>
+                    <option value="ALL">{t('all_status', { defaultValue: 'All Status' })}</option>
+                    <option value="ACTIVE">{t('status_labels.ACTIVE')}</option>
+                    <option value="SUSPENDED">{t('status_labels.SUSPENDED')}</option>
                 </select>
                 <div className="ml-auto text-xs text-gray-400 uppercase tracking-wider self-center border-l border-gray-200 pl-4">
-                    Showing {filteredUsers.length} of {users.length}
+                    {t('showing')} {filteredUsers.length} {t('of')} {users.length}
                 </div>
             </div>
 
             {/* Users Table */}
             <SectionCard
                 className="!p-0 flex-1 flex flex-col min-h-0"
-                title="ALL USERS"
+                title={t('all_users')}
                 subtitle={
                     <span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">
                         {filteredUsers.length}
@@ -529,18 +539,18 @@ export const AdminUsersPage = () => {
                 }
             >
                 {filteredUsers.length === 0 ? (
-                    <EmptyState message="No users match your filters" />
+                    <EmptyState message={t('no_users_match', { defaultValue: 'No users match your filters' })} />
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="bg-[#8B1A1A]">
                                     <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">#</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">User</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">Role</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">Status</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden md:table-cell">Joined</th>
-                                    <th className="py-3 px-4 text-right text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap">Actions</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('user').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('role').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('status').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden md:table-cell">{t('joined_date', { defaultValue: 'JOINED' })}</th>
+                                    <th className="py-3 px-4 text-right text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap">{t('actions').toUpperCase()}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -565,39 +575,39 @@ export const AdminUsersPage = () => {
                                             <StatusBadge status={user.status} />
                                             {user.status === 'SUSPENDED' && user.suspensionReason && (
                                                 <div className="text-[10px] text-[#8B1A1A] font-semibold mt-1 max-w-[120px] leading-tight" title={user.suspensionReason}>
-                                                    Reason: {user.suspensionReason}
+                                                    {t('reason')}: {user.suspensionReason}
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="py-3 px-4 text-gray-500 text-xs font-mono hidden md:table-cell border-b border-gray-100 align-middle">{fmtDate(user.createdAt)}</td>
+                                        <td className="py-3 px-4 text-gray-500 text-xs font-mono hidden md:table-cell border-b border-gray-100 align-middle">{fmtDate(user.createdAt, i18n)}</td>
                                         <td className="py-3 px-4 text-right border-b border-gray-100 align-middle">
                                             <div className="flex items-center justify-end gap-1.5 flex-wrap">
                                                 <button
                                                     onClick={() => setViewUserModal({ isOpen: true, user })}
-                                                    className="px-3 py-1 text-xs uppercase tracking-wider border border-gray-300 text-gray-600 hover:bg-gray-50"
+                                                    className="px-3 py-1 text-xs uppercase tracking-wider border border-gray-300 text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors font-bold"
                                                 >
-                                                    VIEW
+                                                    {t('view').toUpperCase()}
                                                 </button>
                                                 {user.role === 'ADMIN' ? (
-                                                    <span className="text-gray-300 text-xs flex items-center justify-end gap-1 font-bold uppercase tracking-wider ml-1">
-                                                        <Lock size={12} /> Protected
+                                                    <span className="text-gray-400 text-[10px] flex items-center justify-end gap-1 font-bold uppercase tracking-widest ml-1 bg-gray-100 px-2 py-1 border border-gray-200">
+                                                        <Lock size={10} /> {t('protected', { defaultValue: 'Protected' })}
                                                     </span>
                                                 ) : (
                                                     user.status === 'ACTIVE' ? (
                                                         <button
                                                             onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'SUSPENDED', userName: user.name })}
                                                             disabled={actionLoading[user._id]}
-                                                            className="px-3 py-1 text-xs uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50 disabled:opacity-50"
+                                                            className="px-3 py-1 text-xs uppercase tracking-wider border border-red-500 text-red-700 bg-red-50 hover:bg-red-100 transition-colors font-bold disabled:opacity-50"
                                                         >
-                                                            {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-red-500 border-t-transparent rounded-full" /> : 'SUSPEND'}
+                                                            {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-red-500 border-t-transparent rounded-full" /> : t('suspend').toUpperCase()}
                                                         </button>
                                                     ) : (
                                                         <button
                                                             onClick={() => setConfirmModal({ isOpen: true, userId: user._id, newStatus: 'ACTIVE', userName: user.name })}
                                                             disabled={actionLoading[user._id]}
-                                                            className="px-3 py-1 text-xs uppercase tracking-wider border border-green-600 text-green-600 hover:bg-green-50 disabled:opacity-50"
+                                                            className="px-3 py-1 text-xs uppercase tracking-wider border border-green-600 text-green-700 bg-green-50 hover:bg-green-100 transition-colors font-bold disabled:opacity-50"
                                                         >
-                                                            {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-green-600 border-t-transparent rounded-full" /> : 'ACTIVATE'}
+                                                            {actionLoading[user._id] ? <div className="animate-spin h-3 w-3 border-2 border-green-600 border-t-transparent rounded-full" /> : t('activate_btn', { defaultValue: 'ACTIVATE' })}
                                                         </button>
                                                     )
                                                 )}
@@ -614,24 +624,24 @@ export const AdminUsersPage = () => {
             {/* Summary Footer */}
             <div className="bg-[#8B1A1A] px-5 py-2.5 flex gap-6 mt-auto">
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Total <span className="text-[#E2B325] font-bold ml-1">{users.length}</span>
+                    {t('total')} <span className="text-[#E2B325] font-bold ml-1">{users.length}</span>
                 </span>
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Employers <span className="text-[#E2B325] font-bold ml-1">{totalEmployers}</span>
+                    {t('employers')} <span className="text-[#E2B325] font-bold ml-1">{totalEmployers}</span>
                 </span>
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Seekers <span className="text-[#E2B325] font-bold ml-1">{totalSeekers}</span>
+                    {t('job_seekers')} <span className="text-[#E2B325] font-bold ml-1">{totalSeekers}</span>
                 </span>
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Suspended <span className="text-[#E2B325] font-bold ml-1">{suspendedCount}</span>
+                    {t('suspend')} <span className="text-[#E2B325] font-bold ml-1">{suspendedCount}</span>
                 </span>
             </div>
 
             <ConfirmModal 
                 isOpen={confirmModal.isOpen}
-                title={confirmModal.newStatus === 'SUSPENDED' ? 'Suspend Account' : 'Activate Account'}
-                message={`Are you sure you want to ${confirmModal.newStatus === 'SUSPENDED' ? 'suspend' : 'activate'} ${confirmModal.userName}?`}
-                confirmText={confirmModal.newStatus === 'SUSPENDED' ? 'SUSPEND' : 'ACTIVATE'}
+                title={confirmModal.newStatus === 'SUSPENDED' ? t('suspend_account_title', { defaultValue: 'Suspend Account' }) : t('activate_account_title', { defaultValue: 'Activate Account' })}
+                message={confirmModal.newStatus === 'SUSPENDED' ? t('suspend_user_msg', { name: confirmModal.userName }) : t('activate_user_msg', { name: confirmModal.userName })}
+                confirmText={confirmModal.newStatus === 'SUSPENDED' ? t('suspend').toUpperCase() : t('activate_btn', { defaultValue: 'ACTIVATE' })}
                 loading={confirmModal.userId ? actionLoading[confirmModal.userId] : false}
                 requireReason={confirmModal.newStatus === 'SUSPENDED'}
                 onCancel={() => setConfirmModal({ isOpen: false, userId: null, newStatus: null, userName: '' })}
@@ -641,7 +651,7 @@ export const AdminUsersPage = () => {
             <Modal
                 isOpen={viewUserModal.isOpen}
                 onClose={() => setViewUserModal({ isOpen: false, user: null })}
-                title="User Profile Details"
+                title={t('user_profile_details', { defaultValue: 'User Profile Details' })}
                 size="md"
             >
                 {viewUserModal.user && (
@@ -666,7 +676,7 @@ export const AdminUsersPage = () => {
                             <div className="mb-4 p-4 border border-red-200 bg-red-50 flex flex-col gap-2">
                                 <div className="flex items-center gap-2 text-[#8B1A1A]">
                                     <AlertTriangle className="h-4 w-4" />
-                                    <span className="font-bold text-xs uppercase tracking-wider">Suspension Reason</span>
+                                    <span className="font-bold text-xs uppercase tracking-wider">{t('reason_suspension')}</span>
                                 </div>
                                 <p className="text-sm text-red-900 leading-relaxed font-medium">
                                     {viewUserModal.user.suspensionReason}
@@ -676,24 +686,27 @@ export const AdminUsersPage = () => {
                         
                         <div className="border-t border-gray-100 pt-4 space-y-3">
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Joined Date</span>
-                                <span className="font-medium text-[#1A1A1A]">{fmtDate(viewUserModal.user.createdAt)}</span>
+                                <span className="text-gray-500">{t('joined_date')}</span>
+                                <span className="font-medium text-[#1A1A1A]">{fmtDate(viewUserModal.user.createdAt, i18n)}</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">User ID</span>
+                                <span className="text-gray-500">{t('user_id', { defaultValue: 'User ID' })}</span>
                                 <span className="font-mono text-xs text-gray-400">{viewUserModal.user._id}</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Authentication</span>
+                                <span className="text-gray-500">{t('authentication', { defaultValue: 'Authentication' })}</span>
                                 <span className="font-medium text-[#1A1A1A]">
-                                    {viewUserModal.user.googleId ? 'Google Account' : 'Email / Password'}
+                                    {viewUserModal.user.googleId ? t('google_account', { defaultValue: 'Google Account' }) : t('email_password', { defaultValue: 'Email / Password' })}
                                 </span>
                             </div>
                         </div>
                         <div className="mt-8 flex justify-end">
-                            <Button variant="outline" onClick={() => setViewUserModal({ isOpen: false, user: null })}>
-                                CLOSE
-                            </Button>
+                            <button 
+                                onClick={() => setViewUserModal({ isOpen: false, user: null })}
+                                className="bg-gray-100 border border-gray-300 text-gray-700 text-xs px-6 py-2 uppercase tracking-widest hover:bg-gray-200 transition-colors font-bold shadow-sm"
+                            >
+                                {t('close').toUpperCase()}
+                            </button>
                         </div>
                     </div>
                 )}
@@ -708,7 +721,7 @@ export const AdminUsersPage = () => {
 // ═══════════════════════════════════════════════════════════════
 
 export const AdminCompaniesPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [companies, setCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -758,7 +771,7 @@ export const AdminCompaniesPage = () => {
         try {
             await adminAPI.verifyCompany(id);
             setCompanies(prev => prev.map(c => c._id === id ? { ...c, verificationStatus: 'VERIFIED' } : c));
-            toast.success('Company verified.');
+            toast.success(t('company_verified_success', { defaultValue: 'Company verified successfully.' }));
             if (selectedCompany?._id === id) setSelectedCompany(null);
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to verify company.');
@@ -772,7 +785,7 @@ export const AdminCompaniesPage = () => {
         try {
             await adminAPI.suspendCompany(id, reason);
             setCompanies(prev => prev.map(c => c._id === id ? { ...c, isSuspended: !c.isSuspended, suspensionReason: reason || null } : c));
-            toast.success(isSuspended ? 'Company unsuspended.' : 'Company suspended.');
+            toast.success(isSuspended ? t('company_unsuspended_success', { defaultValue: 'Company unsuspended.' }) : t('company_suspended_success', { defaultValue: 'Company suspended.' }));
             setConfirmModal({ isOpen: false, companyId: null, isCurrentlySuspended: false, companyName: '' });
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to update company.');
@@ -786,8 +799,8 @@ export const AdminCompaniesPage = () => {
     return (
         <div className="flex flex-col flex-1">
             <PageHeading
-                title="Company Management"
-                subtitle={`${companies.length} companies registered`}
+                title={t('company_management', { defaultValue: 'Company Management' })}
+                subtitle={`${companies.length} ${t('companies_registered', { defaultValue: 'companies registered' })}`}
             />
 
             {/* Pending Alert */}
@@ -795,7 +808,7 @@ export const AdminCompaniesPage = () => {
                 <div className="flex items-center gap-3 px-5 py-3 mb-5 border-l-4 border-[#8B1A1A] bg-[#E2B325]">
                     <AlertTriangle className="text-[#8B1A1A] h-5 w-5" />
                     <span className="text-sm text-[#8B1A1A] font-semibold">
-                        {pendingCount} company verification{pendingCount > 1 ? 's' : ''} awaiting review.
+                        {t('company_verifications_pending', { count: pendingCount })}
                     </span>
                 </div>
             )}
@@ -806,7 +819,7 @@ export const AdminCompaniesPage = () => {
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Search by name or owner..."
+                        placeholder={t('search_companies_ph', { defaultValue: 'Search by name or owner...' })}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
@@ -817,29 +830,29 @@ export const AdminCompaniesPage = () => {
                     onChange={e => setVerifyFilter(e.target.value)}
                     className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#8B1A1A] bg-white cursor-pointer"
                 >
-                    <option value="ALL">All Status</option>
-                    <option value="PENDING">Pending</option>
-                    <option value="VERIFIED">Verified</option>
-                    <option value="REJECTED">Rejected</option>
+                    <option value="ALL">{t('filter_all')}</option>
+                    <option value="PENDING">{t('status_labels.PENDING')}</option>
+                    <option value="VERIFIED">{t('status_labels.VERIFIED')}</option>
+                    <option value="REJECTED">{t('status_labels.REJECTED')}</option>
                 </select>
                 <select
                     value={suspendFilter}
                     onChange={e => setSuspendFilter(e.target.value)}
                     className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#8B1A1A] bg-white cursor-pointer"
                 >
-                    <option value="ALL">All Suspension</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="SUSPENDED">Suspended</option>
+                    <option value="ALL">{t('all_suspension')}</option>
+                    <option value="ACTIVE">{t('status_labels.ACTIVE')}</option>
+                    <option value="SUSPENDED">{t('status_labels.SUSPENDED')}</option>
                 </select>
                 <div className="ml-auto text-xs text-gray-400 uppercase tracking-wider self-center border-l border-gray-200 pl-4">
-                    Showing {filteredCompanies.length} of {companies.length}
+                    {t('showing')} {filteredCompanies.length} {t('of')} {companies.length}
                 </div>
             </div>
 
             {/* Companies Table */}
             <SectionCard
                 className="!p-0 flex-1 flex flex-col min-h-0"
-                title="ALL COMPANIES"
+                title={t('all_companies')}
                 subtitle={
                     <span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">
                         {filteredCompanies.length}
@@ -847,19 +860,19 @@ export const AdminCompaniesPage = () => {
                 }
             >
                 {filteredCompanies.length === 0 ? (
-                    <EmptyState message="No companies match your filters" />
+                    <EmptyState message={t('no_companies_found', { defaultValue: 'No companies match your filters' })} />
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="bg-[#8B1A1A]">
                                     <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">#</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">Company</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden md:table-cell">Owner</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden lg:table-cell">District</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">Verification</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden sm:table-cell">Suspended</th>
-                                    <th className="py-3 px-4 text-right text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap">Actions</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('company').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden md:table-cell">{t('owner')}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden lg:table-cell">{t('district').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('verification', { defaultValue: 'VERIFICATION' })}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515] hidden sm:table-cell">{t('suspend').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-right text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap">{t('actions').toUpperCase()}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -875,9 +888,9 @@ export const AdminCompaniesPage = () => {
                                             )}
                                             <button
                                                 onClick={() => setSelectedCompany(company)}
-                                                className="text-xs text-[#E2B325] hover:text-[#8B1A1A] underline cursor-pointer mt-0.5 uppercase tracking-wider font-bold"
+                                                className="text-[10px] bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 px-2 py-0.5 mt-2 uppercase tracking-widest font-bold transition-colors"
                                             >
-                                                Details
+                                                {t('view').toUpperCase()}
                                             </button>
                                         </td>
                                         <td className="py-3 px-4 hidden md:table-cell border-b border-gray-100 align-middle">
@@ -896,13 +909,13 @@ export const AdminCompaniesPage = () => {
                                             <StatusBadge status={company.isSuspended ? 'SUSPENDED' : 'ACTIVE'} />
                                             {company.isSuspended && company.suspensionReason && (
                                                 <div className="text-[10px] text-[#8B1A1A] font-semibold mt-1 max-w-[120px] leading-tight" title={company.suspensionReason}>
-                                                    Reason: {company.suspensionReason}
+                                                    {t('reason_suspension')}: {company.suspensionReason}
                                                 </div>
                                             )}
                                         </td>
                                         <td className="py-3 px-4 hidden sm:table-cell border-b border-gray-100 align-middle">
                                             {company.isSuspended ? (
-                                                <span className="text-xs font-bold text-[#8B1A1A] uppercase tracking-wider">YES</span>
+                                                <span className="text-xs font-bold text-[#8B1A1A] uppercase tracking-wider">{t('yes', { defaultValue: 'YES' })}</span>
                                             ) : (
                                                 <span className="text-xs text-gray-300">—</span>
                                             )}
@@ -913,20 +926,20 @@ export const AdminCompaniesPage = () => {
                                                     <button
                                                         onClick={() => handleVerify(company._id)}
                                                         disabled={actionLoading[company._id]}
-                                                        className="text-xs px-2.5 py-1 uppercase tracking-wider bg-green-700 text-white hover:bg-green-800 disabled:opacity-50"
+                                                        className="text-[10px] px-3 py-1 font-bold uppercase tracking-widest bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-50 shadow-sm"
                                                     >
-                                                        {actionLoading[company._id] ? <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mx-2" /> : 'VERIFY'}
+                                                        {actionLoading[company._id] ? <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mx-2" /> : t('verify').toUpperCase()}
                                                     </button>
                                                 )}
                                                 <button
                                                     onClick={() => setConfirmModal({ isOpen: true, companyId: company._id, isCurrentlySuspended: company.isSuspended, companyName: company.businessName })}
                                                     disabled={actionLoading[company._id]}
-                                                    className={`text-xs px-2.5 py-1 uppercase tracking-wider disabled:opacity-50 ${company.isSuspended
-                                                        ? 'bg-[#1e40af] text-white hover:bg-blue-800'
+                                                    className={`text-[10px] px-3 py-1 font-bold uppercase tracking-widest disabled:opacity-50 shadow-sm transition-colors ${company.isSuspended
+                                                        ? 'bg-blue-600 text-white hover:bg-blue-700'
                                                         : 'bg-orange-500 text-white hover:bg-orange-600'
                                                         }`}
                                                 >
-                                                    {actionLoading[company._id] ? <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mx-4" /> : (company.isSuspended ? 'UNSUSPEND' : 'SUSPEND')}
+                                                    {actionLoading[company._id] ? <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mx-4" /> : (company.isSuspended ? t('unsuspend').toUpperCase() : t('suspend').toUpperCase())}
                                                 </button>
                                             </div>
                                         </td>
@@ -941,16 +954,16 @@ export const AdminCompaniesPage = () => {
             {/* Summary Footer */}
             <div className="bg-[#8B1A1A] px-5 py-2.5 flex gap-6 mt-auto">
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Total <span className="text-[#E2B325] font-bold ml-1">{companies.length}</span>
+                    {t('total')} <span className="text-[#E2B325] font-bold ml-1">{companies.length}</span>
                 </span>
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Pending <span className="text-[#E2B325] font-bold ml-1">{pendingCount}</span>
+                    {t('pending')} <span className="text-[#E2B325] font-bold ml-1">{pendingCount}</span>
                 </span>
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Verified <span className="text-[#E2B325] font-bold ml-1">{verifiedCount}</span>
+                    {t('verified')} <span className="text-[#E2B325] font-bold ml-1">{verifiedCount}</span>
                 </span>
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Suspended <span className="text-[#E2B325] font-bold ml-1">{suspendedCount}</span>
+                    {t('suspend')} <span className="text-[#E2B325] font-bold ml-1">{suspendedCount}</span>
                 </span>
             </div>
 
@@ -978,43 +991,43 @@ export const AdminCompaniesPage = () => {
                         <div className="p-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">District</p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">{t('district')}</p>
                                     <p className="text-sm font-medium text-[#1A1A1A]">{selectedCompany.district || '—'}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">Town</p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">{t('town')}</p>
                                     <p className="text-sm font-medium text-[#1A1A1A]">{selectedCompany.town || '—'}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">Phone</p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">{t('job_contact_phone')}</p>
                                     <p className="text-sm font-medium text-[#1A1A1A]">{selectedCompany.contactPhone || '—'}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">WhatsApp</p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">{t('whatsapp', { defaultValue: 'WhatsApp' })}</p>
                                     <p className="text-sm font-medium text-[#1A1A1A]">{selectedCompany.contactWhatsApp || '—'}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">Suspended</p>
-                                    <p className="text-sm font-medium text-[#1A1A1A]">{selectedCompany.isSuspended ? <span className="text-[#8B1A1A] font-bold">YES</span> : 'No'}</p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">{t('suspend')}</p>
+                                    <p className="text-sm font-medium text-[#1A1A1A]">{selectedCompany.isSuspended ? <span className="text-[#8B1A1A] font-bold">{t('yes').toUpperCase()}</span> : t('no', { defaultValue: 'No' })}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">Registered</p>
-                                    <p className="text-sm font-medium text-[#1A1A1A]">{fmtDate(selectedCompany.createdAt)}</p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">{t('registered')}</p>
+                                    <p className="text-sm font-medium text-[#1A1A1A]">{fmtDate(selectedCompany.createdAt, i18n)}</p>
                                 </div>
                             </div>
 
                             <div className="border-t border-gray-100 my-4" />
 
                             <div className="w-full">
-                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Description</p>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('description')}</p>
                                 <p className="text-sm text-gray-600 leading-relaxed bg-[#FAF7F2] p-3">
-                                    {selectedCompany.description || 'No description provided.'}
+                                    {selectedCompany.description || t('no_desc_provided', { defaultValue: 'No description provided.' })}
                                 </p>
                             </div>
 
-                            {selectedCompany.employerUserId && (
+                             {selectedCompany.employerUserId && (
                                 <div className="mt-4 bg-[#FAF7F2] p-3 border-l-4 border-l-[#E2B325]">
-                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Owner Account</p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('owner_account')}</p>
                                     <p className="text-sm font-semibold text-[#1A1A1A]">{selectedCompany.employerUserId.name}</p>
                                     <p className="text-xs text-gray-400">{selectedCompany.employerUserId.email}</p>
                                 </div>
@@ -1025,7 +1038,7 @@ export const AdminCompaniesPage = () => {
                             <div className="mx-6 mb-4 p-4 border border-red-200 bg-red-50 flex flex-col gap-2">
                                 <div className="flex items-center gap-2 text-[#8B1A1A]">
                                     <AlertTriangle className="h-4 w-4" />
-                                    <span className="font-bold text-xs uppercase tracking-wider">Suspension Reason</span>
+                                    <span className="font-bold text-xs uppercase tracking-wider">{t('reason_suspension')}</span>
                                 </div>
                                 <p className="text-sm text-red-900 leading-relaxed font-medium">
                                     {selectedCompany.suspensionReason}
@@ -1034,14 +1047,14 @@ export const AdminCompaniesPage = () => {
                         )}
 
                         <div className="border-t border-gray-100 px-6 py-4 bg-[#FAF7F2] flex gap-3 justify-end">
-                            <button className="border border-gray-300 text-gray-600 text-xs px-4 py-2 uppercase tracking-wider hover:bg-gray-100" onClick={() => setSelectedCompany(null)}>CANCEL</button>
+                            <button className="bg-gray-100 border border-gray-300 text-gray-700 text-xs px-4 py-2 uppercase tracking-widest hover:bg-gray-200 transition-colors font-bold" onClick={() => setSelectedCompany(null)}>{t('cancel')}</button>
                             {selectedCompany.verificationStatus === 'PENDING' && (
                                 <button
-                                    className="bg-[#8B1A1A] text-white text-xs px-4 py-2 uppercase tracking-wider hover:bg-[#6e1515] disabled:opacity-50"
+                                    className="bg-green-600 text-white text-xs px-6 py-2 uppercase tracking-widest hover:bg-green-700 transition-colors font-bold shadow-sm disabled:opacity-50"
                                     disabled={actionLoading[selectedCompany._id]}
                                     onClick={() => handleVerify(selectedCompany._id)}
                                 >
-                                    {actionLoading[selectedCompany._id] ? 'VERIFYING...' : 'VERIFY THIS COMPANY'}
+                                    {actionLoading[selectedCompany._id] ? t('wait') : t('verify_company_btn').toUpperCase()}
                                 </button>
                             )}
                         </div>
@@ -1051,9 +1064,9 @@ export const AdminCompaniesPage = () => {
 
             <ConfirmModal 
                 isOpen={confirmModal.isOpen}
-                title={confirmModal.isCurrentlySuspended ? 'Unsuspend Company' : 'Suspend Company'}
-                message={`Are you sure you want to ${confirmModal.isCurrentlySuspended ? 'unsuspend' : 'suspend'} ${confirmModal.companyName}?`}
-                confirmText={confirmModal.isCurrentlySuspended ? 'UNSUSPEND' : 'SUSPEND'}
+                title={confirmModal.isCurrentlySuspended ? t('unsuspend_company_title') : t('suspend_company_title')}
+                message={confirmModal.isCurrentlySuspended ? t('unsuspend_company_msg', { name: confirmModal.companyName }) : t('suspend_company_msg', { name: confirmModal.companyName })}
+                confirmText={confirmModal.isCurrentlySuspended ? t('unsuspend').toUpperCase() : t('suspend').toUpperCase()}
                 loading={confirmModal.companyId ? actionLoading[confirmModal.companyId] : false}
                 requireReason={!confirmModal.isCurrentlySuspended}
                 onCancel={() => setConfirmModal({ isOpen: false, companyId: null, isCurrentlySuspended: false, companyName: '' })}
@@ -1086,7 +1099,7 @@ export const AdminJobsPage = () => {
                 setJobs(res?.data?.jobs || res?.jobs || []);
             } catch (err) {
                 if (err.response?.status !== 404) {
-                    toast.error(err.response?.data?.message || 'Failed to load jobs.');
+                    toast.error(err.response?.data?.message || t('error_load_jobs'));
                 }
                 setError(true);
             } finally {
@@ -1121,9 +1134,9 @@ export const AdminJobsPage = () => {
             await adminAPI.deleteJob(jobId);
             setJobs(prev => prev.filter(j => j._id !== jobId));
             setDeleteTarget(null);
-            toast.success('Job deleted successfully.');
+            toast.success(t('job_deleted_success', { defaultValue: 'Job deleted successfully.' }));
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to delete job.');
+            toast.error(err.response?.data?.message || t('error_generic'));
         } finally {
             setDeleteLoading(false);
         }
@@ -1141,15 +1154,15 @@ export const AdminJobsPage = () => {
     if (loading) return <Spinner />;
     if (error) return (
         <div className="flex-1 flex items-center justify-center">
-            <p className="text-lg font-bold text-[#8B1A1A] uppercase tracking-wider">Failed to load jobs. Try refreshing.</p>
+            <p className="text-lg font-bold text-[#8B1A1A] uppercase tracking-wider">{t('error_load_jobs', { defaultValue: 'Failed to load jobs. Try refreshing.' })}</p>
         </div>
     );
 
     return (
         <div className="flex flex-col flex-1">
             <PageHeading
-                title="Job Management"
-                subtitle={`${jobs.length} total jobs`}
+                title={t('job_management', { defaultValue: 'Job Management' })}
+                subtitle={`${jobs.length} ${t('total_jobs')}`}
             />
 
             {/* Filter Bar */}
@@ -1158,7 +1171,7 @@ export const AdminJobsPage = () => {
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Search by title or district..."
+                        placeholder={t('search_jobs_ph')}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
@@ -1169,29 +1182,29 @@ export const AdminJobsPage = () => {
                     onChange={e => setStatusFilter(e.target.value)}
                     className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#8B1A1A] bg-white cursor-pointer"
                 >
-                    <option value="ALL">All Status</option>
-                    <option value="OPEN">Open</option>
-                    <option value="CLOSED">Closed</option>
+                    <option value="ALL">{t('filter_all')}</option>
+                    <option value="OPEN">{t('active')}</option>
+                    <option value="CLOSED">{t('closed')}</option>
                 </select>
                 <select
                     value={categoryFilter}
                     onChange={e => setCategoryFilter(e.target.value)}
                     className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#8B1A1A] bg-white cursor-pointer"
                 >
-                    <option value="ALL">All Categories</option>
+                    <option value="ALL">{t('all_categories')}</option>
                     {uniqueCategories.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                     ))}
                 </select>
                 <div className="ml-auto text-xs text-gray-400 uppercase tracking-wider self-center border-l border-gray-200 pl-4">
-                    Showing {filteredJobs.length} of {jobs.length}
+                    {t('showing')} {filteredJobs.length} {t('of')} {jobs.length}
                 </div>
             </div>
 
             {/* Jobs Table */}
             <SectionCard
                 className="!p-0 flex-1 flex flex-col min-h-0"
-                title="ALL JOBS"
+                title={t('all_jobs')}
                 subtitle={
                     <span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">
                         {filteredJobs.length}
@@ -1199,19 +1212,19 @@ export const AdminJobsPage = () => {
                 }
             >
                 {filteredJobs.length === 0 ? (
-                    <EmptyState message="No jobs match your filters" />
+                    <EmptyState message={t('no_jobs_found_filters', { defaultValue: 'No jobs match your filters' })} />
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="bg-[#8B1A1A]">
                                     <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">#</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">Job</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">Employer</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">Location</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">Type</th>
-                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">Status</th>
-                                    <th className="py-3 px-4 text-right text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap">Actions</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('job').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('employer').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('location').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('job_type_label').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap border-r border-[#6e1515]">{t('status').toUpperCase()}</th>
+                                    <th className="py-3 px-4 text-right text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap">{t('actions').toUpperCase()}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1242,9 +1255,9 @@ export const AdminJobsPage = () => {
                                             <button
                                                 onClick={() => setDeleteTarget(job)}
                                                 disabled={actionLoading[job._id]}
-                                                className="text-xs px-3 py-1 uppercase tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white transition-colors disabled:opacity-50"
+                                                className="text-[10px] px-3 py-1 font-bold uppercase tracking-widest border border-red-500 text-red-700 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
                                             >
-                                                {actionLoading[job._id] ? <div className="animate-spin h-3 w-3 border-2 border-[#8B1A1A] border-t-transparent rounded-full" /> : 'DELETE'}
+                                                {actionLoading[job._id] ? <div className="animate-spin h-3 w-3 border-2 border-red-500 border-t-transparent rounded-full" /> : t('delete').toUpperCase()}
                                             </button>
                                         </td>
                                     </tr>
@@ -1258,26 +1271,229 @@ export const AdminJobsPage = () => {
             {/* Summary Footer */}
             <div className="bg-[#8B1A1A] px-5 py-2.5 flex gap-6 mt-auto">
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Total <span className="text-[#E2B325] font-bold ml-1">{jobs.length}</span>
+                    {t('total')} <span className="text-[#E2B325] font-bold ml-1">{jobs.length}</span>
                 </span>
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Open <span className="text-[#E2B325] font-bold ml-1">{openCount}</span>
+                    {t('active')} <span className="text-[#E2B325] font-bold ml-1">{openCount}</span>
                 </span>
                 <span className="text-white/70 text-xs uppercase tracking-wider">
-                    Closed <span className="text-[#E2B325] font-bold ml-1">{closedCount}</span>
+                    {t('closed')} <span className="text-[#E2B325] font-bold ml-1">{closedCount}</span>
                 </span>
             </div>
 
             {/* Delete Confirmation Modal */}
             <ConfirmModal
                 isOpen={!!deleteTarget}
-                title="Delete Job"
-                message={`Are you sure you want to delete '${deleteTarget?.title}'? This action cannot be undone.`}
+                title={t('delete_job', { defaultValue: 'Delete Job' })}
+                message={t('delete_job_msg', { defaultValue: `Are you sure you want to delete '${deleteTarget?.title}'? This action cannot be undone.` })}
                 onConfirm={() => handleDeleteJob(deleteTarget._id)}
                 onCancel={() => setDeleteTarget(null)}
                 loading={deleteLoading}
-                confirmText="DELETE"
+                confirmText={t('delete').toUpperCase()}
             />
+        </div>
+    );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE 5: ADMIN REPORTS
+// ═══════════════════════════════════════════════════════════════
+
+export const AdminReportsPage = () => {
+    const { t } = useTranslation();
+    const [loading, setLoading] = useState(false);
+    const [report, setReport] = useState(null);
+    const [startDate, setStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+    const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+    const today = new Date().toISOString().split('T')[0];
+
+    const fetchReport = async () => {
+        // Validation
+        if (new Date(startDate) > new Date(endDate)) {
+            toast.error(t('error_start_end_date', { defaultValue: 'Start date cannot be after the end date.' }));
+            return;
+        }
+
+        if (new Date(endDate) > new Date()) {
+            toast.error(t('error_future_date', { defaultValue: 'End date cannot be in the future.' }));
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await adminAPI.getReports({ startDate, endDate });
+            setReport(res?.data || res);
+        } catch (err) {
+            toast.error(t('error_gen_report', { defaultValue: 'Failed to generate report.' }));
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchReport();
+    }, []);
+
+    const exportToCSV = () => {
+        if (!report) return;
+        
+        const { summary } = report;
+        const csvRows = [
+            [t('category', { defaultValue: 'Category' }), t('metric', { defaultValue: 'Metric' }), t('count', { defaultValue: 'Value' })],
+            [t('nav_users'), t('total_registrations', { defaultValue: 'Total Registrations' }), summary.users.total],
+            [t('nav_users'), t('job_seekers'), summary.users.seekers],
+            [t('nav_users'), t('employers'), summary.users.employers],
+            [t('nav_users'), t('role_labels.ADMIN'), summary.users.admins],
+            [t('all_jobs'), t('total_posts', { defaultValue: 'Total Posts' }), summary.jobs.total],
+            [t('all_jobs'), t('open_jobs', { defaultValue: 'Open Jobs' }), summary.jobs.open],
+            [t('all_jobs'), t('closed_jobs', { defaultValue: 'Closed Jobs' }), summary.jobs.closed],
+            [t('nav_applications'), t('total_submitted', { defaultValue: 'Total Submitted' }), summary.applications.total],
+            [t('nav_applications'), t('status_labels.ACCEPTED'), summary.applications.accepted],
+            [t('nav_applications'), t('status_labels.REJECTED'), summary.applications.rejected],
+            [t('nav_applications'), t('status_labels.PENDING'), summary.applications.pending],
+            [t('all_companies'), t('companies_registered'), summary.companies.total],
+            [t('all_companies'), t('status_labels.VERIFIED'), summary.companies.verified],
+            [t('all_companies'), t('pending_verify'), summary.companies.pending],
+            [t('all_companies'), t('status_labels.SUSPENDED'), summary.companies.suspended],
+        ];
+
+        const csvContent = csvRows.map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `system_report_${startDate}_to_${endDate}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    return (
+        <div className="flex flex-col flex-1">
+            <PageHeading 
+                title={t('system_reports_title', { defaultValue: 'System Activity Reports' })} 
+                subtitle={t('system_reports_desc', { defaultValue: 'Analyze platform growth and engagement' })} 
+            />
+
+            {/* Date Range Selector */}
+            <div className="bg-white border border-gray-200 border-t-4 border-t-[#8B1A1A] p-6 mb-6 shadow-sm">
+                <div className="flex flex-col md:flex-row items-end gap-6">
+                    <div className="flex-1 space-y-2">
+                        <label className="text-xs font-bold text-gray-700 uppercase tracking-widest">{t('start_date', { defaultValue: 'Start Date' })}</label>
+                        <input 
+                            type="date" 
+                            value={startDate} 
+                            max={today}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="w-full border border-gray-300 p-2.5 text-sm focus:outline-none focus:border-[#8B1A1A] placeholder-gray-400"
+                        />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                        <label className="text-xs font-bold text-gray-700 uppercase tracking-widest">{t('end_date', { defaultValue: 'End Date' })}</label>
+                        <input 
+                            type="date" 
+                            value={endDate} 
+                            max={today}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="w-full border border-gray-300 p-2.5 text-sm focus:outline-none focus:border-[#8B1A1A] placeholder-gray-400"
+                        />
+                    </div>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={fetchReport} 
+                            disabled={loading}
+                            className="bg-[#8B1A1A] text-white px-8 py-2.5 text-sm font-bold uppercase tracking-widest hover:bg-[#6e1515] transition-colors disabled:opacity-50 shadow-sm"
+                        >
+                            {loading ? t('wait') : t('generate_report_btn').toUpperCase()}
+                        </button>
+                        {report && (
+                            <button 
+                                onClick={exportToCSV}
+                                className="bg-[#E2B325] text-[#8B1A1A] px-6 py-2.5 text-sm font-bold uppercase tracking-widest hover:bg-[#d1a620] transition-colors flex items-center"
+                            >
+                                <FileText className="inline-block mr-2" size={16} /> {t('download_csv', { defaultValue: 'DOWNLOAD CSV' })}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {loading ? <Spinner /> : report ? (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <StatCard label={t('new_users', { defaultValue: 'New Users' })} value={report.summary.users.total} icon={Users} accent="#8B1A1A" />
+                        <StatCard label={t('recent_job_posts')} value={report.summary.jobs.total} icon={Briefcase} accent="#1e40af" />
+                        <StatCard label={t('applications')} value={report.summary.applications.total} icon={FileText} accent="#E2B325" />
+                        <StatCard label={t('new_companies', { defaultValue: 'New Companies' })} value={report.summary.companies.total} icon={Building2} accent="#1e40af" />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Breakdown 1: Users & Companies */}
+                        <SectionCard title={t('registration_breakdown', { defaultValue: 'Registration Breakdown' })}>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('users_by_role', { defaultValue: 'Users by Role' })}</h4>
+                                    <div className="flex justify-between items-center bg-[#FAF7F2] p-3 border-l-4 border-l-[#8B1A1A]">
+                                        <span className="text-sm font-semibold">{t('job_seekers')}</span>
+                                        <span className="text-lg font-bold text-[#8B1A1A]">{report.summary.users.seekers}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-[#FAF7F2] p-3 border-l-4 border-l-[#1e40af]">
+                                        <span className="text-sm font-semibold">{t('employers')}</span>
+                                        <span className="text-lg font-bold text-[#1e40af]">{report.summary.users.employers}</span>
+                                    </div>
+                                </div>
+                                <div className="pt-4 space-y-2">
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('company_status_label', { defaultValue: 'Company Status' })}</h4>
+                                    <div className="flex justify-between items-center bg-[#FAF7F2] p-3 border-l-4 border-l-green-600">
+                                        <span className="text-sm font-semibold">{t('verified_companies_label', { defaultValue: 'Verified Companies' })}</span>
+                                        <span className="text-lg font-bold text-green-600">{report.summary.companies.verified}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-[#FAF7F2] p-3 border-l-4 border-l-orange-500">
+                                        <span className="text-sm font-semibold">{t('pending_verify')}</span>
+                                        <span className="text-lg font-bold text-orange-500">{report.summary.companies.pending}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </SectionCard>
+
+                        {/* Breakdown 2: Jobs & Applications */}
+                        <SectionCard title={t('performance_breakdown', { defaultValue: 'Performance Breakdown' })}>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('application_status', { defaultValue: 'Application Status' })}</h4>
+                                    <div className="flex justify-between items-center bg-[#FAF7F2] p-3 border-l-4 border-l-green-600">
+                                        <span className="text-sm font-semibold">{t('apps_accepted', { defaultValue: 'Applications Accepted' })}</span>
+                                        <span className="text-lg font-bold text-green-600">{report.summary.applications.accepted}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-[#FAF7F2] p-3 border-l-4 border-l-[#8B1A1A]">
+                                        <span className="text-sm font-semibold">{t('apps_rejected', { defaultValue: 'Applications Rejected' })}</span>
+                                        <span className="text-lg font-bold text-[#8B1A1A]">{report.summary.applications.rejected}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-[#FAF7F2] p-3 border-l-4 border-l-blue-500">
+                                        <span className="text-sm font-semibold">{t('in_review_pending', { defaultValue: 'In Review / Pending' })}</span>
+                                        <span className="text-lg font-bold text-blue-500">{report.summary.applications.pending}</span>
+                                    </div>
+                                </div>
+                                <div className="pt-4 space-y-2">
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('job_metrics', { defaultValue: 'Job Metrics' })}</h4>
+                                    <div className="flex justify-between items-center bg-[#FAF7F2] p-3 border-l-4 border-l-[#1e40af]">
+                                        <span className="text-sm font-semibold">{t('open_positions_label', { defaultValue: 'Open Positions' })}</span>
+                                        <span className="text-lg font-bold text-[#1e40af]">{report.summary.jobs.open}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-[#FAF7F2] p-3 border-l-4 border-l-gray-400">
+                                        <span className="text-sm font-semibold">{t('closed_filled', { defaultValue: 'Closed / Filled' })}</span>
+                                        <span className="text-lg font-bold text-gray-500">{report.summary.jobs.closed}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </SectionCard>
+                    </div>
+                </div>
+            ) : (
+                <EmptyState message={t('select_dates_report_msg', { defaultValue: 'Select dates and generate a report' })} />
+            )}
         </div>
     );
 };

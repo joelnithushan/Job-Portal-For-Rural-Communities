@@ -8,11 +8,13 @@ import { JobCardSkeleton } from '../../components/jobs/JobCardSkeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
 import { useSavedJobs } from '../../hooks/useSavedJobs';
+import { useTranslation } from 'react-i18next';
 
 // Fallback Mock Data
 import { MOCK_JOBS } from '../../utils/mockData';
 
 export const JobsPage = () => {
+    const { t } = useTranslation();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);
@@ -127,14 +129,14 @@ export const JobsPage = () => {
 
                     {/* Mobile Filter Toggle */}
                     <div className="lg:hidden flex items-center justify-between bg-white p-4 border border-gray-200">
-                        <span className="font-semibold text-[#1A1A1A] uppercase tracking-wider text-xs">Filters</span>
+                        <span className="font-semibold text-[#1A1A1A] uppercase tracking-wider text-xs">{t('filter_title')}</span>
                         <Button
                             variant="outline" size="sm"
                             onClick={() => setIsMobileFiltersOpen(true)}
                             className="relative border-[#8B1A1A] text-[#8B1A1A] rounded-none hover:bg-[#8B1A1A] hover:text-white"
                         >
                             <Filter size={18} className="mr-2" />
-                            SHOW FILTERS
+                            {t('filter_mobile_btn')}
                             {activeFilterCount > 0 && (
                                 <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#8B1A1A] text-white text-[10px] font-bold rounded-none flex items-center justify-center">
                                     {activeFilterCount}
@@ -158,24 +160,24 @@ export const JobsPage = () => {
                         <div className="bg-white border border-gray-200 overflow-hidden mb-6">
                             <div className="bg-[#8B1A1A] px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <h2 className="text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-                                    AVAILABLE POSITIONS ({total})
+                                    {t('jobs_available')} ({total})
                                     {totalPages > 1 && (
                                         <span className="text-[10px] text-[#E2B325]/70 font-normal ml-2">
-                                            (PAGE {filters.page} OF {totalPages})
+                                            ({t('jobs_page')} {filters.page} {t('jobs_of')} {totalPages})
                                         </span>
                                     )}
                                 </h2>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-[10px] text-[#E2B325] font-bold uppercase tracking-widest shrink-0">Sort by:</span>
+                                    <span className="text-[10px] text-[#E2B325] font-bold uppercase tracking-widest shrink-0">{t('jobs_sort_by')}</span>
                                     <select
                                         className="bg-[#6e1515] border border-[#E2B325]/30 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 block focus:outline-none focus:border-[#E2B325] transition-colors cursor-pointer"
                                         value={filters.sort}
                                         onChange={(e) => handleFilterChange({ sort: e.target.value })}
                                         style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
                                     >
-                                        <option value="newest">NEWEST FIRST</option>
-                                        <option value="salaryDesc">SALARY: HIGH TO LOW</option>
-                                        <option value="salaryAsc">SALARY: LOW TO HIGH</option>
+                                        <option value="newest">{t('jobs_sort_newest')}</option>
+                                        <option value="salaryDesc">{t('jobs_sort_salary_desc')}</option>
+                                        <option value="salaryAsc">{t('jobs_sort_salary_asc')}</option>
                                     </select>
                                 </div>
                             </div>
@@ -191,9 +193,9 @@ export const JobsPage = () => {
                             ) : jobs.length === 0 ? (
                                 <EmptyState
                                     icon={Filter}
-                                    title="No jobs found"
-                                    description="We couldn't find any jobs matching your current filters. Try broadening your search or clearing some filters."
-                                    action={<Button variant="outline" onClick={clearFilters}>Clear All Filters</Button>}
+                                    title={t('jobs_empty_title')}
+                                    description={t('jobs_empty_desc')}
+                                    action={<Button variant="outline" onClick={clearFilters}>{t('jobs_clear_filters')}</Button>}
                                     className="my-8"
                                 />
                             ) : (
@@ -228,7 +230,7 @@ export const JobsPage = () => {
                                         disabled={filters.page === 1}
                                         onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
                                     >
-                                        Previous
+                                        {t('pagination_prev')}
                                     </Button>
 
                                     {getPageNumbers()[0] > 1 && (
@@ -279,7 +281,7 @@ export const JobsPage = () => {
                                         disabled={filters.page >= totalPages}
                                         onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
                                     >
-                                        Next
+                                        {t('pagination_next')}
                                     </Button>
                                 </div>
                             </div>
@@ -310,7 +312,7 @@ export const JobsPage = () => {
                             className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl h-[85vh] flex flex-col lg:hidden"
                         >
                             <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-                                <h3 className="font-heading font-semibold text-lg">Filters</h3>
+                                <h3 className="font-heading font-semibold text-lg">{t('filter_title')}</h3>
                                 <button onClick={() => setIsMobileFiltersOpen(false)} className="p-2 bg-gray-100 rounded-full text-gray-500">
                                     <X size={20} />
                                 </button>

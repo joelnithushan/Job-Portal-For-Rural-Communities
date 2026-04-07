@@ -8,12 +8,17 @@ import { authAPI } from '../../api/services';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
-const schema = yup.object({
-    email: yup.string().email('Please enter a valid email address').required('Email is required'),
-});
+// Schema moved inside component
 
 export const ForgotPasswordPage = () => {
+    const { t } = useTranslation();
+
+    const schema = yup.object({
+        email: yup.string().email(t('auth_err_email_invalid')).required(t('auth_err_email_req')),
+    });
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [emailSent, setEmailSent] = useState(false);
     const [sentEmail, setSentEmail] = useState('');
@@ -49,13 +54,13 @@ export const ForgotPasswordPage = () => {
                     /* ─── Success State ─── */
                     <div className="text-center py-4">
                         <CheckCircle size={48} className="mx-auto mb-4" style={{ color: '#22c55e' }} />
-                        <h2 className="text-xl font-heading font-semibold text-brand-dark mb-3">Check Your Email</h2>
+                        <h2 className="text-xl font-heading font-semibold text-brand-dark mb-3">{t('forgot_pwd_success_title')}</h2>
                         <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                            If an account exists for <strong className="text-brand-dark">{sentEmail}</strong>, you will receive a password reset link shortly. Check your spam folder too.
+                            {t('forgot_pwd_success_desc_1')} <strong className="text-brand-dark">{sentEmail}</strong>, {t('forgot_pwd_success_desc_2')}
                         </p>
                         <Link to="/login">
                             <Button variant="outline" fullWidth>
-                                BACK TO LOGIN
+                                {t('forgot_pwd_back_to_login')}
                             </Button>
                         </Link>
                     </div>
@@ -63,23 +68,23 @@ export const ForgotPasswordPage = () => {
                     /* ─── Form State ─── */
                     <>
                         <div className="text-center mb-6">
-                            <h2 className="text-xl font-heading font-semibold text-brand-dark mb-2">Forgot Password</h2>
+                            <h2 className="text-xl font-heading font-semibold text-brand-dark mb-2">{t('forgot_pwd_title')}</h2>
                             <p className="text-sm text-gray-500">
-                                Enter your registered email address and we'll send you a link to reset your password.
+                                {t('forgot_pwd_desc')}
                             </p>
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <Input
-                                label="Email Address"
+                                label={t('auth_email_address')}
                                 type="email"
-                                placeholder="nimal@gmail.com"
+                                placeholder={t('auth_email_ph')}
                                 error={errors.email?.message}
                                 {...register('email')}
                             />
 
                             <Button type="submit" variant="primary" fullWidth size="lg" loading={isSubmitting}>
-                                {isSubmitting ? 'SENDING...' : 'SEND RESET LINK'}
+                                {isSubmitting ? t('forgot_pwd_sending') : t('forgot_pwd_send_link')}
                             </Button>
                         </form>
                     </>
@@ -89,7 +94,7 @@ export const ForgotPasswordPage = () => {
                 {!emailSent && (
                     <div className="text-center mt-6">
                         <Link to="/login" className="text-sm text-gray-500 hover:text-brand-dark transition-colors">
-                            ← Back to Login
+                            ← {t('forgot_pwd_back_link')}
                         </Link>
                     </div>
                 )}

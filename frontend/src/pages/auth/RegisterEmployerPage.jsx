@@ -10,21 +10,26 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { useTranslation } from 'react-i18next';
 
 const nameRegex = /^[a-zA-Z\s.-]+$/;
 const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
 
-const registerSchema = yup.object({
-    name: yup.string().required('Full name is required').min(2, 'Name is too short').matches(nameRegex, 'Name can only contain letters, spaces, dots and hyphens'),
-    email: yup.string().email('Please enter a valid email address').required('Email is required'),
-    password: yup.string().required('Password is required').matches(pwdRegex, 'Password must have min 8 chars, 1 uppercase, 1 number, and 1 special char'),
-    confirmPassword: yup.string()
-        .required('Please confirm your password')
-        .oneOf([yup.ref('password')], 'Passwords must match'),
-    agreeToTerms: yup.boolean().oneOf([true], 'You must accept the terms')
-});
+// Schema moved inside component to use translation hook
 
 export const RegisterEmployerPage = () => {
+    const { t } = useTranslation();
+
+    const registerSchema = yup.object({
+        name: yup.string().required(t('auth_err_name_req')).min(2, t('auth_err_name_short')).matches(nameRegex, t('auth_err_name_invalid')),
+        email: yup.string().email(t('auth_err_email_invalid')).required(t('auth_err_email_req')),
+        password: yup.string().required(t('auth_err_pass_req')).matches(pwdRegex, t('auth_err_pass_invalid')),
+        confirmPassword: yup.string()
+            .required(t('auth_err_confirm_pass_req'))
+            .oneOf([yup.ref('password')], t('auth_err_confirm_pass_match')),
+        agreeToTerms: yup.boolean().oneOf([true], t('auth_err_terms_req'))
+    });
+
     const { register: registerUser, googleLogin } = useAuth();
     const navigate = useNavigate();
     const { executeRecaptcha } = useGoogleReCaptcha();
@@ -39,7 +44,7 @@ export const RegisterEmployerPage = () => {
     const onGoogleSuccess = async (credentialResponse) => {
         try {
             await googleLogin(credentialResponse.credential, 'EMPLOYER');
-            toast.success('Employer account created!');
+            toast.success(t('auth_emp_success_msg'));
             navigate('/employer', { replace: true });
         } catch (error) {
             console.error('Google Signup error:', error);
@@ -48,7 +53,7 @@ export const RegisterEmployerPage = () => {
 
     const onSubmit = async (data) => {
         if (!executeRecaptcha) {
-            toast.error('Security check not ready, please try again.');
+            toast.error(t('auth_security_err'));
             return;
         }
 
@@ -57,7 +62,7 @@ export const RegisterEmployerPage = () => {
             const captchaToken = await executeRecaptcha('register_employer');
             const { confirmPassword, agreeToTerms, ...rest } = data;
             await registerUser({ ...rest, role: 'EMPLOYER', captchaToken });
-            toast.success('Employer account created!');
+            toast.success(t('auth_emp_success_msg'));
             navigate('/employer', { replace: true });
         } catch (error) {
             console.error('Employer registration error:', error);
@@ -73,33 +78,33 @@ export const RegisterEmployerPage = () => {
             <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg rounded-2xl my-8">
                 <div className="text-center mb-6">
                     <Link to="/">
-                        <img src="/logo.png" alt="RuralWork" className="h-20 w-auto object-contain mx-auto mb-4" />
+                        <img src="/logo.png" alt="NextEra" className="h-20 w-auto object-contain mx-auto mb-4" />
                     </Link>
-                    <h2 className="text-xl font-heading font-semibold text-brand-dark">Employer Sign Up</h2>
-                    <p className="text-sm text-gray-400 mt-1">Post jobs and find local talent</p>
+                    <h2 className="text-xl font-heading font-semibold text-brand-dark">{t('auth_emp_title')}</h2>
+                    <p className="text-sm text-gray-400 mt-1">{t('auth_emp_desc')}</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <Input
-                        label="Company / Your Name"
-                        placeholder="e.g. Green Valley Estates"
+                        label={t('auth_emp_name')}
+                        placeholder={t('auth_emp_name_ph')}
                         error={errors.name?.message}
                         {...register('name')}
                     />
 
                     <Input
-                        label="Business Email"
+                        label={t('auth_emp_email')}
                         type="email"
-                        placeholder="hr@company.lk"
+                        placeholder={t('auth_emp_email_ph')}
                         error={errors.email?.message}
                         {...register('email')}
                     />
 
                     <div className="relative">
                         <Input
-                            label="Password"
+                            label={t('auth_password')}
                             type={showPassword ? "text" : "password"}
-                            placeholder="Minimum 8 characters"
+                            placeholder={t('auth_password_ph')}
                             error={errors.password?.message}
                             {...register('password')}
                         />
@@ -113,9 +118,9 @@ export const RegisterEmployerPage = () => {
                     </div>
 
                     <Input
-                        label="Confirm Password"
+                        label={t('auth_confirm_password')}
                         type={showPassword ? "text" : "password"}
-                        placeholder="Re-enter password"
+                        placeholder={t('auth_confirm_pwd_ph')}
                         error={errors.confirmPassword?.message}
                         {...register('confirmPassword')}
                     />
@@ -128,7 +133,7 @@ export const RegisterEmployerPage = () => {
                                 className={`mt-0.5 text-brand-green focus:ring-brand-green ${errors.agreeToTerms ? 'border-red-400' : 'border-gray-300'}`}
                             />
                             <span className="text-sm text-gray-500">
-                                I agree to the <a href="#" className="text-brand-green hover:underline">Terms</a> and <a href="#" className="text-brand-green hover:underline">Privacy Policy</a>
+                                {t('auth_agree')} <a href="#" className="text-brand-green hover:underline">{t('auth_terms')}</a> {t('auth_and')} <a href="#" className="text-brand-green hover:underline">{t('auth_privacy')}</a>
                             </span>
                         </label>
                         {errors.agreeToTerms && <p className="mt-1 text-sm text-red-500">{errors.agreeToTerms.message}</p>}
@@ -137,14 +142,14 @@ export const RegisterEmployerPage = () => {
 
 
                     <Button type="submit" variant="primary" fullWidth size="lg" loading={isSubmitting}>
-                        CREATE EMPLOYER ACCOUNT
+                        {t('auth_emp_btn')}
                     </Button>
                 </form>
 
                 {/* Divider */}
                 <div className="flex items-center gap-4 my-6">
                     <div className="flex-1 h-px bg-gray-200" />
-                    <span className="text-xs text-gray-400 uppercase tracking-wider">or</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wider">{t('auth_or')}</span>
                     <div className="flex-1 h-px bg-gray-200" />
                 </div>
 
@@ -152,7 +157,7 @@ export const RegisterEmployerPage = () => {
                     <GoogleLogin
                         onSuccess={onGoogleSuccess}
                         onError={() => {
-                            toast.error('Google Signup Failed');
+                            toast.error(t('auth_login_failed_msg'));
                         }}
                         text="signup_with"
                     />
@@ -160,16 +165,16 @@ export const RegisterEmployerPage = () => {
 
                 <div className="text-center space-y-3">
                     <div className="text-sm text-gray-500">
-                        Looking for a job?{' '}
+                        {t('auth_emp_looking_job')}{' '}
                         <Link to="/register" className="font-semibold text-brand-green hover:underline">
-                            Register as Job Seeker →
+                            {t('auth_reg_as_seeker')} →
                         </Link>
                     </div>
                     <div className="text-sm text-gray-500">
-                        Already have an account?{' '}
+                        {t('auth_already_have_acc')}{' '}
                         <Link to="/login" className="inline-flex items-center gap-1">
                             <span className="font-semibold text-white bg-brand-green px-3 py-1 text-xs hover:bg-brand-greenLight transition-colors">
-                                Log in
+                                {t('auth_login')}
                             </span>
                         </Link>
                     </div>

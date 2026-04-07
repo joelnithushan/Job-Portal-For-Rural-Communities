@@ -11,6 +11,7 @@ import {
     Camera, Trash2, User, Phone, MapPin, FileText,
     Mail, Shield, Calendar, Edit3, Save, X, CheckCircle, CreditCard, AlertTriangle
 } from 'lucide-react';
+import { formatDate } from '../../utils/formatters';
 
 const DISTRICTS = [
     'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo',
@@ -36,13 +37,12 @@ const getInitials = (name) => {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
-const fmtDate = (d) => {
-    if (!d) return '—';
-    return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+const fmtDate = (d, i18n) => {
+    return formatDate(d, i18n);
 };
 
 export const ProfilePage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user, updateUser, logout } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -52,6 +52,14 @@ export const ProfilePage = () => {
     const [photoPreview, setPhotoPreview] = useState(null);
     const [bioLength, setBioLength] = useState(user?.bio?.length || 0);
     const fileInputRef = useRef(null);
+
+    const profileSchema = yup.object({
+        name: yup.string().required(t('err_name_req', { defaultValue: 'Name is required' })).min(2, t('err_name_short', { defaultValue: 'Name must be at least 2 characters' })).max(60, t('err_name_long', { defaultValue: 'Name must be at most 60 characters' })).trim(),
+        phone: yup.string().nullable().transform(v => v === '' ? null : v).matches(/^[0-9+\-\s()]{7,20}$/, { message: t('err_phone_invalid', { defaultValue: 'Enter a valid phone number' }), excludeEmptyString: true }),
+        district: yup.string().nullable().transform(v => v === '' ? null : v),
+        nic: yup.string().nullable().transform(v => v === '' ? null : v).matches(/^(?:\d{9}[vVxX]|\d{12})$/, { message: t('err_nic_invalid', { defaultValue: 'Enter a valid Sri Lankan NIC' }), excludeEmptyString: true }),
+        bio: yup.string().nullable().transform(v => v === '' ? null : v).max(500, t('err_bio_long', { defaultValue: 'Bio cannot exceed 500 characters' })),
+    });
 
     const { register, handleSubmit, reset, formState: { errors, isDirty }, watch } = useForm({
         resolver: yupResolver(profileSchema),
@@ -244,10 +252,10 @@ export const ProfilePage = () => {
                         {/* Divider + Account info */}
                         <div className="border-t border-gray-100 mt-5 pt-5 w-full">
                             {[
-                                { icon: Mail, label: 'Email', value: user?.email },
-                                { icon: Shield, label: 'Role', value: user?.role?.replace('_', ' ') },
-                                { icon: Calendar, label: 'Member Since', value: fmtDate(user?.createdAt) },
-                                { icon: CheckCircle, label: 'Status', value: user?.status, color: user?.status === 'ACTIVE' ? '#16a34a' : '#dc2626' },
+                                { icon: Mail, label: t('auth_email_address'), value: user?.email },
+                                { icon: Shield, label: t('role'), value: t(`role_labels.${user?.role}`, { defaultValue: user?.role?.replace('_', ' ') }) },
+                                { icon: Calendar, label: t('member_since'), value: fmtDate(user?.createdAt, i18n) },
+                                { icon: CheckCircle, label: t('status'), value: t(`status_labels.${user?.status}`, { defaultValue: user?.status }), color: user?.status === 'ACTIVE' ? '#16a34a' : '#dc2626' },
                             ].map(item => (
                                 <div key={item.label} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
                                     <item.icon className="h-4 w-4 text-[#8B1A1A] flex-shrink-0" />
@@ -277,23 +285,23 @@ export const ProfilePage = () => {
                             <div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
                                     {[
-                                        { icon: User, label: 'Full Name', value: user?.name },
-                                        { icon: Phone, label: 'Phone', value: user?.phone },
-                                        { icon: CreditCard, label: 'National ID (NIC)', value: user?.nic },
-                                        { icon: MapPin, label: 'District', value: user?.district },
+                                        { icon: User, label: t('full_name'), value: user?.name },
+                                        { icon: Phone, label: t('job_contact_phone'), value: user?.phone },
+                                        { icon: CreditCard, label: 'NIC', value: user?.nic },
+                                        { icon: MapPin, label: t('district'), value: user?.district },
                                     ].map(field => (
                                         <div key={field.label} className="flex flex-col py-4 border-b border-gray-100">
                                             <span className="text-xs text-gray-400 uppercase tracking-wider mb-1">{field.label}</span>
                                             <span className="text-sm font-medium text-[#1A1A1A]">
-                                                {field.value || <span className="text-gray-300 italic">Not provided</span>}
+                                                {field.value || <span className="text-gray-300 italic">{t('not_provided')}</span>}
                                             </span>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="mt-4 pt-4 border-t border-gray-100">
-                                    <span className="text-xs text-gray-400 uppercase tracking-wider mb-2 block">Bio / About Me</span>
+                                    <span className="text-xs text-gray-400 uppercase tracking-wider mb-2 block">{t('bio_label')}</span>
                                     <div className="text-sm text-gray-600 leading-relaxed bg-[#FAF7F2] p-4">
-                                        {user?.bio || <span className="text-gray-300 italic">No bio added yet.</span>}
+                                        {user?.bio || <span className="text-gray-300 italic">{t('no_bio')}</span>}
                                     </div>
                                 </div>
                             </div>

@@ -4,8 +4,10 @@ import { ChevronRight } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { formatDate } from '../../utils/formatters';
 import { JOB_TYPE_LABELS } from '../../utils/constants';
+import { useTranslation } from 'react-i18next';
 
 export const ApplicationRow = ({ application, index }) => {
+    const { t, i18n } = useTranslation();
     const { job, status, createdAt } = application;
     const company = job?.companyId;
 
@@ -56,7 +58,7 @@ export const ApplicationRow = ({ application, index }) => {
                 <div className="flex items-center gap-3 w-1/2 md:w-32 flex-shrink-0 mt-2 md:mt-0">
                     <div className="flex flex-col">
                         <span className="text-xs text-brand-muted uppercase tracking-wider font-semibold">Applied On</span>
-                        <span className="text-sm font-medium">{formatDate(createdAt)}</span>
+                        <span className="text-sm font-medium">{formatDate(createdAt, i18n)}</span>
                     </div>
                 </div>
 

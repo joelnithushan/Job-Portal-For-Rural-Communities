@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 // ─── SHARED HELPERS ────────────────────────────────────────────
 
 const StatusBadge = ({ status }) => {
+    const { t } = useTranslation();
     const map = {
         OPEN: 'bg-[#E2B325] text-[#8B1A1A]',
         CLOSED: 'bg-gray-200 text-gray-600',
@@ -32,29 +33,35 @@ const StatusBadge = ({ status }) => {
     };
     return (
         <span className={`inline-block px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${map[status] || 'bg-gray-200 text-gray-600'}`}>
-            {status?.replace('_', ' ')}
+            {t(`status_labels.${status}`, { defaultValue: status?.replace('_', ' ') })}
         </span>
     );
 };
 
-const Spinner = () => (
-    <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
-        <p className="text-sm text-gray-400 uppercase tracking-widest">Loading...</p>
-    </div>
-);
-
-const EmptyState = ({ message, subtitle }) => (
-    <div className="flex flex-col items-center justify-center py-16 gap-2">
-        <div className="h-12 w-12 border-2 border-dashed border-gray-300 flex items-center justify-center">
-            <span className="text-gray-300 text-2xl">—</span>
+const Spinner = () => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <div className="animate-spin h-10 w-10 border-4 border-[#8B1A1A] border-t-[#E2B325]" />
+            <p className="text-sm text-gray-400 uppercase tracking-widest">{t('loading')}</p>
         </div>
-        <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mt-2">
-            {message || 'No Records Found'}
-        </p>
-        <p className="text-xs text-gray-300">{subtitle}</p>
-    </div>
-);
+    );
+};
+
+const EmptyState = ({ message, subtitle }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center justify-center py-16 gap-2">
+            <div className="h-12 w-12 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <span className="text-gray-300 text-2xl">—</span>
+            </div>
+            <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mt-2">
+                {message || t('no_records_found')}
+            </p>
+            <p className="text-xs text-gray-300">{subtitle}</p>
+        </div>
+    );
+};
 
 const SectionCard = ({ children, className = '', title, rightSlot }) => (
     <div className={`bg-white border border-gray-200 overflow-hidden mb-6 ${className}`}>
@@ -84,7 +91,8 @@ const StatCard = ({ label, value, icon: Icon, accentColor }) => (
     </div>
 );
 
-const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, confirmText = 'DELETE' }) => {
+const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, confirmText }) => {
+    const { t } = useTranslation();
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center">
@@ -92,9 +100,9 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
                 <h3 className="font-['Playfair_Display'] text-lg text-[#1A1A1A] font-bold">{title}</h3>
                 <p className="text-sm text-gray-500 mt-2 leading-relaxed">{message}</p>
                 <div className="mt-6 flex gap-3 justify-end">
-                    <button onClick={onCancel} className="border border-gray-300 px-4 py-2 text-sm uppercase tracking-wider text-gray-600 hover:bg-gray-50">CANCEL</button>
+                    <button onClick={onCancel} className="border border-gray-300 px-4 py-2 text-sm uppercase tracking-wider text-gray-600 hover:bg-gray-50">{t('cancel')}</button>
                     <button onClick={onConfirm} disabled={loading} className="bg-[#8B1A1A] text-white px-4 py-2 text-sm uppercase tracking-wider hover:bg-[#6e1515] disabled:opacity-50">
-                        {loading ? 'WAIT...' : confirmText}
+                        {loading ? t('wait') : (confirmText || t('confirm'))}
                     </button>
                 </div>
             </div>
@@ -110,12 +118,12 @@ const getInitials = (name) => {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
-const fmtDate = (d) => {
-    if (!d) return '—';
-    return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+const fmtDate = (d, i18n) => {
+    return formatDate(d, i18n);
 };
 
 const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
+    const { t } = useTranslation();
     if (!isOpen || !applicant) return null;
     return (
         <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center p-4">
@@ -133,9 +141,9 @@ const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
                             </div>
                         )}
                         <div>
-                            <h3 className="font-['Playfair_Display'] text-2xl text-[#1A1A1A] font-bold">{applicant.name || 'Applicant'}</h3>
+                            <h3 className="font-['Playfair_Display'] text-2xl text-[#1A1A1A] font-bold">{applicant.name || t('applicant')}</h3>
                             <span className="bg-[#E2B325] text-[#8B1A1A] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 mt-1 inline-block">
-                                Job Seeker
+                                {t('role_labels.JOB_SEEKER')}
                             </span>
                         </div>
                     </div>
@@ -143,11 +151,11 @@ const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Email</p>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('auth_email_address')}</p>
                                 <p className="text-sm font-medium text-[#1A1A1A] truncate" title={applicant.email}>{applicant.email || '—'}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Phone</p>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('job_contact_phone')}</p>
                                 <p className="text-sm font-medium text-[#1A1A1A]">{applicant.phone || '—'}</p>
                             </div>
                             <div>
@@ -155,15 +163,15 @@ const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
                                 <p className="text-sm font-medium text-[#1A1A1A]">{applicant.nic || '—'}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">District</p>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('district')}</p>
                                 <p className="text-sm font-medium text-[#1A1A1A]">{applicant.district || '—'}</p>
                             </div>
                         </div>
                         
                         <div className="pt-4 border-t border-gray-100">
-                            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Bio / About Me</p>
+                            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">{t('bio_label', { defaultValue: 'Bio / About Me' })}</p>
                             <div className="bg-[#FAF7F2] p-4 text-sm text-gray-600 leading-relaxed max-h-40 overflow-y-auto whitespace-pre-line">
-                                {applicant.bio || <span className="italic text-gray-400">No bio provided.</span>}
+                                {applicant.bio || <span className="italic text-gray-400">{t('no_bio', { defaultValue: 'No bio provided.' })}</span>}
                             </div>
                         </div>
                     </div>
@@ -260,8 +268,8 @@ export const EmployerDashboard = () => {
                 {myJobs.length === 0 ? (
                     <div className="flex flex-col items-center py-10 gap-3">
                         <Briefcase className="h-12 w-12 text-gray-200" />
-                        <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider">No jobs posted yet</p>
-                        <button onClick={() => navigate('/employer/post-job')} className="mt-2 bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#6e1515]">Post your first job →</button>
+                        <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{t('no_jobs_posted', { defaultValue: 'No jobs posted yet' })}</p>
+                        <button onClick={() => navigate('/employer/post-job')} className="mt-2 bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#6e1515]">{t('post_first_job', { defaultValue: 'Post your first job →' })}</button>
                     </div>
                 ) : (
                     myJobs.slice(0, 5).map(job => (
@@ -273,7 +281,7 @@ export const EmployerDashboard = () => {
                             </div>
                             <div className="ml-auto flex items-center gap-3">
                                 <StatusBadge status={job.status} />
-                                <Link to="/employer/jobs" className="text-xs uppercase tracking-wider text-[#8B1A1A] hover:text-[#E2B325]">VIEW</Link>
+                                <Link to="/employer/jobs" className="text-xs uppercase tracking-wider text-[#8B1A1A] hover:text-[#E2B325]">{t('view_label', { defaultValue: 'VIEW' })}</Link>
                             </div>
                         </div>
                     ))
@@ -299,10 +307,10 @@ export const EmployerDashboard = () => {
 
                 <SectionCard title={t('quick_actions')}>
                     {[
-                        { label: t('post_new_job'), desc: 'Create a new job listing', icon: PlusCircle, path: '/employer/post-job' },
-                        { label: t('my_jobs'), desc: 'Manage your job postings', icon: Briefcase, path: '/employer/jobs' },
-                        { label: t('company'), desc: 'Update your company details', icon: Building2, path: '/employer/company' },
-                        { label: t('all_job_applications'), desc: 'Review incoming applications', icon: ClipboardList, path: '/employer/jobs' },
+                        { label: t('post_new_job'), desc: t('create_job_desc', { defaultValue: 'Create a new job listing' }), icon: PlusCircle, path: '/employer/post-job' },
+                        { label: t('my_jobs'), desc: t('manage_jobs_desc', { defaultValue: 'Manage your job postings' }), icon: Briefcase, path: '/employer/jobs' },
+                        { label: t('company'), desc: t('update_company_desc', { defaultValue: 'Update your company details' }), icon: Building2, path: '/employer/company' },
+                        { label: t('all_job_applications'), desc: t('review_apps_desc', { defaultValue: 'Review incoming applications' }), icon: ClipboardList, path: '/employer/jobs' },
                     ].map(action => (
                         <div key={action.label} onClick={() => navigate(action.path)} className="flex items-center gap-4 p-4 border-b border-gray-100 last:border-0 hover:bg-[#FAF7F2] transition-colors group cursor-pointer">
                             <div className="bg-[#8B1A1A]/10 p-2.5"><action.icon className="h-5 w-5 text-[#8B1A1A]" /></div>
@@ -325,21 +333,22 @@ export const EmployerDashboard = () => {
 // ═══════════════════════════════════════════════════════════════
 const phoneRegex = /^(?:\+94|0)[0-9]{9}$/;
 
-const postJobSchema = yup.object({
-    title: yup.string().required('Job title is required').min(5, 'Title is too short'),
-    description: yup.string().required('Description is required').min(20, 'Provide more details'),
-    district: yup.string().required('District is required'),
-    town: yup.string().required('Town is required'),
-    category: yup.string().required('Category is required'),
-    jobType: yup.string().required('Job type is required'),
-    contactPhone: yup.string().required('Contact phone is required').matches(phoneRegex, 'Must be a valid Sri Lankan mobile number'),
-    salaryMin: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
-    salaryMax: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
-    cvRequired: yup.boolean(),
-});
-
 export const PostJobPage = () => {
     const { t } = useTranslation();
+    
+    const postJobSchema = yup.object({
+        title: yup.string().required(t('err_title_req', { defaultValue: 'Job title is required' })).min(5, t('err_title_short', { defaultValue: 'Title is too short' })),
+        description: yup.string().required(t('err_desc_req', { defaultValue: 'Description is required' })).min(20, t('err_desc_short', { defaultValue: 'Provide more details' })),
+        district: yup.string().required(t('err_district_req', { defaultValue: 'District is required' })),
+        town: yup.string().required(t('err_town_req', { defaultValue: 'Town is required' })),
+        category: yup.string().required(t('err_cat_req', { defaultValue: 'Category is required' })),
+        jobType: yup.string().required(t('err_type_req', { defaultValue: 'Job type is required' })),
+        contactPhone: yup.string().required(t('err_phone_req', { defaultValue: 'Contact phone is required' })).matches(phoneRegex, t('err_phone_invalid', { defaultValue: 'Must be a valid Sri Lankan mobile number' })),
+        salaryMin: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+        salaryMax: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+        cvRequired: yup.boolean(),
+    });
+
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -364,12 +373,12 @@ export const PostJobPage = () => {
                 cvRequired: data.cvRequired || false,
             };
             await jobsAPI.createJob(payload);
-            toast.success('Job posted successfully!');
+            toast.success(t('job_posted_success', { defaultValue: 'Job posted successfully!' }));
             navigate('/employer/jobs');
         } catch (error) {
-            const msg = error.response?.data?.message || 'Failed to post job';
+            const msg = error.response?.data?.message || t('error_generic');
             if (msg.includes('INCOMPLETE_COMPANY')) {
-                toast.error('Please set up your company profile before posting a job');
+                toast.error(t('setup_profile_error', { defaultValue: 'Please set up your company profile before posting a job' }));
                 navigate('/employer/company');
                 return;
             }
@@ -399,74 +408,72 @@ export const PostJobPage = () => {
 
             <div className="bg-white border border-gray-200 border-t-4 border-t-[#8B1A1A]">
                 <div className="bg-[#FAF7F2] border-b border-gray-200 px-6 py-4">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-[#8B1A1A]">Job Details</h2>
-                    <p className="text-xs text-gray-400 mt-0.5">All fields marked * are required</p>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-[#8B1A1A]">{t('job_details')}</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">{t('fields_required', { defaultValue: 'All fields marked * are required' })}</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <FieldWrap label="Job Title" required error={errors.title?.message} className="md:col-span-2">
-                        <input className={inputCls(errors.title)} placeholder="e.g. Senior Farm Supervisor" {...register('title')} />
+                    <FieldWrap label={t('job_title_label')} required error={errors.title?.message} className="md:col-span-2">
+                        <input className={inputCls(errors.title)} placeholder={t('job_title_ph', { defaultValue: 'e.g. Senior Farm Supervisor' })} {...register('title')} />
                     </FieldWrap>
 
-                    <FieldWrap label="District" required error={errors.district?.message}>
+                    <FieldWrap label={t('district')} required error={errors.district?.message}>
                         <select className={`${inputCls(errors.district)} cursor-pointer`} {...register('district')}>
-                            <option value="">Select District</option>
+                            <option value="">{t('select_district', { defaultValue: 'Select District' })}</option>
                             {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
                     </FieldWrap>
 
-                    <FieldWrap label="Town" required error={errors.town?.message}>
-                        <input className={inputCls(errors.town)} placeholder="e.g. Nallur" {...register('town')} />
+                    <FieldWrap label={t('town')} required error={errors.town?.message}>
+                        <input className={inputCls(errors.town)} placeholder={t('town_ph', { defaultValue: 'e.g. Nallur' })} {...register('town')} />
                     </FieldWrap>
 
-                    <FieldWrap label="Category" required error={errors.category?.message}>
+                    <FieldWrap label={t('category')} required error={errors.category?.message}>
                         <select className={`${inputCls(errors.category)} cursor-pointer`} {...register('category')}>
-                            <option value="">Select Category</option>
+                            <option value="">{t('select_category', { defaultValue: 'Select Category' })}</option>
                             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </FieldWrap>
 
-                    <FieldWrap label="Job Type" required error={errors.jobType?.message}>
+                    <FieldWrap label={t('job_type_label')} required error={errors.jobType?.message}>
                         <select className={`${inputCls(errors.jobType)} cursor-pointer`} {...register('jobType')}>
-                            <option value="">Select Type</option>
-                            {JOB_TYPES.filter(t => ['FULL_TIME', 'PART_TIME', 'CONTRACT'].includes(t)).map(t => (
-                                <option key={t} value={t}>{JOB_TYPE_LABELS[t]}</option>
+                            <option value="">{t('select_type', { defaultValue: 'Select Type' })}</option>
+                            {JOB_TYPES.filter(t => ['FULL_TIME', 'PART_TIME', 'CONTRACT'].includes(t)).map(type => (
+                                <option key={type} value={type}>{JOB_TYPE_LABELS[type]}</option>
                             ))}
                         </select>
                     </FieldWrap>
 
-                    <FieldWrap label="Contact Phone" required error={errors.contactPhone?.message}>
-                        <input className={inputCls(errors.contactPhone)} placeholder="e.g. 077 123 4567" {...register('contactPhone')} />
+                    <FieldWrap label={t('job_contact_phone')} required error={errors.contactPhone?.message}>
+                        <input className={inputCls(errors.contactPhone)} placeholder={t('phone_ph', { defaultValue: 'e.g. 077 123 4567' })} {...register('contactPhone')} />
                     </FieldWrap>
 
-                    <FieldWrap label="Minimum Salary (LKR)">
-                        <input type="number" className={inputCls()} placeholder="e.g. 35000" {...register('salaryMin')} />
+                    <FieldWrap label={t('salary_min', { defaultValue: 'Minimum Salary (LKR)' })}>
+                        <input type="number" className={inputCls()} placeholder="e.g. 25000" {...register('salaryMin')} />
                     </FieldWrap>
-
-                    <FieldWrap label="Maximum Salary (LKR)">
-                        <input type="number" className={inputCls()} placeholder="e.g. 55000" {...register('salaryMax')} />
+                    <FieldWrap label={t('salary_max', { defaultValue: 'Maximum Salary (LKR)' })}>
+                        <input type="number" className={inputCls()} placeholder="e.g. 75000" {...register('salaryMax')} />
                     </FieldWrap>
-
-                    <p className="text-xs text-gray-400 md:col-span-2 -mt-3">Leave blank if salary is negotiable</p>
+                    <p className="text-xs text-gray-400 md:col-span-2 -mt-3">{t('salary_neg_hint', { defaultValue: 'Leave blank if salary is negotiable' })}</p>
 
                     <div className="md:col-span-2 flex items-center gap-3 bg-[#FAF7F2] p-4 border border-gray-200">
                         <input type="checkbox" id="cvRequired" {...register('cvRequired')} className="h-4 w-4 text-[#8B1A1A] focus:ring-[#8B1A1A] border-gray-300 rounded cursor-pointer" />
                         <label htmlFor="cvRequired" className="text-sm font-semibold text-[#1A1A1A] cursor-pointer inline-flex flex-col">
-                            Require CV for this job
-                            <span className="text-xs text-gray-500 font-normal mt-0.5">Job seekers will be forced to upload a PDF/DOC document when applying.</span>
+                            {t('cv_required')}
+                            <span className="text-xs text-gray-500 font-normal mt-0.5">{t('cv_hint', { defaultValue: 'Job seekers will be forced to upload a PDF/DOC document when applying.' })}</span>
                         </label>
                     </div>
 
-                    <FieldWrap label="Job Description" required error={errors.description?.message} className="md:col-span-2">
-                        <textarea className={`${inputCls(errors.description)} min-h-[120px] resize-y`} placeholder="Describe the role, responsibilities, and requirements..." {...register('description')} />
+                    <FieldWrap label={t('job_desc_title')} required error={errors.description?.message} className="md:col-span-2">
+                        <textarea className={`${inputCls(errors.description)} min-h-[120px] resize-y`} placeholder={t('job_desc_ph')} {...register('description')} />
                     </FieldWrap>
 
                     <div className="md:col-span-2 border-t border-gray-200 pt-5 flex items-center justify-between mt-2">
-                        <span className="text-xs text-gray-400">* Required fields</span>
+                        <span className="text-xs text-gray-400">* {t('fields_required_label', { defaultValue: 'Required fields' })}</span>
                         <div className="flex gap-3">
-                            <button type="button" onClick={() => navigate('/employer/jobs')} className="border border-gray-300 text-gray-600 text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-gray-50">CANCEL</button>
+                            <button type="button" onClick={() => navigate('/employer/jobs')} className="border border-gray-300 text-gray-600 text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-gray-50">{t('cancel')}</button>
                             <button type="submit" disabled={isSubmitting} className="bg-[#8B1A1A] text-white text-sm uppercase tracking-wider px-6 py-2.5 hover:bg-[#6e1515] disabled:opacity-50">
-                                {isSubmitting ? 'POSTING...' : 'POST JOB'}
+                                {isSubmitting ? t('posting_btn') : t('post_job_btn')}
                             </button>
                         </div>
                     </div>
@@ -498,7 +505,7 @@ export const MyJobsPage = () => {
             const res = await jobsAPI.getMyJobs();
             setJobs(res.data?.jobs || res.data || []);
         } catch (error) {
-            toast.error('Failed to load jobs');
+            toast.error(t('error_load_jobs', { defaultValue: 'Failed to load jobs' }));
         } finally {
             setLoading(false);
         }
@@ -511,7 +518,7 @@ export const MyJobsPage = () => {
         try {
             await jobsAPI.deleteJob(id);
             setJobs(prev => prev.filter(j => j._id !== id));
-            toast.success('Job deleted');
+            toast.success(t('job_deleted_success', { defaultValue: 'Job deleted' }));
             setDeleteTarget(null);
         } catch (error) {
             console.error('Job deletion error:', error);
@@ -526,9 +533,9 @@ export const MyJobsPage = () => {
         try {
             await jobsAPI.updateJob(id, { status: newStatus });
             setJobs(prev => prev.map(j => j._id === id ? { ...j, status: newStatus } : j));
-            toast.success(newStatus === 'CLOSED' ? 'Job closed' : 'Job reopened');
+            toast.success(newStatus === 'CLOSED' ? t('job_closed_success', { defaultValue: 'Job closed' }) : t('job_reopened_success', { defaultValue: 'Job reopened' }));
         } catch (error) {
-            toast.error('Failed to update job');
+            toast.error(t('error_generic'));
         } finally {
             setActionLoading(prev => ({ ...prev, [id]: false }));
         }
@@ -551,9 +558,9 @@ export const MyJobsPage = () => {
                 rightSlot={
                     <div className="flex items-center gap-4">
                         <div className="bg-white/10 border border-white/20 px-4 py-2 text-white text-xs uppercase tracking-wider">
-                            Active: <span className="text-[#E2B325] font-bold">{openCount}</span> | Closed: <span className="text-[#E2B325] font-bold">{closedCount}</span>
+                            {t('active')}: <span className="text-[#E2B325] font-bold">{openCount}</span> | {t('closed')}: <span className="text-[#E2B325] font-bold">{closedCount}</span>
                         </div>
-                        <button onClick={() => navigate('/employer/post-job')} className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold uppercase tracking-wider px-4 py-2 hover:bg-[#d4a420]">POST NEW JOB</button>
+                        <button onClick={() => navigate('/employer/post-job')} className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold uppercase tracking-wider px-4 py-2 hover:bg-[#d4a420]">{t('post_new_job')}</button>
                     </div>
                 }
             />
@@ -562,28 +569,28 @@ export const MyJobsPage = () => {
             <div className="bg-white border border-gray-200 border-t-4 border-t-[#E2B325] p-4 mb-4 flex flex-wrap gap-3 items-center">
                 <div className="relative">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                    <input type="text" placeholder="Search by title or location..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                    <input type="text" placeholder={t('search_jobs_ph', { defaultValue: 'Search by title or location...' })} value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                         className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white" />
                 </div>
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#8B1A1A] bg-white cursor-pointer">
-                    <option value="ALL">All Status</option>
-                    <option value="OPEN">Open</option>
-                    <option value="CLOSED">Closed</option>
+                    <option value="ALL">{t('filter_all')}</option>
+                    <option value="OPEN">{t('active')}</option>
+                    <option value="CLOSED">{t('closed')}</option>
                 </select>
                 <div className="ml-auto text-xs text-gray-400 uppercase tracking-wider border-l border-gray-200 pl-4">
-                    Showing {filtered.length} of {jobs.length}
+                    {t('showing')} {filtered.length} {t('of')} {jobs.length}
                 </div>
             </div>
 
             {/* Jobs Table */}
-            <SectionCard className="!p-0" title="ALL JOBS" rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{filtered.length}</span>}>
-                {filtered.length === 0 ? <EmptyState message="No jobs found" subtitle="Try adjusting your search or filters" /> : (
+            <SectionCard className="!p-0" title={t('all_jobs')} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{filtered.length}</span>}>
+                {filtered.length === 0 ? <EmptyState message={t('jobs_empty_title')} subtitle={t('jobs_empty_desc')} /> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="bg-[#8B1A1A]">
-                                    {['#', 'JOB', 'LOCATION', 'TYPE', 'SALARY', 'STATUS', 'ACTIONS'].map((h, i) => (
-                                        <th key={h} className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap ${i < 6 ? 'border-r border-[#6e1515]' : ''} ${h === 'ACTIONS' ? 'text-right' : 'text-left'}`}>{h}</th>
+                                    {['#', t('job').toUpperCase(), t('location').toUpperCase(), t('job_type_label').toUpperCase(), t('salary').toUpperCase(), t('status').toUpperCase(), t('actions').toUpperCase()].map((h, i) => (
+                                        <th key={h} className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap ${i < 6 ? 'border-r border-[#6e1515]' : ''} ${h === t('actions').toUpperCase() ? 'text-right' : 'text-left'}`}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -600,16 +607,16 @@ export const MyJobsPage = () => {
                                         <td className="py-3 px-4 border-b border-gray-100">
                                             {job.salaryMin || job.salaryMax ? (
                                                 <span className="text-sm font-semibold text-[#8B1A1A]">Rs. {job.salaryMin?.toLocaleString()} – {job.salaryMax?.toLocaleString()}</span>
-                                            ) : <span className="text-xs text-gray-300">Negotiable</span>}
+                                            ) : <span className="text-xs text-gray-300">{t('negotiable', { defaultValue: 'Negotiable' })}</span>}
                                         </td>
                                         <td className="py-3 px-4 border-b border-gray-100"><StatusBadge status={job.status} /></td>
                                         <td className="py-3 px-4 text-right border-b border-gray-100">
                                             <div className="flex gap-1.5 flex-wrap justify-end">
-                                                <button onClick={() => navigate(`/employer/jobs/${job._id}/applications`)} className="text-xs px-2.5 py-1 uppercase tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]">APPLICATIONS</button>
+                                                <button onClick={() => navigate(`/employer/jobs/${job._id}/applications`)} className="text-xs px-2.5 py-1 uppercase tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]">{t('applications').toUpperCase()}</button>
                                                 <button onClick={() => handleToggleStatus(job._id, job.status)} disabled={actionLoading[job._id]} className="text-xs px-2.5 py-1 uppercase tracking-wider border border-gray-400 text-gray-500 hover:bg-gray-50 disabled:opacity-50">
-                                                    {actionLoading[job._id] ? '...' : job.status === 'OPEN' ? 'CLOSE' : 'REOPEN'}
+                                                    {actionLoading[job._id] ? '...' : job.status === 'OPEN' ? t('close').toUpperCase() : t('reopen', { defaultValue: 'REOPEN' })}
                                                 </button>
-                                                <button onClick={() => setDeleteTarget(job)} className="text-xs px-2.5 py-1 uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50">DELETE</button>
+                                                <button onClick={() => setDeleteTarget(job)} className="text-xs px-2.5 py-1 uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50">{t('delete').toUpperCase()}</button>
                                             </div>
                                         </td>
                                     </tr>
@@ -622,12 +629,12 @@ export const MyJobsPage = () => {
 
             {/* Summary Footer */}
             <div className="bg-[#8B1A1A] px-5 py-2.5 flex gap-6">
-                <span className="text-white/70 text-xs uppercase tracking-wider">Total <span className="text-[#E2B325] font-bold ml-1">{jobs.length}</span></span>
-                <span className="text-white/70 text-xs uppercase tracking-wider">Open <span className="text-[#E2B325] font-bold ml-1">{openCount}</span></span>
-                <span className="text-white/70 text-xs uppercase tracking-wider">Closed <span className="text-[#E2B325] font-bold ml-1">{closedCount}</span></span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">{t('total')} <span className="text-[#E2B325] font-bold ml-1">{jobs.length}</span></span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">{t('active')} <span className="text-[#E2B325] font-bold ml-1">{openCount}</span></span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">{t('closed')} <span className="text-[#E2B325] font-bold ml-1">{closedCount}</span></span>
             </div>
 
-            <ConfirmModal isOpen={!!deleteTarget} title="Delete Job" message={`Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.`}
+            <ConfirmModal isOpen={!!deleteTarget} title={t('delete_job', { defaultValue: 'Delete Job' })} message={t('delete_job_msg', { defaultValue: `Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.` })}
                 onConfirm={() => handleDelete(deleteTarget?._id)} onCancel={() => setDeleteTarget(null)} loading={deleteLoading} />
         </>
     );
@@ -639,7 +646,7 @@ export const MyJobsPage = () => {
 // ═══════════════════════════════════════════════════════════════
 
 export const JobApplicationsPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { jobId } = useParams();
     const navigate = useNavigate();
     const [job, setJob] = useState(null);
@@ -663,7 +670,7 @@ export const JobApplicationsPage = () => {
                     setJob(null);
                 }
             } catch (error) {
-                toast.error('Failed to load applications');
+                toast.error(t('error_load_apps', { defaultValue: 'Failed to load applications' }));
             } finally {
                 setLoading(false);
             }
@@ -675,9 +682,9 @@ export const JobApplicationsPage = () => {
         try {
             await applicationsAPI.updateAppStatus(appId, { status: newStatus });
             setApplications(apps => apps.map(a => a._id === appId ? { ...a, status: newStatus } : a));
-            toast.success('Status updated');
+            toast.success(t('status_updated_success', { defaultValue: 'Status updated' }));
         } catch (error) {
-            toast.error('Failed to update status');
+            toast.error(t('error_status_update', { defaultValue: 'Failed to update status' }));
         }
     };
 
@@ -699,29 +706,29 @@ export const JobApplicationsPage = () => {
 
             <div className="mb-6">
                 <h1 className="text-2xl font-heading text-[#1A1A1A] font-bold uppercase tracking-tight">
-                    {job ? `Applications for: ${job.title}` : 'All Job Applications'}
+                    {job ? `${t('applications_for')}: ${job.title}` : t('all_job_applications')}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
-                    {job ? 'Review candidates who applied for this specific position' : 'Review all candidates across all your active job postings'}
+                    {job ? t('review_job_apps_desc', { defaultValue: 'Review candidates who applied for this specific position' }) : t('review_all_apps_desc', { defaultValue: 'Review all candidates across all your active job postings' })}
                 </p>
             </div>
 
             {/* Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <StatCard label="TOTAL" value={totalApps} icon={ClipboardList} accentColor="#8B1A1A" />
-                <StatCard label="APPLIED" value={appliedCount} icon={UserPlus} accentColor="#3b82f6" />
-                <StatCard label="REVIEWED" value={reviewedCount} icon={Eye} accentColor="#E2B325" />
-                <StatCard label="ACCEPTED" value={acceptedCount} icon={UserCheck} accentColor="#16a34a" />
+                <StatCard label={t('total')} value={totalApps} icon={ClipboardList} accentColor="#8B1A1A" />
+                <StatCard label={t('status_labels.APPLIED')} value={appliedCount} icon={UserPlus} accentColor="#3b82f6" />
+                <StatCard label={t('status_labels.REVIEWED')} value={reviewedCount} icon={Eye} accentColor="#E2B325" />
+                <StatCard label={t('status_labels.ACCEPTED')} value={acceptedCount} icon={UserCheck} accentColor="#16a34a" />
             </div>
 
             {/* Applications Table */}
-            <SectionCard className="!p-0" title={job ? "APPLICANTS FOR THIS JOB" : "ALL APPLICANTS"} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{totalApps}</span>}>
-                {applications.length === 0 ? <EmptyState message="No applications yet" subtitle="Share the job listing to attract candidates" /> : (
+            <SectionCard className="!p-0" title={job ? t('applicants_for_job', { defaultValue: "APPLICANTS FOR THIS JOB" }) : t('all_applicants', { defaultValue: "ALL APPLICANTS" })} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{totalApps}</span>}>
+                {applications.length === 0 ? <EmptyState message={t('no_applications_yet')} subtitle={t('attract_candidates_desc', { defaultValue: "Share the job listing to attract candidates" })} /> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="bg-[#8B1A1A]">
-                                    {['#', 'APPLICANT', !job ? 'JOB TITLE' : null, 'APPLIED DATE', 'CV', 'STATUS', 'ACTIONS'].filter(Boolean).map((h, i) => (
+                                    {['#', t('applicant'), !job ? t('job_title_label') : null, t('applied_date'), t('cv'), t('status'), t('actions')].filter(Boolean).map((h, i) => (
                                         <th key={h} className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap ${i < (!job ? 6 : 5) ? 'border-r border-[#6e1515]' : ''} text-left`}>{h}</th>
                                     ))}
                                 </tr>
@@ -736,17 +743,17 @@ export const JobApplicationsPage = () => {
                                                     {getInitials(app.seekerId?.name)}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-[#1A1A1A]">{app.seekerId?.name || 'Applicant'}</p>
+                                                    <p className="text-sm font-semibold text-[#1A1A1A]">{app.seekerId?.name || t('applicant')}</p>
                                                     <p className="text-xs text-gray-400">{app.seekerId?.email || '-'}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         {!job && (
                                             <td className="py-3 px-4 border-b border-gray-100">
-                                                <p className="text-xs font-bold text-[#8B1A1A] uppercase tracking-wider">{app.jobId?.title || 'Unknown Job'}</p>
+                                                <p className="text-xs font-bold text-[#8B1A1A] uppercase tracking-wider">{app.jobId?.title || t('unknown_job', { defaultValue: 'Unknown Job' })}</p>
                                             </td>
                                         )}
-                                        <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100">{fmtDate(app.createdAt)}</td>
+                                        <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100">{fmtDate(app.createdAt, i18n)}</td>
                                         <td className="py-3 px-4 border-b border-gray-100 text-center">
                                             {app.cvUrl ? (
                                                 <a href={app.cvUrl} target="_blank" rel="noopener noreferrer" 
@@ -766,13 +773,13 @@ export const JobApplicationsPage = () => {
                                             <div className="flex items-center gap-2">
                                                 <select value={app.status} onChange={e => handleStatusChange(app._id, e.target.value)}
                                                     className="border border-gray-300 text-xs px-2 py-1 focus:border-[#8B1A1A] focus:outline-none bg-white">
-                                                    <option value="APPLIED">Applied</option>
-                                                    <option value="REVIEWED">Reviewed</option>
-                                                    <option value="ACCEPTED">Accepted</option>
-                                                    <option value="REJECTED">Rejected</option>
+                                                    <option value="APPLIED">{t('status_labels.APPLIED')}</option>
+                                                    <option value="REVIEWED">{t('status_labels.REVIEWED')}</option>
+                                                    <option value="ACCEPTED">{t('status_labels.ACCEPTED')}</option>
+                                                    <option value="REJECTED">{t('status_labels.REJECTED')}</option>
                                                 </select>
                                                 <button onClick={() => setViewApplicant(app.seekerId)} className="text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider bg-[#FAF7F2] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white border border-[#8B1A1A] transition-colors rounded-sm">
-                                                    PROFILE
+                                                    {t('dash_my_profile').toUpperCase()}
                                                 </button>
                                             </div>
                                         </td>
@@ -786,11 +793,11 @@ export const JobApplicationsPage = () => {
 
             {/* Summary Footer */}
             <div className="bg-[#8B1A1A] px-5 py-2.5 flex gap-6">
-                <span className="text-white/70 text-xs uppercase tracking-wider">Total <span className="text-[#E2B325] font-bold ml-1">{totalApps}</span></span>
-                <span className="text-white/70 text-xs uppercase tracking-wider">Applied <span className="text-[#E2B325] font-bold ml-1">{appliedCount}</span></span>
-                <span className="text-white/70 text-xs uppercase tracking-wider">Reviewed <span className="text-[#E2B325] font-bold ml-1">{reviewedCount}</span></span>
-                <span className="text-white/70 text-xs uppercase tracking-wider">Accepted <span className="text-[#E2B325] font-bold ml-1">{acceptedCount}</span></span>
-                <span className="text-white/70 text-xs uppercase tracking-wider">Rejected <span className="text-[#E2B325] font-bold ml-1">{rejectedCount}</span></span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">{t('total')} <span className="text-[#E2B325] font-bold ml-1">{totalApps}</span></span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">{t('applied')} <span className="text-[#E2B325] font-bold ml-1">{appliedCount}</span></span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">{t('reviewed')} <span className="text-[#E2B325] font-bold ml-1">{reviewedCount}</span></span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">{t('accepted')} <span className="text-[#E2B325] font-bold ml-1">{acceptedCount}</span></span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">{t('rejected')} <span className="text-[#E2B325] font-bold ml-1">{rejectedCount}</span></span>
             </div>
 
             <ApplicantProfileModal
@@ -807,20 +814,20 @@ export const JobApplicationsPage = () => {
 // PAGE 5: COMPANY PROFILE PAGE
 // ═══════════════════════════════════════════════════════════════
 
-const companySchema = yup.object({
-    businessName: yup.string().required('Business name is required'),
-    description: yup.string(),
-    district: yup.string().required('District is required'),
-    town: yup.string(),
-    contactPhone: yup.string().required('Contact phone is required').matches(phoneRegex, 'Must be a valid Sri Lankan mobile number'),
-    contactWhatsApp: yup.string().test('is-valid-whatsapp', 'Must be a valid Sri Lankan mobile number', value => {
-        if (!value) return true; // Optional field
-        return phoneRegex.test(value);
-    }),
-});
-
 export const CompanyProfilePage = () => {
     const { t } = useTranslation();
+
+    const companySchema = yup.object({
+        businessName: yup.string().required(t('err_business_req', { defaultValue: 'Business name is required' })),
+        description: yup.string(),
+        district: yup.string().required(t('err_district_req')),
+        town: yup.string(),
+        contactPhone: yup.string().required(t('err_phone_req')).matches(phoneRegex, t('err_phone_invalid')),
+        contactWhatsApp: yup.string().test('is-valid-whatsapp', t('err_phone_invalid'), value => {
+            if (!value) return true; // Optional field
+            return phoneRegex.test(value);
+        }),
+    });
     const { user } = useAuth();
     const navigate = useNavigate();
     const [company, setCompany] = useState(null);
@@ -856,12 +863,12 @@ export const CompanyProfilePage = () => {
             if (company) {
                 const res = await companiesAPI.updateMyCompany(data);
                 setCompany(res.data?.company || res.data);
-                toast.success('Profile updated!');
+                toast.success(t('profile_updated_success', { defaultValue: 'Profile updated!' }));
                 setEditing(false);
             } else {
                 const res = await companiesAPI.createCompany(data);
                 setCompany(res.data?.company || res.data);
-                toast.success('Company profile created!');
+                toast.success(t('company_created_success', { defaultValue: 'Company profile created!' }));
                 setEditing(false);
             }
         } catch (error) {
@@ -878,10 +885,10 @@ export const CompanyProfilePage = () => {
             setCompany(null);
             setEditing(true);
             reset({});
-            toast.success('Company profile deleted');
+            toast.success(t('company_deleted_success', { defaultValue: 'Company profile deleted' }));
             setDeleteModalOpen(false);
         } catch (error) {
-            toast.error('Failed to delete');
+            toast.error(t('error_delete_profile', { defaultValue: 'Failed to delete' }));
         } finally {
             setDeleteLoading(false);
         }
@@ -906,25 +913,25 @@ export const CompanyProfilePage = () => {
         if (!company) return (
             <div className="bg-[#E2B325] border-l-4 border-l-[#8B1A1A] px-5 py-3 mb-5 flex items-center gap-3">
                 <AlertTriangle className="h-5 w-5 text-[#8B1A1A]" />
-                <span className="text-[#8B1A1A] text-sm font-semibold">Create your company profile below</span>
+                <span className="text-[#8B1A1A] text-sm font-semibold">{t('create_profile_desc', { defaultValue: 'Create your company profile below' })}</span>
             </div>
         );
         if (company.verificationStatus === 'PENDING') return (
             <div className="bg-orange-50 border-l-4 border-l-orange-500 px-5 py-3 mb-5 flex items-center gap-3">
                 <Clock className="h-5 w-5 text-orange-500" />
-                <span className="text-orange-800 text-sm font-semibold">Company verification is pending. You can post jobs meanwhile.</span>
+                <span className="text-orange-800 text-sm font-semibold">{t('company_pending')}</span>
             </div>
         );
         if (company.verificationStatus === 'VERIFIED') return (
             <div className="bg-green-50 border-l-4 border-l-green-600 px-5 py-3 mb-5 flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-green-800 text-sm font-semibold">Verified Employer ✓ — Your company is verified.</span>
+                <span className="text-green-800 text-sm font-semibold">{t('company_verified')}</span>
             </div>
         );
         if (company.verificationStatus === 'REJECTED') return (
             <div className="bg-red-50 border-l-4 border-l-[#8B1A1A] px-5 py-3 mb-5 flex items-center gap-3">
                 <XCircle className="h-5 w-5 text-[#8B1A1A]" />
-                <span className="text-[#8B1A1A] text-sm font-semibold">Verification rejected. Please update your company profile.</span>
+                <span className="text-[#8B1A1A] text-sm font-semibold">{t('company_rejected')}</span>
             </div>
         );
         return null;
@@ -935,44 +942,46 @@ export const CompanyProfilePage = () => {
         return (
             <>
                 <PageHeader
-                    title="Company Profile"
-                    subtitle="Manage your business information"
-                    rightSlot={company ? <button onClick={() => { setEditing(false); reset(company); }} className="border border-white/40 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-white/10">CANCEL</button> : null}
+                    title={t('company').toUpperCase()}
+                    subtitle={t('manage_business_desc', { defaultValue: 'Manage your business information' })}
+                    rightSlot={company ? <button onClick={() => { setEditing(false); reset(company); }} className="border border-white/40 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-white/10">{t('cancel')}</button> : null}
                 />
                 <VerificationBanner />
                 <div className="bg-white border border-gray-200 border-t-4 border-t-[#8B1A1A]">
                     <div className="bg-[#FAF7F2] border-b border-gray-200 px-6 py-4">
-                        <h2 className="text-sm font-bold uppercase tracking-widest text-[#8B1A1A]">{company ? 'EDIT COMPANY PROFILE' : 'CREATE COMPANY PROFILE'}</h2>
+                        <h2 className="text-sm font-bold uppercase tracking-widest text-[#8B1A1A]">
+                            {company ? t('edit_company_profile', { defaultValue: 'EDIT COMPANY PROFILE' }) : t('create_company_profile', { defaultValue: 'CREATE COMPANY PROFILE' })}
+                        </h2>
                     </div>
                     <form onSubmit={handleSubmit(onSubmit)} className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <FieldWrap label="Business Name" required error={errors.businessName?.message} className="md:col-span-2">
-                            <input className={inputCls(errors.businessName)} placeholder="e.g. Green Valley Farms" {...register('businessName')} />
+                        <FieldWrap label={t('business_name_label')} required error={errors.businessName?.message} className="md:col-span-2">
+                            <input className={inputCls(errors.businessName)} placeholder={t('business_name_ph', { defaultValue: 'e.g. Green Valley Farms' })} {...register('businessName')} />
                         </FieldWrap>
-                        <FieldWrap label="Description" className="md:col-span-2">
-                            <textarea className={`${inputCls()} min-h-[100px] resize-y`} placeholder="Tell us about your company..." {...register('description')} />
+                        <FieldWrap label={t('description_label')} className="md:col-span-2">
+                            <textarea className={`${inputCls()} min-h-[100px] resize-y`} placeholder={t('company_desc_ph', { defaultValue: 'Tell us about your company...' })} {...register('description')} />
                         </FieldWrap>
-                        <FieldWrap label="District" required error={errors.district?.message}>
+                        <FieldWrap label={t('district')} required error={errors.district?.message}>
                             <select className={`${inputCls(errors.district)} cursor-pointer`} {...register('district')}>
-                                <option value="">Select District</option>
+                                <option value="">{t('select_district')}</option>
                                 {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
                             </select>
                         </FieldWrap>
-                        <FieldWrap label="Town"><input className={inputCls()} placeholder="e.g. Nallur" {...register('town')} /></FieldWrap>
-                        <FieldWrap label="Contact Phone" required error={errors.contactPhone?.message}>
+                        <FieldWrap label={t('town')}><input className={inputCls()} placeholder={t('town_ph')} {...register('town')} /></FieldWrap>
+                        <FieldWrap label={t('job_contact_phone')} required error={errors.contactPhone?.message}>
                             <input className={inputCls(errors.contactPhone)} placeholder="077 123 4567" {...register('contactPhone')} />
                         </FieldWrap>
                         <FieldWrap label="WhatsApp"><input className={inputCls()} placeholder="077 123 4567" {...register('contactWhatsApp')} /></FieldWrap>
                         <div className="md:col-span-2 border-t border-gray-200 pt-5 flex items-center justify-between mt-2">
                             <div className="flex flex-col gap-1">
-                                <span className="text-xs text-gray-400">* Required fields</span>
+                                <span className="text-xs text-gray-400">* {t('fields_required_label')}</span>
                                 <span className="text-xs text-gray-500 mt-1">
-                                    Looking to add your Company Logo? Upload it on your <Link to="/profile" className="text-[#8B1A1A] underline font-semibold hover:text-[#6e1515]">User Profile</Link>
+                                    {t('company_logo_hint', { defaultValue: 'Looking to add your Company Logo? Upload it on your' })} <Link to="/profile" className="text-[#8B1A1A] underline font-semibold hover:text-[#6e1515]">{t('dash_my_profile')}</Link>
                                 </span>
                             </div>
                             <div className="flex gap-3">
-                                {company && <button type="button" onClick={() => { setEditing(false); reset(company); }} className="border border-gray-300 text-gray-600 text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-gray-50">CANCEL</button>}
+                                {company && <button type="button" onClick={() => { setEditing(false); reset(company); }} className="border border-gray-300 text-gray-600 text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-gray-50">{t('cancel')}</button>}
                                 <button type="submit" disabled={submitting} className="bg-[#8B1A1A] text-white text-sm uppercase tracking-wider px-6 py-2.5 hover:bg-[#6e1515] disabled:opacity-50">
-                                    {submitting ? 'SAVING...' : company ? 'SAVE CHANGES' : 'CREATE PROFILE'}
+                                    {submitting ? t('wait') : company ? t('save_changes').toUpperCase() : t('create_profile_btn').toUpperCase()}
                                 </button>
                             </div>
                         </div>
@@ -988,37 +997,37 @@ export const CompanyProfilePage = () => {
     return (
         <>
             <PageHeader
-                title="Company Profile"
-                subtitle="Manage your business information"
-                rightSlot={<button onClick={() => setEditing(true)} className="border border-white/40 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-white/10">EDIT PROFILE</button>}
+                title={t('company').toUpperCase()}
+                subtitle={t('manage_business_desc')}
+                rightSlot={<button onClick={() => setEditing(true)} className="border border-white/40 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-white/10">{t('update_profile_btn').toUpperCase()}</button>}
             />
             <VerificationBanner />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Left — Company Card */}
-                <SectionCard title="COMPANY INFO">
+                <SectionCard title={t('company').toUpperCase()}>
                     <div className="flex flex-col items-center">
                         <div className="h-20 w-20 bg-[#8B1A1A] text-white text-3xl font-bold flex items-center justify-center mt-2 rounded-full">
                             {company.businessName?.charAt(0) || 'C'}
                         </div>
                         <h3 className="text-xl font-bold text-[#1A1A1A] text-center mt-3 font-['Playfair_Display']">{company.businessName}</h3>
                         <span className={`inline-block px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider mt-1 ${vBadge[company.verificationStatus] || 'bg-gray-200 text-gray-600'}`}>
-                            {company.verificationStatus}
+                            {t(`status_labels.${company.verificationStatus}`, { defaultValue: company.verificationStatus })}
                         </span>
                         <button onClick={() => setDeleteModalOpen(true)} className="text-xs text-red-400 hover:text-red-600 uppercase tracking-wider mt-4 cursor-pointer flex items-center gap-1">
-                            <Trash2 size={12} /> DELETE COMPANY
+                            <Trash2 size={12} /> {t('delete_company', { defaultValue: 'DELETE COMPANY' })}
                         </button>
                     </div>
                 </SectionCard>
 
                 {/* Right — Details Card */}
                 <div className="md:col-span-2">
-                    <SectionCard title="BUSINESS DETAILS">
+                    <SectionCard title={t('job_details').toUpperCase()}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
                             {[
-                                { label: 'District', value: company.district },
-                                { label: 'Town', value: company.town },
-                                { label: 'Phone', value: company.contactPhone },
+                                { label: t('district'), value: company.district },
+                                { label: t('town'), value: company.town },
+                                { label: t('job_contact_phone'), value: company.contactPhone },
                                 { label: 'WhatsApp', value: company.contactWhatsApp },
                             ].map(f => (
                                 <div key={f.label} className="flex flex-col gap-0.5 py-3 border-b border-gray-100 px-2">
@@ -1028,7 +1037,7 @@ export const CompanyProfilePage = () => {
                             ))}
                         </div>
                         <div className="mt-4">
-                            <span className="text-xs text-gray-400 uppercase tracking-wider">ABOUT YOUR COMPANY</span>
+                            <span className="text-xs text-gray-400 uppercase tracking-wider">{t('about_company', { defaultValue: 'ABOUT YOUR COMPANY' })}</span>
                             <div className="text-sm text-gray-600 leading-relaxed bg-[#FAF7F2] p-4 mt-2">
                                 {company.description || '—'}
                             </div>
@@ -1037,7 +1046,7 @@ export const CompanyProfilePage = () => {
                 </div>
             </div>
 
-            <ConfirmModal isOpen={deleteModalOpen} title="Delete Company" message="Are you sure you want to delete your company profile? This action cannot be undone."
+            <ConfirmModal isOpen={deleteModalOpen} title={t('delete_company', { defaultValue: 'Delete Company' })} message={t('delete_company_msg', { defaultValue: 'Are you sure you want to delete your company profile? This action cannot be undone.' })}
                 onConfirm={handleDelete} onCancel={() => setDeleteModalOpen(false)} loading={deleteLoading} />
         </>
     );

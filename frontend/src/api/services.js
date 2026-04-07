@@ -50,6 +50,7 @@ export const adminAPI = {
     verifyCompany: (id) => api.patch(`/admin/companies/${id}/verify`),
     suspendCompany: (id, reason) => api.patch(`/admin/companies/${id}/suspend`, { reason }),
     getNotifications: () => api.get('/admin/notifications'),
+    getReports: (params) => api.get('/admin/reports', { params }),
 };
 
 export const profileAPI = {

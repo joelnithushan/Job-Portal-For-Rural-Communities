@@ -45,3 +45,17 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 }
+
+/* ── i18n: Sinhala & Tamil overflow safeties ── */
+:lang(si), :lang(ta) {
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+:lang(si) {
+  font-family: 'Iskoola Pota', 'Noto Sans Sinhala', var(--font-body);
+}
+
+:lang(ta) {
+  font-family: 'Latha', 'Noto Sans Tamil', var(--font-body);
+}

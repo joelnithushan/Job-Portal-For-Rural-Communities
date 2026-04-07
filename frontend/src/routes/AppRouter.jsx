@@ -12,10 +12,11 @@ import { JobsPage } from '../pages/public/JobsPage';
 import { JobDetailPage, CompaniesPage } from '../pages/public/PublicPages';
 import { DiscoverJobsPage } from '../pages/seeker/DiscoverJobsPage';
 import { CompanyJobsPage } from '../pages/public/CompanyJobsPage';
+import { useTranslation } from 'react-i18next';
 import { LoginPage, RegisterPage, RegisterEmployerPage, ForgotPasswordPage, ResetPasswordPage } from '../pages/auth/AuthPages';
 import { SeekerDashboard, MyApplicationsPage, SavedJobsPage } from '../pages/seeker/SeekerPages';
 import { EmployerDashboard, PostJobPage, MyJobsPage, JobApplicationsPage, CompanyProfilePage } from '../pages/employer/EmployerPages';
-import { AdminDashboard, AdminUsersPage, AdminCompaniesPage, AdminJobsPage } from '../pages/admin/AdminPages';
+import { AdminDashboard, AdminUsersPage, AdminCompaniesPage, AdminJobsPage, AdminReportsPage } from '../pages/admin/AdminPages';
 import { ProfilePage } from '../pages/profile/ProfilePage';
 
 const ProfileWrapper = () => {
@@ -40,6 +41,7 @@ const ProfileWrapper = () => {
 };
 
 export const AppRouter = () => {
+    const { t } = useTranslation();
     const { user, isAuthenticated } = useAuth();
 
     // Redirect authenticated users from home to their dashboard
@@ -264,15 +266,26 @@ export const AppRouter = () => {
                         </div>
                     </RoleRoute>
                 } />
+                <Route path="/admin/reports" element={
+                    <RoleRoute roles={['ADMIN']}>
+                        <div className="flex min-h-screen bg-brand-cream">
+                            <Sidebar />
+                            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+                                <Navbar />
+                                <main className="flex-1 p-4 md:p-8"><AdminReportsPage /></main>
+                            </div>
+                        </div>
+                    </RoleRoute>
+                } />
 
                 {/* 404 Catch-All */}
                 <Route path="*" element={
                     <>
                         <Navbar />
                         <main className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                            <h1 className="text-6xl font-heading text-brand-green mb-4">404</h1>
-                            <p className="text-xl text-brand-muted mb-8">Page not found</p>
-                            <a href="/" className="px-6 py-3 bg-brand-terra text-white rounded-xl font-medium hover:bg-brand-terraLight transition-colors">Return Home</a>
+                            <h1 className="text-6xl font-heading text-brand-green mb-4">{t('not_found_404')}</h1>
+                            <p className="text-xl text-brand-muted mb-8">{t('not_found_msg')}</p>
+                            <a href="/" className="px-6 py-3 bg-brand-terra text-white rounded-xl font-medium hover:bg-brand-terraLight transition-colors">{t('not_found_btn')}</a>
                         </main>
                         <Footer />
                     </>

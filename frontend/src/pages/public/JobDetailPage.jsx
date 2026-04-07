@@ -19,6 +19,7 @@ import { MOCK_JOBS } from '../../utils/mockData';
 
 export const JobDetailPage = () => {
     const { id } = useParams();
+    const { t, i18n } = useTranslation();
     const { user, isAuthenticated } = useAuth();
     const { executeRecaptcha } = useGoogleReCaptcha();
 
@@ -113,7 +114,7 @@ export const JobDetailPage = () => {
         if (navigator.share) {
             navigator.share({
                 title: job?.title,
-                text: `Check out this job on RuralWork: ${job?.title} at ${job?.companyId?.name}`,
+                text: `Check out this job on NextEra: ${job?.title} at ${job?.companyId?.name}`,
                 url: window.location.href,
             }).catch(console.error);
         } else {
@@ -202,7 +203,7 @@ export const JobDetailPage = () => {
                                     <Badge status={job.status} />
                                     {job.deadline && (
                                         <span className="text-xs font-semibold text-red-500 bg-red-50 px-2 py-1 rounded">
-                                            Closes: {formatDate(job.deadline)}
+                                            Closes: {formatDate(job.deadline, i18n)}
                                         </span>
                                     )}
                                 </div>
@@ -220,7 +221,7 @@ export const JobDetailPage = () => {
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Clock size={16} className="text-gray-400" />
-                                    <span>Posted {timeAgo(job.createdAt)}</span>
+                                    <span>Posted {timeAgo(job.createdAt, t)}</span>
                                 </div>
                             </div>
 
@@ -229,7 +230,7 @@ export const JobDetailPage = () => {
                                 <div>
                                     <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Offered Salary</p>
                                     <p className="text-2xl font-bold text-amber-600">
-                                        {formatSalary(job.salaryMin, job.salaryMax)}
+                                        {formatSalary(job.salaryMin, job.salaryMax, t)}
                                     </p>
                                 </div>
 
@@ -343,7 +344,7 @@ export const JobDetailPage = () => {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center py-2 border-b border-gray-50">
                                     <span className="text-sm text-gray-500">Posted on</span>
-                                    <span className="text-sm font-medium">{formatDate(job.createdAt)}</span>
+                                    <span className="text-sm font-medium">{formatDate(job.createdAt, i18n)}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-gray-50">
                                     <span className="text-sm text-gray-500">Job Type</span>
@@ -370,7 +371,7 @@ export const JobDetailPage = () => {
                                 <AlertCircle size={16} /> Safety Tips
                             </h4>
                             <p className="text-xs text-amber-700 leading-relaxed">
-                                Never pay money to apply for a job or to attend an interview. RuralWork does not charge job seekers for applying to jobs on our platform.
+                                Never pay money to apply for a job or to attend an interview. NextEra does not charge job seekers for applying to jobs on our platform.
                             </p>
                         </div>
 

@@ -81,7 +81,7 @@ export const Navbar = () => {
         ...(!isAuthenticated ? [{ label: t('nav_home'), path: '/' }] : []),
         ...(isSeeker ? [
             { label: t('dashboard'), path: '/dashboard' },
-            { label: 'Discover Jobs', path: '/dashboard/discover' },
+            { label: t('browse_available_jobs'), path: '/dashboard/discover' },
             { label: t('my_applications'), path: '/dashboard/applications' },
             { label: t('saved_jobs'), path: '/dashboard/saved' }
         ] : []),
@@ -94,21 +94,21 @@ export const Navbar = () => {
         ...(!isAuthenticated ? [{ label: t('nav_home'), path: '/' }] : []),
         ...(isSeeker ? [
             { label: t('dashboard'), path: '/dashboard' },
-            { label: 'Discover Jobs', path: '/dashboard/discover' },
+            { label: t('browse_available_jobs'), path: '/dashboard/discover' },
             { label: t('my_applications'), path: '/dashboard/applications' },
             { label: t('saved_jobs'), path: '/dashboard/saved' }
         ] : []),
         ...(user?.role === 'EMPLOYER' ? [
-            { label: 'Dashboard', path: '/employer' },
-            { label: 'Post a Job', path: '/employer/post-job' },
-            { label: 'My Jobs', path: '/employer/jobs' },
-            { label: 'Company Profile', path: '/employer/company' },
+            { label: t('dashboard'), path: '/employer' },
+            { label: t('nav_post_job'), path: '/employer/post-job' },
+            { label: t('my_jobs'), path: '/employer/jobs' },
+            { label: t('company'), path: '/employer/company' },
         ] : []),
         ...(user?.role === 'ADMIN' ? [
-            { label: 'Dashboard', path: '/admin' },
-            { label: 'Users', path: '/admin/users' },
-            { label: 'Companies', path: '/admin/companies' },
-            { label: 'All Jobs', path: '/admin/jobs' },
+            { label: t('dashboard'), path: '/admin' },
+            { label: t('nav_users'), path: '/admin/users' },
+            { label: t('nav_companies_admin'), path: '/admin/companies' },
+            { label: t('all_jobs'), path: '/admin/jobs' },
         ] : []),
         { label: t('nav_jobs'), path: '/jobs' },
         { label: t('nav_companies'), path: '/companies' },
@@ -138,17 +138,19 @@ export const Navbar = () => {
 
                 {/* Logo */}
                 <Link to={user?.role === 'ADMIN' ? '/admin' : '/'} className="flex items-center shrink-0">
-                    <img src="/logo.png" alt="RuralWork" className="h-14 md:h-16 w-auto object-contain" />
+                    <img src="/logo.png" alt="NextEra" className="h-14 md:h-16 w-auto object-contain" />
                 </Link>
 
                 {/* Desktop Nav — hide for admins */}
                 {user?.role !== 'ADMIN' && (
-                    <div className="hidden md:flex items-center gap-10">
+                    <div className="hidden lg:flex items-center gap-4 xl:gap-8">
                         {navItems.map(item => (
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`text-xs tracking-widest font-bold py-1 border-b-2 transition-colors uppercase ${isActive(item.path)
+                                className={`tracking-widest font-bold py-1 border-b-2 transition-colors uppercase whitespace-nowrap ${
+                                    i18n.language !== 'en' ? 'text-[11px]' : 'text-xs'
+                                } ${isActive(item.path)
                                     ? 'border-[#E2B325] text-[#8B1A1A]'
                                     : 'border-transparent text-gray-500 hover:text-[#8B1A1A]'
                                     }`}
@@ -161,16 +163,16 @@ export const Navbar = () => {
 
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center gap-3">
-                    {/* Language Switcher — hidden for admin */}
-                    {user?.role !== 'ADMIN' && <LanguageSwitcher />}
+                    {/* Language Switcher */}
+                    <LanguageSwitcher />
 
                     {!isAuthenticated ? (
                         <>
                             <Link to="/login" className="text-xs tracking-widest font-medium text-gray-500 hover:text-brand-dark transition-colors px-3 py-2">
-                                SIGN IN
+                                {t('sign_in')}
                             </Link>
                             <Link to="/register/employer">
-                                <Button variant="primary" size="sm">POST A JOB</Button>
+                                <Button variant="primary" size="sm">{t('nav_post_job')}</Button>
                             </Link>
                         </>
                     ) : (
@@ -187,7 +189,7 @@ export const Navbar = () => {
                                     {/* Notifications Dropdown */}
                                     <div className="absolute right-0 top-full mt-1 w-80 bg-white shadow-xl rounded-xl border border-gray-100 opacity-0 invisible group-hover/adminnotif:opacity-100 group-hover/adminnotif:visible transition-all duration-200 origin-top-right z-50">
                                         <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                            <h3 className="font-semibold text-brand-dark text-sm">Notifications</h3>
+                                            <h3 className="font-semibold text-brand-dark text-sm">{t('notifications')}</h3>
                                             <div className="flex items-center gap-2">
                                                 {unreadCount > 0 && (
                                                     <span className="bg-[#8B1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
@@ -196,7 +198,7 @@ export const Navbar = () => {
                                                 )}
                                                 {unreadCount > 0 && (
                                                     <button onClick={handleMarkAllAsRead} className="text-[10px] text-[#8B1A1A] hover:underline hover:text-[#6e1515] font-semibold uppercase tracking-wider cursor-pointer">
-                                                        Mark as read
+                                                        {t('mark_all_read')}
                                                     </button>
                                                 )}
                                             </div>
@@ -204,7 +206,7 @@ export const Navbar = () => {
                                         <div className="max-h-[300px] overflow-y-auto">
                                             {notifications.length === 0 ? (
                                                 <div className="p-4 text-center text-gray-500 text-sm">
-                                                    No new notifications
+                                                    {t('no_notifications')}
                                                 </div>
                                             ) : (
                                                 notifications.map(notification => (
@@ -220,7 +222,7 @@ export const Navbar = () => {
                                                         </div>
                                                         <p className="text-xs text-brand-muted line-clamp-2">{notification.message}</p>
                                                         <p className="text-[10px] text-gray-400 mt-2">
-                                                            {new Date(notification.createdAt).toLocaleDateString()}
+                                                            {new Date(notification.createdAt).toLocaleDateString(i18n.language.startsWith('si') ? 'si-LK' : i18n.language.startsWith('ta') ? 'ta-LK' : 'en-GB')}
                                                         </p>
                                                     </Link>
                                                 ))
@@ -249,7 +251,7 @@ export const Navbar = () => {
 
                                     <div className="absolute right-0 top-full mt-1 w-80 bg-white shadow-xl rounded-xl border border-gray-100 opacity-0 invisible group-hover/notif:opacity-100 group-hover/notif:visible transition-all duration-200 origin-top-right z-50">
                                         <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                            <h3 className="font-semibold text-brand-dark text-sm">Notifications</h3>
+                                            <h3 className="font-semibold text-brand-dark text-sm">{t('notifications')}</h3>
                                             <div className="flex items-center gap-2">
                                                 {unreadCount > 0 && (
                                                     <span className="bg-[#8B1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
@@ -258,7 +260,7 @@ export const Navbar = () => {
                                                 )}
                                                 {unreadCount > 0 && (
                                                     <button onClick={handleMarkAllAsRead} className="text-[10px] text-[#8B1A1A] hover:underline hover:text-[#6e1515] font-semibold uppercase tracking-wider cursor-pointer">
-                                                        Mark as read
+                                                        {t('mark_all_read')}
                                                     </button>
                                                 )}
                                             </div>
@@ -266,7 +268,7 @@ export const Navbar = () => {
                                         <div className="max-h-[300px] overflow-y-auto">
                                             {notifications.length === 0 ? (
                                                 <div className="p-4 text-center text-gray-500 text-sm">
-                                                    No new notifications
+                                                    {t('no_notifications')}
                                                 </div>
                                             ) : (
                                                 notifications.map(notification => (
@@ -282,7 +284,7 @@ export const Navbar = () => {
                                                         </div>
                                                         <p className="text-xs text-brand-muted line-clamp-2">{notification.message}</p>
                                                         <p className="text-[10px] text-gray-400 mt-2">
-                                                            {new Date(notification.createdAt).toLocaleDateString()}
+                                                            {new Date(notification.createdAt).toLocaleDateString(i18n.language.startsWith('si') ? 'si-LK' : i18n.language.startsWith('ta') ? 'ta-LK' : 'en-GB')}
                                                         </p>
                                                     </Link>
                                                 ))
@@ -304,14 +306,11 @@ export const Navbar = () => {
                                     <div className="absolute right-0 top-full mt-1 w-48 bg-white shadow-lg border border-gray-100 opacity-0 invisible group-hover/profile:opacity-100 group-hover/profile:visible transition-all duration-150 origin-top-right z-50">
                                         <div className="p-3 border-b border-gray-100">
                                             <p className="font-semibold text-brand-dark text-sm truncate">{user?.name}</p>
-                                            <p className="text-xs text-gray-400 capitalize">{user?.role?.replace('_', ' ').toLowerCase()}</p>
+                                            <p className="text-xs text-gray-400 capitalize">{t(`role_labels.${user?.role}`, { defaultValue: user?.role?.replace('_', ' ').toLowerCase() })}</p>
                                         </div>
                                         <div className="p-1.5 flex flex-col">
                                             <Link to="/profile" className="px-3 py-2 text-sm text-brand-dark hover:bg-gray-50 transition-colors flex items-center gap-2">
-                                                <User size={14} /> My Profile
-                                            </Link>
-                                            <Link to={user?.role === 'EMPLOYER' ? '/employer' : '/dashboard'} className="px-3 py-2 text-sm text-brand-dark hover:bg-gray-50 transition-colors">
-                                                {t('nav_dashboard')}
+                                                <User size={14} /> {t('my_profile')}
                                             </Link>
                                             <button onClick={logout} className="px-3 py-2 text-sm text-left text-red-600 hover:bg-red-50 transition-colors w-full">
                                                 {t('nav_logout')}
@@ -345,11 +344,9 @@ export const Navbar = () => {
                     >
                         <div className="px-4 py-6 flex flex-col gap-5">
                             {/* Language Switcher (mobile) */}
-                            {user?.role !== 'ADMIN' && (
-                                <div className="flex justify-center">
-                                    <LanguageSwitcher />
-                                </div>
-                            )}
+                            <div className="flex justify-center">
+                                <LanguageSwitcher />
+                            </div>
 
                             <div className="flex flex-col gap-3">
                                 {mobileNavItems.map(item => {
@@ -376,10 +373,10 @@ export const Navbar = () => {
                             {!isAuthenticated ? (
                                 <div className="flex flex-col gap-3">
                                     <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                                        <Button variant="ghost" fullWidth className="text-brand-dark border border-gray-200">Sign In</Button>
+                                        <Button variant="ghost" fullWidth className="text-brand-dark border border-gray-200">{t('sign_in')}</Button>
                                     </Link>
                                     <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                                        <Button variant="primary" fullWidth>Create Account</Button>
+                                        <Button variant="primary" fullWidth>{t('create_account')}</Button>
                                     </Link>
                                 </div>
                             ) : (

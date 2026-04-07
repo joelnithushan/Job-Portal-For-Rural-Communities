@@ -1,42 +1,46 @@
-export const formatSalary = (min, max) => {
-    if (!min && !max) return 'Salary not disclosed';
+export const formatSalary = (min, max, t) => {
+    if (!min && !max) return t ? t('salary_not_disclosed') : 'Salary not disclosed';
     if (!max) return `LKR ${min.toLocaleString()}+`;
     return `LKR ${min.toLocaleString()} – ${max.toLocaleString()}`;
 };
 
-export const formatDate = (dateString) => {
+export const formatDate = (dateString, i18n) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
+    const locale = i18n?.status ? i18n.language : (typeof i18n === 'string' ? i18n : 'en-GB');
+    const localeMap = { 'en': 'en-GB', 'ta': 'ta-LK', 'si': 'si-LK' };
+    
+    return date.toLocaleDateString(localeMap[locale] || 'en-GB', {
         day: 'numeric',
         month: 'short',
         year: 'numeric'
     });
 };
 
-export const timeAgo = (dateString) => {
+export const timeAgo = (dateString, t) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
 
+    if (seconds < 10) return t ? t('just_now') : 'Just now';
+
     let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + ' years ago';
+    if (interval > 1) return t ? t('years_ago', { count: Math.floor(interval) }) : Math.floor(interval) + ' years ago';
 
     interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + ' months ago';
+    if (interval > 1) return t ? t('months_ago', { count: Math.floor(interval) }) : Math.floor(interval) + ' months ago';
 
     interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + ' days ago';
+    if (interval > 1) return t ? t('days_ago', { count: Math.floor(interval) }) : Math.floor(interval) + ' days ago';
 
     interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + ' hours ago';
+    if (interval > 1) return t ? t('hours_ago', { count: Math.floor(interval) }) : Math.floor(interval) + ' hours ago';
 
     interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + ' minutes ago';
+    if (interval > 1) return t ? t('minutes_ago', { count: Math.floor(interval) }) : Math.floor(interval) + ' minutes ago';
 
-    if (seconds < 10) return 'Just now';
-    return Math.floor(seconds) + ' seconds ago';
+    return t ? t('seconds_ago', { count: Math.floor(seconds) }) : Math.floor(seconds) + ' seconds ago';
 };
 
 export const formatDistance = (meters) => {

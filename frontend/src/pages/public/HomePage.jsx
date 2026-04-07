@@ -7,6 +7,7 @@ import {
     Leaf, HardHat, Heart, BookOpen, ShoppingBag, Truck, Coffee, Fish
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { useTranslation } from 'react-i18next';
 
 const MOCK_FEATURED_JOBS = [
     { id: 1, title: 'Farm Supervisor', company: 'Green Valley Estates', location: 'Nuwara Eliya', type: 'Full Time', salary: 'LKR 45,000 – 60,000' },
@@ -27,6 +28,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export const HomePage = () => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('seeker');
     const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
     const [summaryStats, setSummaryStats] = useState({
@@ -80,19 +82,19 @@ export const HomePage = () => {
             <section className="relative w-full overflow-hidden" style={{ aspectRatio: '16/6' }}>
                 <img
                     src="/hero-bg.png"
-                    alt="RuralWork - Find Work. Build Community."
+                    alt="NextEra - Find Work. Build Community."
                     className="absolute inset-0 w-full h-full object-cover"
                 />
                 {/* Overlay Buttons */}
                 <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex gap-4">
                     <Link to="/jobs">
                         <button className="px-10 py-3.5 bg-white text-brand-dark text-xs tracking-[0.2em] font-medium border border-white hover:bg-gray-100 transition-colors">
-                            EXPLORE JOBS
+                            {t('home_hero_explore')}
                         </button>
                     </Link>
                     <Link to="/register/employer">
                         <button className="px-10 py-3.5 bg-transparent text-white text-xs tracking-[0.2em] font-medium border border-white hover:bg-brand-amber hover:border-brand-amber hover:text-brand-dark transition-colors">
-                            POST A JOB
+                            {t('home_hero_post')}
                         </button>
                     </Link>
                 </div>
@@ -103,10 +105,10 @@ export const HomePage = () => {
                 <div className="max-w-5xl mx-auto px-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                         {[
-                            { value: summaryStats.jobsCount, label: 'Jobs Posted' },
-                            { value: summaryStats.employersCount, label: 'Verified Employers' },
-                            { value: summaryStats.districtsCount, label: 'Districts' },
-                            { value: summaryStats.placementRate, label: 'Placement Rate' },
+                            { value: summaryStats.jobsCount, label: t('home_stats_jobs') },
+                            { value: summaryStats.employersCount, label: t('home_stats_employers') },
+                            { value: summaryStats.districtsCount, label: t('home_stats_districts') },
+                            { value: summaryStats.placementRate, label: t('home_stats_placement') },
                         ].map((stat, i) => (
                             <div key={i}>
                                 <span className="block text-3xl lg:text-4xl font-heading text-white mb-1">{stat.value}</span>
@@ -121,8 +123,8 @@ export const HomePage = () => {
             <section className="py-16 bg-white">
                 <div className="max-w-5xl mx-auto px-4">
                     <div className="text-center mb-10">
-                        <h2 className="text-3xl font-heading mb-3">Explore by Category</h2>
-                        <p className="text-gray-500 max-w-lg mx-auto text-sm">Find opportunities that match your skills across Sri Lanka's key industries.</p>
+                        <h2 className="text-3xl font-heading mb-3">{t('home_cat_title')}</h2>
+                        <p className="text-gray-500 max-w-lg mx-auto text-sm">{t('home_cat_subtitle')}</p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-l border-t border-brand-green/20">
@@ -137,8 +139,8 @@ export const HomePage = () => {
                                         <cat.icon size={20} className="text-white group-hover:text-brand-dark transition-colors" />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-semibold text-white group-hover:text-brand-dark transition-colors uppercase tracking-wider">{cat.name}</h3>
-                                        <p className="text-[10px] text-white/60 group-hover:text-brand-dark/60 transition-colors mt-0.5 font-medium tracking-widest">{cat.count} OPEN POSITIONS</p>
+                                        <h3 className="text-sm font-semibold text-white group-hover:text-brand-dark transition-colors uppercase tracking-wider">{t(`home_cat_${cat.name}`)}</h3>
+                                        <p className="text-[10px] text-white/60 group-hover:text-brand-dark/60 transition-colors mt-0.5 font-medium tracking-widest">{cat.count} {t('home_cat_open')}</p>
                                     </div>
                                 </div>
                                 <ArrowRight size={14} className="text-white/40 group-hover:text-brand-dark transition-colors" />
@@ -152,7 +154,7 @@ export const HomePage = () => {
             <section className="py-20 bg-brand-sand">
                 <div className="max-w-5xl mx-auto px-4">
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl font-heading mb-3">How It Works</h2>
+                        <h2 className="text-3xl font-heading mb-3">{t('home_hiw_title')}</h2>
                     </div>
 
                     <div className="flex justify-center mb-10">
@@ -161,29 +163,29 @@ export const HomePage = () => {
                                 onClick={() => setActiveTab('seeker')}
                                 className={`px-6 py-3 text-xs tracking-widest font-medium transition-colors ${activeTab === 'seeker' ? 'bg-brand-green text-white' : 'bg-white text-gray-500 hover:text-brand-dark'}`}
                             >
-                                FOR JOB SEEKERS
+                                {t('home_hiw_seeker_tab')}
                             </button>
                             <button
                                 onClick={() => setActiveTab('employer')}
                                 className={`px-6 py-3 text-xs tracking-widest font-medium transition-colors ${activeTab === 'employer' ? 'bg-brand-green text-white' : 'bg-white text-gray-500 hover:text-brand-dark'}`}
                             >
-                                FOR EMPLOYERS
+                                {t('home_hiw_employer_tab')}
                             </button>
                         </div>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {(activeTab === 'seeker' ? [
-                            { title: 'Create Free Account', desc: 'Register in under 2 minutes with basic details.' },
-                            { title: 'Search Nearby Jobs', desc: 'Filter by district, category, or use GPS location.' },
-                            { title: 'Apply Instantly', desc: 'One-click apply to jobs with your saved profile.' }
+                            { title: t('home_hiw_s1_t'), desc: t('home_hiw_s1_d') },
+                            { title: t('home_hiw_s2_t'), desc: t('home_hiw_s2_d') },
+                            { title: t('home_hiw_s3_t'), desc: t('home_hiw_s3_d') }
                         ] : [
-                            { title: 'Register Company', desc: 'Submit your business details for admin verification.' },
-                            { title: 'Post Job Openings', desc: 'Reach thousands of verified local workers easily.' },
-                            { title: 'Review Applicants', desc: 'Shortlist, reject, or accept candidates with one click.' }
+                            { title: t('home_hiw_e1_t'), desc: t('home_hiw_e1_d') },
+                            { title: t('home_hiw_e2_t'), desc: t('home_hiw_e2_d') },
+                            { title: t('home_hiw_e3_t'), desc: t('home_hiw_e3_d') }
                         ]).map((step, i) => (
                             <div key={i} className="bg-white p-8 border border-gray-200">
-                                <span className="inline-block text-xs tracking-widest text-brand-amber font-semibold mb-4">STEP {i + 1}</span>
+                                <span className="inline-block text-xs tracking-widest text-brand-amber font-semibold mb-4">{t('home_hiw_step')} {i + 1}</span>
                                 <h3 className="text-lg font-heading font-semibold mb-3">{step.title}</h3>
                                 <p className="text-gray-500 text-sm leading-relaxed">{step.desc}</p>
                             </div>
@@ -196,9 +198,9 @@ export const HomePage = () => {
             <section className="py-20 bg-white">
                 <div className="max-w-6xl mx-auto px-4">
                     <div className="flex items-end justify-between mb-10">
-                        <h2 className="text-3xl font-heading">Latest Opportunities</h2>
+                        <h2 className="text-3xl font-heading">{t('home_featured_title')}</h2>
                         <Link to="/jobs" className="hidden md:flex items-center gap-2 text-xs tracking-widest text-brand-green font-semibold hover:text-brand-greenLight transition-colors">
-                            VIEW ALL <ArrowRight size={14} />
+                            {t('home_featured_view')} <ArrowRight size={14} />
                         </Link>
                     </div>
 
@@ -224,7 +226,7 @@ export const HomePage = () => {
 
                     <div className="mt-8 text-center md:hidden">
                         <Link to="/jobs">
-                            <Button variant="primary">BROWSE ALL JOBS</Button>
+                            <Button variant="primary">{t('home_featured_browse')}</Button>
                         </Link>
                     </div>
                 </div>
@@ -234,14 +236,14 @@ export const HomePage = () => {
             <section className="bg-brand-green py-20">
                 <div className="max-w-3xl mx-auto px-4 text-center">
                     <h2 className="text-3xl sm:text-4xl font-heading text-white mb-5">
-                        Hire from Your Community
+                        {t('home_cta_title')}
                     </h2>
                     <p className="text-white/60 text-base mb-10 max-w-lg mx-auto leading-relaxed">
-                        Post job openings, manage applications, and connect with verified local talent. Supporting the rural workforce.
+                        {t('home_cta_subtitle')}
                     </p>
                     <Link to="/register/employer">
                         <Button variant="secondary" size="lg">
-                            START HIRING TODAY
+                            {t('home_cta_btn')}
                         </Button>
                     </Link>
                 </div>

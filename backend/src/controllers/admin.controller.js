@@ -93,6 +93,25 @@ const getAdminNotifications = async (req, res, next) => {
     }
 };
 
+const getSystemReport = async (req, res, next) => {
+    try {
+        const { startDate, endDate } = req.query;
+        
+        if (new Date(startDate) > new Date(endDate)) {
+            throw { statusCode: 400, message: 'Start date cannot be after the end date.' };
+        }
+
+        if (new Date(endDate) > new Date()) {
+            throw { statusCode: 400, message: 'End date cannot be in the future.' };
+        }
+
+        const report = await adminService.getSystemReport(startDate, endDate);
+        successResponse(res, 'System report generated successfully', report);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getAllUsers,
     updateUserStatus,
@@ -104,4 +123,5 @@ module.exports = {
     suspendCompany,
     getAllCompanies,
     getAdminNotifications,
+    getSystemReport,
 };

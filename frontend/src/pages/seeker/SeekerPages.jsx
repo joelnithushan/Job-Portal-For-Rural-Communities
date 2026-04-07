@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { applicationsAPI, jobsAPI } from '../../api/services';
-import { timeAgo } from '../../utils/formatters';
+import { timeAgo, formatDate } from '../../utils/formatters';
 import toast from 'react-hot-toast';
 
 // ═══════════════════════════════════════════════════════════════
@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 // ═══════════════════════════════════════════════════════════════
 
 const StatusBadge = ({ status }) => {
+    const { t } = useTranslation();
     const map = {
         OPEN: 'bg-[#E2B325] text-[#8B1A1A]',
         CLOSED: 'bg-gray-200 text-gray-600',
@@ -25,7 +26,7 @@ const StatusBadge = ({ status }) => {
     };
     return (
         <span className={`inline-block px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${map[status] || 'bg-gray-200 text-gray-600'}`}>
-            {status?.replace('_', ' ')}
+            {t(`status_labels.${status}`, { defaultValue: status?.replace('_', ' ') })}
         </span>
     );
 };
@@ -105,9 +106,8 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading, co
     );
 };
 
-const fmtDate = (d) => {
-    if (!d) return '—';
-    return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+const fmtDate = (d, i18n) => {
+    return formatDate(d, i18n);
 };
 
 
@@ -188,8 +188,8 @@ export const SeekerDashboard = () => {
                                 <div key={app._id} className="flex items-center gap-3 py-3 px-5 hover:bg-[#FAF7F2] transition-colors">
                                     <div className="w-1 self-stretch flex-shrink-0" style={{ backgroundColor: app.status === 'APPLIED' ? '#3b82f6' : app.status === 'REVIEWED' ? '#E2B325' : app.status === 'ACCEPTED' ? '#16a34a' : '#8B1A1A' }} />
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-[#1A1A1A] truncate">{app.jobId?.title || 'Job Title'}</p>
-                                        <p className="text-xs text-gray-400 mt-0.5">{app.jobId?.district || ''} · {timeAgo(app.createdAt)}</p>
+                                        <p className="text-sm font-semibold text-[#1A1A1A] truncate">{app.jobId?.title || t('job_title_label')}</p>
+                                        <p className="text-xs text-gray-400 mt-0.5">{app.jobId?.district || ''} · {timeAgo(app.createdAt, t)}</p>
                                     </div>
                                     <StatusBadge status={app.status} />
                                 </div>
@@ -231,7 +231,7 @@ export const SeekerDashboard = () => {
 // ═══════════════════════════════════════════════════════════════
 
 export const MyApplicationsPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -245,7 +245,7 @@ export const MyApplicationsPage = () => {
             const res = await applicationsAPI.getMyApplications();
             setApplications(res.data?.applications || res.data || []);
         } catch (error) {
-            toast.error('Failed to load applications');
+            toast.error(t('error_generic'));
         } finally {
             setLoading(false);
         }
@@ -326,7 +326,7 @@ export const MyApplicationsPage = () => {
             <SectionCard className="!p-0 border-none" title={t('my_applications')} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{filteredApps.length}</span>}>
                 <div className="bg-white border border-t-0 border-gray-200">
                     {filteredApps.length === 0 ? (
-                        <EmptyState message={t('no_applications_msg')} subtitle="Try searching for jobs that match your skillset" icon={Briefcase} />
+                        <EmptyState message={t('no_applications_msg')} subtitle={t('no_applications_yet')} icon={Briefcase} />
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm border-collapse">
@@ -346,7 +346,7 @@ export const MyApplicationsPage = () => {
                                             <td className="py-3 px-4 text-gray-400 text-xs font-mono border-b border-gray-100 align-middle">{i + 1}</td>
                                             <td className="py-3 px-4 border-b border-gray-100 align-middle">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-semibold text-[#1A1A1A]">{app.jobId?.title || 'Job'}</span>
+                                                    <span className="text-sm font-semibold text-[#1A1A1A]">{app.jobId?.title || t('job_title_label')}</span>
                                                     <span className="text-xs text-gray-400 mt-0.5">{app.jobId?.category || ''}</span>
                                                 </div>
                                             </td>
@@ -354,7 +354,7 @@ export const MyApplicationsPage = () => {
                                                 {app.jobId?.district || '—'}{app.jobId?.town ? `, ${app.jobId.town}` : ''}
                                             </td>
                                             <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100 align-middle hidden md:table-cell">
-                                                {fmtDate(app.createdAt)}
+                                                {fmtDate(app.createdAt, i18n)}
                                             </td>
                                             <td className="py-3 px-4 border-b border-gray-100 align-middle">
                                                 <StatusBadge status={app.status} />
@@ -485,7 +485,7 @@ export const SavedJobsPage = () => {
                                     <div className="flex flex-col gap-1.5 mt-2">
                                         <span className="flex items-center gap-2 text-[13px] text-gray-700 font-medium">
                                             <Briefcase className="h-3.5 w-3.5 text-[#DAB82D]" />
-                                            {job.employerId?.name || job.employerId?.businessName || 'Confidential'}
+                                            {job.employerId?.name || job.employerId?.businessName || t('job_confidential')}
                                         </span>
                                         <span className="flex items-center gap-2 text-[13px] text-gray-600">
                                             <Search className="h-3.5 w-3.5 text-[#8B1A1A]" />

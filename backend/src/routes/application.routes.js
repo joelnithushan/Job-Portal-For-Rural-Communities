@@ -22,6 +22,18 @@ const applySchema = {
   }),
 };
 
+/**
+ * @swagger
+ * /api/applications/upload-cv:
+ *   post:
+ *     summary: Upload a CV for application
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: CV uploaded
+ */
 router.post(
   "/upload-cv",
   auth,
@@ -30,6 +42,30 @@ router.post(
   controller.uploadCV
 );
 
+/**
+ * @swagger
+ * /api/applications:
+ *   post:
+ *     summary: Apply for a job
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [jobId]
+ *             properties:
+ *               jobId:
+ *                 type: string
+ *               cvUrl:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Application submitted
+ */
 router.post(
   "/",
   auth,
@@ -39,6 +75,18 @@ router.post(
   controller.apply
 );
 
+/**
+ * @swagger
+ * /api/applications/me:
+ *   get:
+ *     summary: Get my applications (Job Seeker)
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Applications list
+ */
 router.get(
   "/me",
   auth,
@@ -46,6 +94,18 @@ router.get(
   controller.getMyApplications
 );
 
+/**
+ * @swagger
+ * /api/applications/employer:
+ *   get:
+ *     summary: Get all applications for employer's jobs
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Applications list
+ */
 router.get(
   "/employer",
   auth,
@@ -53,6 +113,22 @@ router.get(
   controller.getEmployerApplications
 );
 
+/**
+ * @swagger
+ * /api/applications/job/{jobId}:
+ *   get:
+ *     summary: Get applicants for a specific job
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Applicants list
+ */
 router.get(
   "/job/:jobId",
   auth,
@@ -81,6 +157,34 @@ const updateStatusSchema = {
   }),
 };
 
+/**
+ * @swagger
+ * /api/applications/{id}/status:
+ *   patch:
+ *     summary: Update application status
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *               note:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Status updated
+ */
 router.patch(
   "/:id/status",
   auth,
@@ -89,6 +193,22 @@ router.patch(
   controller.updateStatus
 );
 
+/**
+ * @swagger
+ * /api/applications/{id}:
+ *   delete:
+ *     summary: Withdraw an application
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Application withdrawn
+ */
 router.delete(
   "/:id",
   auth,

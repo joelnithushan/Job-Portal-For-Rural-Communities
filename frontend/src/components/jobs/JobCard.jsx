@@ -3,11 +3,13 @@ import { MapPin, Clock, Bookmark, Building2, Briefcase } from 'lucide-react';
 import { formatSalary, timeAgo } from '../../utils/formatters';
 import { JOB_TYPE_LABELS } from '../../utils/constants';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export const JobCard = ({ job, isSaved, onSaveToggle }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { isAuthenticated } = useAuth();
+    const { t } = useTranslation();
 
     const handleCardClick = (e) => {
         // Prevent navigation if clicking on the save button
@@ -28,14 +30,14 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
                     </h3>
                     <div className="flex items-center text-[11px] font-bold text-gray-400 mt-1 uppercase tracking-widest">
                         <Building2 size={13} className="mr-1.5 text-[#E2B325]" />
-                        {job.employerId?.name || job.employerId?.businessName || 'Confidential Company'}
+                        {job.employerId?.name || job.employerId?.businessName || t('job_confidential')}
                     </div>
                 </div>
 
                 <div className="flex-shrink-0 flex gap-2">
                     {job.status === 'OPEN' && (
                         <span className="px-2 py-0.5 bg-green-50 text-green-700 rounded-none text-[10px] uppercase font-bold border border-green-200 tracking-wider h-fit mt-1">
-                            OPEN
+                            {t('job_open')}
                         </span>
                     )}
                     
@@ -72,12 +74,12 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
                 </div>
                 
                 <div className="flex items-center gap-1.5 font-bold text-[#DAB82D]">
-                    {formatSalary(job.salaryMin, job.salaryMax)}
+                    {formatSalary(job.salaryMin, job.salaryMax, t)}
                 </div>
                 
                 <div className="flex items-center gap-1.5 font-medium ml-auto">
                     <Clock size={14} className="text-gray-400" />
-                    <span>{timeAgo(job.createdAt)}</span>
+                    <span>{timeAgo(job.createdAt, t)}</span>
                 </div>
             </div>
 
@@ -88,7 +90,7 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
                 </span>
                 
                 <span className="text-[12px] font-bold text-[#DAB82D] group-hover:text-[#8B0000] transition-colors flex items-center gap-1 uppercase tracking-wider">
-                    View Details &rarr;
+                    {t('job_view_details')} &rarr;
                 </span>
             </div>
         </div>
