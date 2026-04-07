@@ -5,7 +5,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 module.exports = {
   env: process.env.NODE_ENV || 'development',
-  port: process.env.PORT || 5001,
+  port: process.env.X_ZOHO_CATALYST_LISTEN_PORT || process.env.PORT || 5000,
   mongoose: {
     url: process.env.MONGO_URI || 'mongodb://localhost:27017/job_portal_db',
     options: {},
