@@ -139,6 +139,22 @@ router.patch('/users/:id/status', validate(updateStatusSchema), adminController.
  *         description: List of all jobs
  */
 router.get('/jobs', adminController.getAllJobs);
+/**
+ * @swagger
+ * /api/admin/jobs/{id}:
+ *   delete:
+ *     summary: Delete a job by ID (Admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Job deleted
+ */
 router.delete('/jobs/:id', validate(objectIdParamsSchema), adminController.deleteJob);
 
 /**
@@ -154,6 +170,22 @@ router.delete('/jobs/:id', validate(objectIdParamsSchema), adminController.delet
  *         description: List of applications
  */
 router.get('/applications', adminController.getAllApplications);
+/**
+ * @swagger
+ * /api/admin/applications/{id}:
+ *   delete:
+ *     summary: Delete an application by ID (Admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Application deleted
+ */
 router.delete('/applications/:id', validate(objectIdParamsSchema), adminController.deleteApplication);
 
 /**
@@ -169,7 +201,48 @@ router.delete('/applications/:id', validate(objectIdParamsSchema), adminControll
  *         description: List of companies
  */
 router.get('/companies', adminController.getAllCompanies);
+/**
+ * @swagger
+ * /api/admin/companies/{id}/verify:
+ *   patch:
+ *     summary: Verify a company (Admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Company verified
+ */
 router.patch('/companies/:id/verify', validate(objectIdParamsSchema), adminController.verifyCompany);
+
+/**
+ * @swagger
+ * /api/admin/companies/{id}/suspend:
+ *   patch:
+ *     summary: Suspend a company (Admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason: { type: string }
+ *     responses:
+ *       200:
+ *         description: Company suspended
+ */
 router.patch('/companies/:id/suspend', validate(suspendCompanySchema), adminController.suspendCompany);
 
 module.exports = router;

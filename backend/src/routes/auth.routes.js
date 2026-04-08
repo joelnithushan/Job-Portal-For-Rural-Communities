@@ -141,6 +141,27 @@ router.post('/register', authLimiter, verifyCaptcha, validate(registerSchema), a
  *         description: Invalid credentials
  */
 router.post('/login', authLimiter, verifyCaptcha, validate(loginSchema), authController.login);
+/**
+ * @swagger
+ * /api/auth/google:
+ *   post:
+ *     summary: Login/Register using Google OAuth token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token]
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Google OAuth ID token from frontend
+ *     responses:
+ *       200:
+ *         description: Successful authentication
+ */
 router.post('/google', authController.google);
 
 /**
@@ -158,7 +179,50 @@ router.post('/google', authController.google);
  *         description: Unauthorized
  */
 router.get('/me', auth, authController.me);
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Request password reset email
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email: { type: string }
+ *     responses:
+ *       200:
+ *         description: Reset email sent
+ */
 router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
+
+/**
+ * @swagger
+ * /api/auth/reset-password/{token}:
+ *   post:
+ *     summary: Reset password using token from email
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password]
+ *             properties:
+ *               password: { type: string }
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ */
 router.post('/reset-password/:token', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
 
 module.exports = router;

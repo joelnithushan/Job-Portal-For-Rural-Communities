@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "49909000000013082",
+      "name": "Job-Portal",
+      "domain": {
+        "id": "10123485606",
+        "name": "job-portal-920232183.development"
+      },
+      "timezone": "Asia/Colombo",
+      "env": [
+        {
+          "idx": 1,
+          "id": "920232183",
+          "name": "Development",
+          "type": 3,
+          "env_status": "Active",
+          "project_details": {
+            "project_name": "Job-Portal",
+            "id": "49909000000013082",
+            "project_type": "Live"
+          },
+          "is_default": true,
+          "action_required": false
+        }
+      ]
+    }
+  ]
+}
