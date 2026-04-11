@@ -1,6 +1,6 @@
-# Job Portal - Software Engineering Project
+# Job Portal For Rural Communities
 
-This is a Full-Stack Web Application developed for the SE3040 - Application Frameworks module, representing a localized Sri Lankan job portal. 
+This is a Full-Stack Web Application developed for the SE3040 - Application Frameworks module, representing a localized Sri Lankan job portal for rural communities.
 
 ## Setup Instructions
 
