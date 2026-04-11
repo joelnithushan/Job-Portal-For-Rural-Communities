@@ -5,13 +5,13 @@ FROM node:18-slim
 WORKDIR /app
 
 # Copy the package.json and package-lock.json files to the working directory
-COPY package*.json ./
+COPY backend/package*.json ./
 
 # Install the production dependencies only
 RUN npm install --omit=dev
 
 # Copy the rest of the application files to the working directory
-COPY . .
+COPY backend/ .
 
 # Set the PORT environment variable (default 5000)
 # Cloud Run or Northflank will override this if configured
