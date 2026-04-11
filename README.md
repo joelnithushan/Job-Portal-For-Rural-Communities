@@ -133,13 +133,13 @@ The project successfully integrates several external services to enhance functio
 * **Frontend Setup Steps**: Pushed the frontend folder to Vercel via GitHub integration and supplied `.env.local` parameters as Environment Variables into Vercel Settings.
 * **Frontend Live URL**: [https://job-portal-for-rural-communities.vercel.app](https://job-portal-for-rural-communities.vercel.app)
 
-* **Backend Deployment Platform**: Northflank (PaaS)
+* **Backend Deployment Platform**: Railway (Containerized PaaS)
 * **Backend Setup Steps**:
-    1.  Connected GitHub repository to Northflank.
-    2.  Configured a "Combined Service" with Docker synchronization.
-    3.  Set **Runtime Variables** from `.env` (MONGO_URI, JWT_SECRET, etc.).
-    4.  Configured Port **5000 (HTTP)** for public exposure.
-* **Backend Live URL**: [https://p01--job-portal-for-rural-communities--5y9vrpzyym7x.code.run](https://p01--job-portal-for-rural-communities--5y9vrpzyym7x.code.run)
+    1. Connected the GitHub repository to a new Railway project.
+    2. Utilized a custom `railway.json` configuration file at the root to declare a `DOCKERFILE` builder.
+    3. Railway automatically orchestrated the build context targeting `backend/Dockerfile`.
+    4. Supplied all **Variables** representing the required `.env` configurations.
+* **Backend Live URL**: [https://job-portal-for-rural-communities-production.up.railway.app](https://job-portal-for-rural-communities-production.up.railway.app)
 
 ### Deployment Screenshots
 ![Frontend Deployment]([IMAGE_URL_PLACEHOLDER])
