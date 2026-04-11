@@ -81,13 +81,27 @@ export const RegisterEmployerPage = () => {
         }
         setIsSubmitting(true);
         try {
-            const { confirmPassword, agreeToTerms, ...rest } = registrationData;
-            await registerUser({ ...rest, role: 'EMPLOYER', otp });
+            const { confirmPassword, agreeToTerms, captchaToken: oldToken, ...rest } = registrationData;
+            const newCaptchaToken = await executeRecaptcha('register_emp_final');
+            await registerUser({ ...rest, role: 'EMPLOYER', otp, captchaToken: newCaptchaToken });
             toast.success(t('auth_emp_success_msg'));
             setShowOtpModal(false);
             navigate('/employer', { replace: true });
         } catch (error) {
             console.error('Employer registration error:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleResendOtp = async () => {
+        setIsSubmitting(true);
+        try {
+            const captchaToken = await executeRecaptcha('resend_otp');
+            await sendOtp(registrationData.email, captchaToken);
+            toast.success("A new OTP has been sent to your email!");
+        } catch (error) {
+            console.error('OTP resend error:', error);
         } finally {
             setIsSubmitting(false);
         }
@@ -245,6 +259,17 @@ export const RegisterEmployerPage = () => {
                                 </Button>
                             </div>
                         </form>
+                        <div className="mt-4 text-center">
+                            <span className="text-sm text-gray-500">Didn't receive the code? </span>
+                            <button 
+                                type="button" 
+                                onClick={handleResendOtp}
+                                disabled={isSubmitting}
+                                className="text-sm font-semibold text-brand-green hover:underline focus:outline-none disabled:opacity-50"
+                            >
+                                Resend OTP
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
