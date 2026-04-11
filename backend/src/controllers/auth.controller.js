@@ -4,6 +4,16 @@ const User = require('../models/user.model');
 const sendEmail = require('../utils/sendEmail');
 const { successResponse } = require('../utils/response');
 
+const sendRegisterOtp = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        await authService.sendRegisterOtp(email);
+        successResponse(res, 'OTP sent to your email successfully', null, 200);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const register = async (req, res, next) => {
     try {
         const { user, token } = await authService.register(req.body);
@@ -164,6 +174,7 @@ const resetPassword = async (req, res, next) => {
 };
 
 module.exports = {
+    sendRegisterOtp,
     register,
     login,
     google,

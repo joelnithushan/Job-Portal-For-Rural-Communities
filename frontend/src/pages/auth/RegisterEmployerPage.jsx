@@ -29,11 +29,14 @@ export const RegisterEmployerPage = () => {
         agreeToTerms: yup.boolean().oneOf([true], t('auth_err_terms_req'))
     });
 
-    const { register: registerUser, googleLogin } = useAuth();
+    const { register: registerUser, googleLogin, sendOtp } = useAuth();
     const navigate = useNavigate();
     const { executeRecaptcha } = useGoogleReCaptcha();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [registrationData, setRegistrationData] = useState(null);
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(registerSchema),
@@ -59,9 +62,29 @@ export const RegisterEmployerPage = () => {
         setIsSubmitting(true);
         try {
             const captchaToken = await executeRecaptcha('register_employer');
-            const { confirmPassword, agreeToTerms, ...rest } = data;
-            await registerUser({ ...rest, role: 'EMPLOYER', captchaToken });
+            setRegistrationData({ ...data, captchaToken });
+            await sendOtp(data.email, captchaToken);
+            toast.success("OTP sent to your email!");
+            setShowOtpModal(true);
+        } catch (error) {
+            console.error('OTP request error:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleOtpSubmit = async (e) => {
+        e.preventDefault();
+        if (otp.length !== 6) {
+            toast.error("Please enter a valid 6-digit OTP");
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            const { confirmPassword, agreeToTerms, ...rest } = registrationData;
+            await registerUser({ ...rest, role: 'EMPLOYER', otp });
             toast.success(t('auth_emp_success_msg'));
+            setShowOtpModal(false);
             navigate('/employer', { replace: true });
         } catch (error) {
             console.error('Employer registration error:', error);
@@ -179,6 +202,52 @@ export const RegisterEmployerPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* OTP Verification Modal */}
+            {showOtpModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative animate-fade-in-up">
+                        <div className="text-center mb-6">
+                            <h3 className="text-xl font-bold font-heading text-brand-dark mb-2">Verify Email</h3>
+                            <p className="text-sm text-gray-500">
+                                We've sent a 6-digit code to <br />
+                                <span className="font-semibold text-brand-dark">{registrationData?.email}</span>
+                            </p>
+                        </div>
+                        <form onSubmit={handleOtpSubmit} className="space-y-4">
+                            <Input
+                                label="Enter OTP Code"
+                                type="text"
+                                placeholder="123456"
+                                maxLength={6}
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                                className="text-center font-bold tracking-[0.5em] text-lg"
+                                autoFocus
+                            />
+                            <div className="flex gap-3 pt-2">
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    fullWidth 
+                                    onClick={() => setShowOtpModal(false)}
+                                    disabled={isSubmitting}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    variant="primary" 
+                                    fullWidth 
+                                    loading={isSubmitting}
+                                >
+                                    Verify
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

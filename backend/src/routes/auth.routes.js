@@ -30,6 +30,17 @@ const registerSchema = {
             'string.pattern.base': 'Enter a valid Sri Lankan phone number'
         }).optional(),
         captchaToken: Joi.string().optional(),
+        otp: Joi.string().length(6).required().messages({
+            'string.length': 'OTP must be exactly 6 digits',
+            'any.required': 'OTP verification is required'
+        }),
+    }),
+};
+
+const sendRegisterOtpSchema = {
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+        captchaToken: Joi.string().optional(),
     }),
 };
 
@@ -101,6 +112,7 @@ const resetPasswordSchema = {
  *       400:
  *         description: Validation error
  */
+router.post('/send-register-otp', authLimiter, verifyCaptcha, validate(sendRegisterOtpSchema), authController.sendRegisterOtp);
 router.post('/register', authLimiter, verifyCaptcha, validate(registerSchema), authController.register);
 
 /**

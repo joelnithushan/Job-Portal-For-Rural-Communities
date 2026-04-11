@@ -37,6 +37,11 @@ export const AuthProvider = ({ children }) => {
         return userData;
     };
 
+    const sendOtp = async (email, captchaToken) => {
+        const response = await authAPI.sendRegisterOtp({ email, captchaToken });
+        return response.data || response;
+    };
+
     const register = async (userData) => {
         const { captchaToken, ...regData } = userData;
         const response = await authAPI.register({ ...regData, captchaToken });
@@ -78,6 +83,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user,
         login,
         googleLogin,
+        sendOtp,
         register,
         logout,
         updateUser,
