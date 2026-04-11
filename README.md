@@ -7,7 +7,10 @@ This is a Full-Stack Web Application developed for the SE3040 - Application Fram
 ### Prerequisites
 - Node.js (v18+)
 - Local MongoDB (or a MongoDB Atlas URI)
-- API Keys for Twilio and Google Auth.
+- Cloudinary Account (for Image/CV uploads)
+- Google Cloud Console Account (for OAuth and reCAPTCHA v3)
+- Email Provider with SMTP (e.g., Gmail App Password for OTPs)
+- Setup Twilio (for SMS)
 
 ### 1. Clone the repository
 ```bash
@@ -26,8 +29,14 @@ cd Job Portal-AF
    ```
 3. Create a `.env` file from the example and fill in your keys:
    ```bash
-   # See .env.example for required fields
+   cp .env.example .env
    ```
+   **Required Backend Keys** (See `.env.example` for full list):
+   - `MONGO_URI`, `JWT_SECRET`
+   - **Cloudinary**: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+   - **Email/SMTP** (for OTP): `EMAIL_HOST`, `EMAIL_PORT` (587), `EMAIL_USER`, `EMAIL_PASS`
+   - **Twilio**: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
+   - **Google**: `GOOGLE_CLIENT_ID`, `RECAPTCHA_SECRET`
 4. Start the backend:
    ```bash
    npm run dev
@@ -43,9 +52,11 @@ cd Job Portal-AF
    ```bash
    npm install
    ```
-3. Create a `.env.local` file and point it to the backend:
+3. Create a `.env.local` file with the following variables:
    ```bash
-   VITE_API_BASE_URL=http://localhost:5000/api
+   VITE_API_URL=http://localhost:5000/api
+   VITE_GOOGLE_CLIENT_ID=your_google_client_id
+   VITE_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
    ```
 4. Start the backend:
    ```bash
