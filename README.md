@@ -126,9 +126,6 @@ The project successfully integrates several external services to enhance functio
 
 ## Deployment Report
 
-> [!IMPORTANT]  
-> **Student Action Required:** Replace the URLs and placeholders below with your actual deployed URLs once done!
-
 * **Frontend Deployment Platform**: Vercel
 * **Frontend Setup Steps**: Pushed the frontend folder to Vercel via GitHub integration and supplied `.env.local` parameters as Environment Variables into Vercel Settings.
 * **Frontend Live URL**: [https://job-portal-for-rural-communities.vercel.app](https://job-portal-for-rural-communities.vercel.app)
