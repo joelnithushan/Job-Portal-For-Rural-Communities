@@ -4,6 +4,7 @@ import { formatSalary, timeAgo } from '../../utils/formatters';
 import { JOB_TYPE_LABELS } from '../../utils/constants';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 
 export const JobCard = ({ job, isSaved, onSaveToggle }) => {
     const navigate = useNavigate();
@@ -40,15 +41,16 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
                         </span>
                     )}
                     
-                    {onSaveToggle && (
+                    {isAuthenticated && onSaveToggle && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (!isAuthenticated) {
-                                    navigate('/login', { state: { from: location } });
-                                    return;
-                                }
                                 onSaveToggle(job._id);
+                                if (!isSaved) {
+                                    toast.success(t('job_saved_msg', { defaultValue: 'Job saved successfully!' }));
+                                } else {
+                                    toast.success(t('job_unsaved_msg', { defaultValue: 'Job removed from saved' }));
+                                }
                             }}
                             className={`save-btn p-1.5 rounded-none text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors ${
                                 isSaved ? 'text-red-500' : ''

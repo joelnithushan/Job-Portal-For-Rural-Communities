@@ -116,23 +116,27 @@ export const JobDetailPage = () => {
 
                         {/* Actions */}
                         <div className="shrink-0 flex flex-wrap items-center justify-end gap-3">
-                            <button
-                                onClick={() => {
-                                    if (!user) {
-                                        navigate('/login', { state: { from: { pathname: `/jobs/${id}` } } });
-                                        return;
-                                    }
-                                    toggleSaveJob(job._id || job.id);
-                                }}
-                                className={`p-3 border ${
-                                    isJobSaved(job._id || job.id)
-                                    ? 'bg-[#8B1A1A]/10 border-[#8B1A1A] text-[#8B1A1A]'
-                                    : 'bg-white border-gray-200 text-gray-400 hover:border-[#8B1A1A] hover:text-[#8B1A1A]'
-                                } transition-colors`}
-                                title={isJobSaved(job._id || job.id) ? t('job_unsave') : t('job_save')}
-                            >
-                                <Bookmark size={20} className={isJobSaved(job._id || job.id) ? "fill-current" : ""} />
-                            </button>
+                            {user && (
+                                <button
+                                    onClick={() => {
+                                        const wasSaved = isJobSaved(job._id || job.id);
+                                        toggleSaveJob(job._id || job.id);
+                                        if (!wasSaved) {
+                                            toast.success(t('job_saved_msg', { defaultValue: 'Job saved successfully!' }));
+                                        } else {
+                                            toast.success(t('job_unsaved_msg', { defaultValue: 'Job removed from saved collection' }));
+                                        }
+                                    }}
+                                    className={`p-3 border ${
+                                        isJobSaved(job._id || job.id)
+                                        ? 'bg-[#8B1A1A]/10 border-[#8B1A1A] text-[#8B1A1A]'
+                                        : 'bg-white border-gray-200 text-gray-400 hover:border-[#8B1A1A] hover:text-[#8B1A1A]'
+                                    } transition-colors`}
+                                    title={isJobSaved(job._id || job.id) ? t('job_unsave') : t('job_save')}
+                                >
+                                    <Bookmark size={20} className={isJobSaved(job._id || job.id) ? "fill-current" : ""} />
+                                </button>
+                            )}
                             {user?.role === 'JOB_SEEKER' ? (
                                 hasApplied ? (
                                     <span className="inline-flex items-center gap-2 px-6 py-3 bg-green-50 text-green-700 font-semibold text-sm border border-green-200">

@@ -198,7 +198,7 @@ export const SeekerDashboard = () => {
                         {[
                             { to: '/jobs', icon: Search, label: t('browse_available_jobs'), desc: t('find_next_opportunity') },
                             { to: '/dashboard/applications', icon: FileText, label: t('view_my_applications'), desc: t('track_application_status') },
-                            { to: '/dashboard/saved', icon: Bookmark, label: t('saved_jobs'), desc: t('jobs_you_bookmarked') },
+                            { to: '/saved-jobs', icon: Bookmark, label: t('saved_jobs'), desc: t('jobs_you_bookmarked') },
                             { to: '/profile', icon: User, label: t('dash_my_profile'), desc: t('dash_profile_desc') },
                         ].map(action => (
                             <NavLink key={action.to} to={action.to} className="flex items-center gap-4 p-4 hover:bg-[#FAF7F2] transition-colors group">

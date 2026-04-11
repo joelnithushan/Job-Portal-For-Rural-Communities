@@ -81,7 +81,7 @@ export const Navbar = () => {
         ...(isSeeker ? [
             { label: t('dashboard'), path: '/dashboard' },
             { label: t('my_applications'), path: '/dashboard/applications' },
-            { label: t('saved_jobs'), path: '/dashboard/saved' }
+            { label: t('saved_jobs'), path: '/saved-jobs' }
         ] : []),
         { label: t('nav_jobs'), path: '/jobs' },
         { label: t('nav_companies'), path: '/companies' },
@@ -92,7 +92,7 @@ export const Navbar = () => {
         ...(isSeeker ? [
             { label: t('dashboard'), path: '/dashboard' },
             { label: t('my_applications'), path: '/dashboard/applications' },
-            { label: t('saved_jobs'), path: '/dashboard/saved' }
+            { label: t('saved_jobs'), path: '/saved-jobs' }
         ] : []),
         ...(user?.role === 'EMPLOYER' ? [
             { label: t('dashboard'), path: '/employer' },

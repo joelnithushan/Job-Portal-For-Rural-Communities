@@ -101,6 +101,16 @@ export const AppRouter = () => {
                     </>
                 } />
 
+                <Route path="/saved-jobs" element={
+                    <RoleRoute roles={['JOB_SEEKER']}>
+                        <>
+                            <Navbar />
+                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><SavedJobsPage /></main>
+                            <Footer />
+                        </>
+                    </RoleRoute>
+                } />
+
                 {/* =========================================
             PROTECTED DASHBOARD ROUTES
             ========================================= */}
