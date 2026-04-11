@@ -142,5 +142,5 @@ The project successfully integrates several external services to enhance functio
 * **Backend Live URL**: [https://job-portal-for-rural-communities-production.up.railway.app](https://job-portal-for-rural-communities-production.up.railway.app)
 
 ### Deployment Screenshots
-![Frontend Deployment]([IMAGE_URL_PLACEHOLDER])
-![Backend Deployment]([IMAGE_URL_PLACEHOLDER])
+![Frontend Deployment](./screenshots/vercel_deployment.png)
+![Backend Deployment](./screenshots/railway_deployment.png)
