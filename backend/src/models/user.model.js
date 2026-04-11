@@ -57,7 +57,7 @@ const userSchema = mongoose.Schema(
         },
         profilePicture: {
             type: String,
-            default: 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png',
+            default: 'https://res.cloudinary.com/dedoxaqug/image/upload/v1775924857/ruralwork/defaults/default_avatar.png',
         },
         phone: {
             type: String,
