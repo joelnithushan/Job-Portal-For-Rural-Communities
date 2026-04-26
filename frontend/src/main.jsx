@@ -8,6 +8,7 @@ import { AppRouter } from './routes/AppRouter';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { HelmetProvider } from 'react-helmet-async';
+import { ChatBubble } from './components/chat/ChatBubble';
 
 import 'leaflet/dist/leaflet.css';
 import './index.css';
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')).render(
           <AuthProvider>
             <GoogleReCaptchaProvider reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''}>
               <AppRouter />
+              <ChatBubble />
             </GoogleReCaptchaProvider>
             <Toaster
               position="top-right"
