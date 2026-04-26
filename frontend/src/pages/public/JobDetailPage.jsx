@@ -13,6 +13,7 @@ import { getInitials, formatSalary, timeAgo, formatDate } from '../../utils/form
 import { JOB_TYPE_LABELS } from '../../utils/constants';
 import toast from 'react-hot-toast';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import SEO from '../../components/SEO';
 
 import { MOCK_JOBS } from '../../utils/mockData';
 
@@ -144,6 +145,12 @@ export const JobDetailPage = () => {
 
     return (
         <div className="min-h-screen bg-brand-cream/40 py-8 lg:py-12">
+            <SEO 
+                title={`${job.title} at ${company.name || 'Company'}`}
+                description={`Apply for the ${job.title} position at ${company.name || 'our company'}. Located in ${job.district}.`}
+                type="article"
+                url={window.location.href}
+            />
             <div className="max-w-7xl mx-auto px-4">
 
                 {/* Breadcrumb */}

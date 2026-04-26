@@ -9,6 +9,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
 import { useSavedJobs } from '../../hooks/useSavedJobs';
 import { useTranslation } from 'react-i18next';
+import SEO from '../../components/SEO';
 
 import { MOCK_JOBS } from '../../utils/mockData';
 
@@ -119,6 +120,10 @@ export const JobsPage = () => {
 
     return (
         <div className="min-h-screen bg-[#FAF7F2] py-8 lg:py-12">
+            <SEO 
+                title={t('jobs_seo_title') || "Find Jobs"} 
+                description={t('jobs_seo_description') || "Browse and search for jobs in various sectors across Sri Lanka."}
+            />
             <div className="max-w-7xl mx-auto px-4">
 
                 <div className="flex flex-col lg:flex-row gap-8">
