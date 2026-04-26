@@ -1,0 +1,161 @@
+import { useState, useRef, useEffect } from 'react';
+import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import { useTranslation } from 'react-i18next';
+
+export const ChatBubble = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [message, setMessage] = useState('');
+    const [messages, setMessages] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef(null);
+    const { t } = useTranslation();
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    useEffect(() => {
+        if (isOpen && messages.length === 0) {
+            setMessages([{
+                role: 'assistant',
+                content: 'Hello! I am your AI assistant for the Job Portal. How can I help you today? \n\nආයුබෝවන්! මම ඔබට කෙසේද උදව් කරන්නේ? \n\nவணக்கம்! நான் உங்களுக்கு எப்படி உதவ முடியும்?'
+            }]);
+        }
+    }, [isOpen]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!message.trim() || isLoading) return;
+
+        const userMessage = message.trim();
+        setMessage('');
+        const newMessages = [...messages, { role: 'user', content: userMessage }];
+        setMessages(newMessages);
+        setIsLoading(true);
+
+        try {
+            const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const response = await axios.post(`${apiBaseUrl}/chat`, {
+                message: userMessage,
+                conversationHistory: messages
+            });
+
+            if (response.data.success) {
+                setMessages([...newMessages, { role: 'assistant', content: response.data.reply }]);
+            } else {
+                throw new Error('Failed to get response');
+            }
+        } catch (error) {
+            console.error('Chat error:', error);
+            setMessages([...newMessages, { role: 'assistant', content: 'Sorry, I am having trouble connecting right now. Please try again later or contact support.' }]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="bg-white rounded-2xl shadow-xl w-[90vw] md:w-[400px] h-[500px] max-h-[80vh] flex flex-col overflow-hidden border border-gray-100 mb-4"
+                    >
+                        {/* Header */}
+                        <div className="bg-brand-green text-white p-4 flex justify-between items-center shrink-0">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                    <MessageCircle size={18} />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-sm">AI Assistant</h3>
+                                    <p className="text-xs text-brand-cream opacity-90">Rural Job Portal Support</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsOpen(false)}
+                                className="text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors cursor-pointer"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Messages Area */}
+                        <div className="flex-1 overflow-y-auto p-4 bg-brand-sand flex flex-col gap-3">
+                            {messages.map((msg, index) => (
+                                <div 
+                                    key={index}
+                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div 
+                                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
+                                            msg.role === 'user' 
+                                                ? 'bg-brand-green text-white rounded-br-sm' 
+                                                : 'bg-white border border-gray-200 shadow-sm text-gray-800 rounded-bl-sm'
+                                        }`}
+                                    >
+                                        <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                                    </div>
+                                </div>
+                            ))}
+                            {isLoading && (
+                                <div className="flex justify-start">
+                                    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-2">
+                                        <div className="flex space-x-1.5">
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        {/* Input Area */}
+                        <div className="p-3 bg-white border-t border-gray-100 shrink-0">
+                            <form onSubmit={handleSubmit} className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    placeholder="Type your message..."
+                                    className="flex-1 bg-brand-sand border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all"
+                                    disabled={isLoading}
+                                />
+                                <button 
+                                    type="submit"
+                                    disabled={!message.trim() || isLoading}
+                                    className="bg-brand-green text-white p-2.5 rounded-xl hover:bg-brand-greenLight transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[44px] cursor-pointer"
+                                >
+                                    {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                                </button>
+                            </form>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Floating Action Button */}
+            <motion.button
+                onClick={() => setIsOpen(!isOpen)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`${
+                    isOpen ? 'bg-brand-terra' : 'bg-brand-green'
+                } text-white p-4 rounded-full shadow-lg flex items-center justify-center hover:bg-brand-terraLight transition-colors relative z-50 cursor-pointer`}
+            >
+                {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+            </motion.button>
+        </div>
+    );
+};
