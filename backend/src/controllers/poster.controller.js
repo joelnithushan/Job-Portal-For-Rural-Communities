@@ -38,6 +38,21 @@ const getPublicPosters = async (req, res, next) => {
     }
 };
 
+const getAllPostersAdmin = async (req, res, next) => {
+    try {
+        const { search, status, page, limit } = req.query;
+        const result = await posterService.getAllPostersAdmin({
+            search,
+            status,
+            page: parseInt(page, 10) || 1,
+            limit: parseInt(limit, 10) || 20,
+        });
+        return successResponse(res, 'All posters retrieved successfully', result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getMyPosters = async (req, res, next) => {
     try {
         const posters = await posterService.getPostersByEmployer(req.user._id);
@@ -81,6 +96,7 @@ module.exports = {
     generatePoster,
     createPoster,
     getPublicPosters,
+    getAllPostersAdmin,
     getMyPosters,
     getPosterById,
     updatePoster,

@@ -69,6 +69,7 @@ export const postersAPI = {
     create: (data) => api.post('/posters', data),
     getPublic: (params) => api.get('/posters', { params }),
     getMine: () => api.get('/posters/mine'),
+    getAdminAll: (params) => api.get('/posters/admin/all', { params }),
     getById: (id) => api.get(`/posters/${id}`),
     update: (id, data) => api.patch(`/posters/${id}`, data),
     delete: (id) => api.delete(`/posters/${id}`),

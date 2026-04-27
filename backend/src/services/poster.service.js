@@ -194,6 +194,29 @@ const getPublicPosters = async ({ category, district, jobType, search, page = 1,
     };
 };
 
+const getAllPostersAdmin = async ({ search, status, page = 1, limit = 20 }) => {
+    const filter = {};
+    if (status) filter.status = status;
+    if (search) filter.title = { $regex: search, $options: 'i' };
+
+    const skip = (page - 1) * limit;
+    const [posters, total] = await Promise.all([
+        Poster.find(filter)
+            .populate('employerId', 'name email')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+        Poster.countDocuments(filter),
+    ]);
+
+    return {
+        posters,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit) || 1,
+    };
+};
+
 const getPostersByEmployer = async (employerId) => {
     return Poster.find({ employerId }).sort({ createdAt: -1 });
 };
@@ -252,6 +275,7 @@ module.exports = {
     generatePoster,
     createPoster,
     getPublicPosters,
+    getAllPostersAdmin,
     getPostersByEmployer,
     getPosterById,
     updatePoster,

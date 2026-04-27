@@ -6,7 +6,7 @@ import {
     Building2, Clock, ShieldOff, BarChart2, AlertTriangle,
     Search, X, CheckCircle, XCircle, Lock
 } from 'lucide-react';
-import { adminAPI } from '../../api/services';
+import { adminAPI, postersAPI } from '../../api/services';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { formatDate } from '../../utils/formatters';
@@ -1470,6 +1470,284 @@ export const AdminReportsPage = () => {
                 </div>
             ) : (
                 <EmptyState message={t('select_dates_report_msg', { defaultValue: 'Select dates and generate a report' })} />
+            )}
+        </div>
+    );
+};
+
+
+export const AdminPostersPage = () => {
+    const { t } = useTranslation();
+    const [posters, setPosters] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [viewTarget, setViewTarget] = useState(null);
+
+    const fetchPosters = async () => {
+        setLoading(true);
+        try {
+            const params = { limit: 100 };
+            if (statusFilter !== 'ALL') params.status = statusFilter;
+            const res = await postersAPI.getAdminAll(params);
+            setPosters(res?.data?.posters || []);
+        } catch (err) {
+            toast.error(err.response?.data?.message || t('error_generic', { defaultValue: 'Failed to load posters' }));
+            setPosters([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { fetchPosters(); }, [statusFilter]);
+
+    const filtered = useMemo(() => {
+        if (!searchTerm) return posters;
+        const q = searchTerm.toLowerCase();
+        return posters.filter(p =>
+            p.title?.toLowerCase().includes(q) ||
+            p.district?.toLowerCase().includes(q) ||
+            p.employerId?.name?.toLowerCase().includes(q)
+        );
+    }, [posters, searchTerm]);
+
+    const publishedCount = posters.filter(p => p.status === 'PUBLISHED').length;
+    const draftCount = posters.filter(p => p.status === 'DRAFT').length;
+
+    const handleDelete = async (id) => {
+        setDeleteLoading(true);
+        try {
+            await postersAPI.delete(id);
+            setPosters(prev => prev.filter(p => p._id !== id));
+            setDeleteTarget(null);
+            toast.success(t('poster_deleted', { defaultValue: 'Poster deleted' }));
+        } catch (err) {
+            toast.error(err.response?.data?.message || t('poster_delete_failed', { defaultValue: 'Failed to delete poster' }));
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    if (loading) return <Spinner />;
+
+    return (
+        <div className="flex flex-col flex-1">
+            <PageHeading
+                title={t('manage_posters', { defaultValue: 'Manage Posters' })}
+                subtitle={`${posters.length} ${t('total', { defaultValue: 'Total' })}`}
+            />
+
+            <div className="bg-white border border-gray-200 border-t-4 border-t-[#E2B325] p-4 mb-4 flex flex-wrap gap-3 items-center">
+                <div className="relative">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder={t('search_posters', { defaultValue: 'Search title, district, employer...' })}
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-80 focus:outline-none focus:border-[#8B1A1A] bg-white"
+                    />
+                </div>
+                <select
+                    value={statusFilter}
+                    onChange={e => setStatusFilter(e.target.value)}
+                    className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#8B1A1A] bg-white cursor-pointer"
+                >
+                    <option value="ALL">{t('filter_all', { defaultValue: 'All Statuses' })}</option>
+                    <option value="PUBLISHED">PUBLISHED</option>
+                    <option value="DRAFT">DRAFT</option>
+                </select>
+                <div className="ml-auto text-xs text-gray-400 uppercase tracking-wider self-center border-l border-gray-200 pl-4">
+                    {t('showing', { defaultValue: 'Showing' })} {filtered.length} {t('of', { defaultValue: 'of' })} {posters.length}
+                </div>
+            </div>
+
+            <SectionCard
+                className="!p-0 flex-1 flex flex-col min-h-0"
+                title={t('all_posters', { defaultValue: 'All Posters' })}
+                subtitle={
+                    <span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">
+                        {filtered.length}
+                    </span>
+                }
+            >
+                {filtered.length === 0 ? (
+                    <EmptyState message={t('no_posters_found', { defaultValue: 'No posters match your filters' })} />
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm border-collapse">
+                            <thead>
+                                <tr className="bg-[#8B1A1A]">
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest border-r border-[#6e1515]">#</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest border-r border-[#6e1515]">{t('preview', { defaultValue: 'Preview' })}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest border-r border-[#6e1515]">{t('title', { defaultValue: 'Title' })}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest border-r border-[#6e1515]">{t('employer', { defaultValue: 'Employer' })}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest border-r border-[#6e1515]">{t('location', { defaultValue: 'Location' })}</th>
+                                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-widest border-r border-[#6e1515]">{t('status', { defaultValue: 'Status' })}</th>
+                                    <th className="py-3 px-4 text-right text-xs font-bold text-white uppercase tracking-widest">{t('actions', { defaultValue: 'Actions' })}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filtered.map((p, i) => (
+                                    <tr key={p._id} className={`${i % 2 === 0 ? 'bg-white' : 'bg-[#FAF7F2]/50'} hover:bg-[#FAF7F2] transition-colors`}>
+                                        <td className="py-3 px-4 text-gray-400 text-xs font-mono border-b border-gray-100">{i + 1}</td>
+                                        <td className="py-3 px-4 border-b border-gray-100">
+                                            <img src={p.imageUrl} alt={p.title} className="w-12 h-16 object-cover border border-gray-200" loading="lazy" />
+                                        </td>
+                                        <td className="py-3 px-4 border-b border-gray-100">
+                                            <span className="text-sm font-semibold text-[#1A1A1A] line-clamp-1">{p.title}</span>
+                                            <span className="block text-xs text-gray-400 mt-0.5">{p.category || '—'}</span>
+                                        </td>
+                                        <td className="py-3 px-4 text-sm text-gray-600 border-b border-gray-100">
+                                            {p.employerId?.name || '—'}
+                                        </td>
+                                        <td className="py-3 px-4 text-sm text-gray-600 border-b border-gray-100">
+                                            {[p.town, p.district].filter(Boolean).join(', ') || '—'}
+                                        </td>
+                                        <td className="py-3 px-4 border-b border-gray-100">
+                                            <StatusBadge status={p.status} />
+                                        </td>
+                                        <td className="py-3 px-4 text-right border-b border-gray-100">
+                                            <button
+                                                onClick={() => setViewTarget(p)}
+                                                className="text-[10px] px-3 py-1 font-bold uppercase tracking-widest border border-[#8B1A1A] text-[#8B1A1A] bg-white hover:bg-[#8B1A1A] hover:text-white transition-colors mr-2 inline-block cursor-pointer"
+                                            >
+                                                {t('view', { defaultValue: 'View' })}
+                                            </button>
+                                            <button
+                                                onClick={() => setDeleteTarget(p)}
+                                                className="text-[10px] px-3 py-1 font-bold uppercase tracking-widest border border-red-500 text-red-700 bg-red-50 hover:bg-red-100 transition-colors"
+                                            >
+                                                {t('delete', { defaultValue: 'Delete' })}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </SectionCard>
+
+            <div className="bg-[#8B1A1A] px-5 py-2.5 flex gap-6 mt-auto">
+                <span className="text-white/70 text-xs uppercase tracking-wider">
+                    {t('total', { defaultValue: 'Total' })} <span className="text-[#E2B325] font-bold ml-1">{posters.length}</span>
+                </span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">
+                    PUBLISHED <span className="text-[#E2B325] font-bold ml-1">{publishedCount}</span>
+                </span>
+                <span className="text-white/70 text-xs uppercase tracking-wider">
+                    DRAFT <span className="text-[#E2B325] font-bold ml-1">{draftCount}</span>
+                </span>
+            </div>
+
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                title={t('delete_poster', { defaultValue: 'Delete Poster' })}
+                message={t('delete_poster_admin_msg', { defaultValue: `Permanently delete poster '${deleteTarget?.title}'? This cannot be undone.` })}
+                onConfirm={() => handleDelete(deleteTarget._id)}
+                onCancel={() => setDeleteTarget(null)}
+                loading={deleteLoading}
+                confirmText={t('delete', { defaultValue: 'DELETE' }).toUpperCase()}
+            />
+
+            {viewTarget && (
+                <div
+                    className="fixed inset-0 bg-[#1A1A1A]/70 z-[100] flex items-center justify-center p-4"
+                    onClick={() => setViewTarget(null)}
+                >
+                    <div
+                        className="bg-white border-t-4 border-t-[#8B1A1A] max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between sticky top-0 z-10">
+                            <h3 className="text-white text-sm font-bold uppercase tracking-widest line-clamp-1">
+                                {viewTarget.title}
+                            </h3>
+                            <button
+                                onClick={() => setViewTarget(null)}
+                                className="text-white hover:text-[#E2B325] transition-colors p-1 cursor-pointer"
+                                aria-label="Close"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div className="bg-[#FAF7F2] border border-gray-200 p-2">
+                                <img src={viewTarget.imageUrl} alt={viewTarget.title} className="w-full h-auto" />
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('employer', { defaultValue: 'Employer' })}</p>
+                                    <p className="text-sm text-[#1A1A1A]">{viewTarget.employerId?.name || '—'}</p>
+                                    {viewTarget.employerId?.email && (
+                                        <p className="text-xs text-gray-500">{viewTarget.employerId.email}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('location', { defaultValue: 'Location' })}</p>
+                                    <p className="text-sm text-[#1A1A1A]">{[viewTarget.town, viewTarget.district].filter(Boolean).join(', ') || '—'}</p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('status', { defaultValue: 'Status' })}</p>
+                                        <StatusBadge status={viewTarget.status} />
+                                    </div>
+                                    {viewTarget.jobType && (
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('job_type_label', { defaultValue: 'Job Type' })}</p>
+                                            <span className="text-xs uppercase tracking-wider px-2 py-0.5 bg-[#8B1A1A]/10 text-[#8B1A1A] font-bold">
+                                                {viewTarget.jobType.replace('_', ' ')}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {viewTarget.category && (
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('category', { defaultValue: 'Category' })}</p>
+                                            <p className="text-sm text-[#1A1A1A]">{viewTarget.category}</p>
+                                        </div>
+                                    )}
+                                </div>
+                                {(viewTarget.salaryMin || viewTarget.salaryMax) && (
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('salary', { defaultValue: 'Salary' })}</p>
+                                        <p className="text-sm font-semibold text-[#8B1A1A]">
+                                            LKR {viewTarget.salaryMin?.toLocaleString() || '—'} - {viewTarget.salaryMax?.toLocaleString() || '—'}
+                                        </p>
+                                    </div>
+                                )}
+                                {viewTarget.contactPhone && (
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('contact_phone', { defaultValue: 'Contact Phone' })}</p>
+                                        <p className="text-sm text-[#1A1A1A]">{viewTarget.contactPhone}</p>
+                                    </div>
+                                )}
+                                {viewTarget.description && (
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('description', { defaultValue: 'Description' })}</p>
+                                        <p className="text-sm text-[#1A1A1A] whitespace-pre-line leading-relaxed">{viewTarget.description}</p>
+                                    </div>
+                                )}
+                                <div className="flex gap-2 pt-3 border-t border-gray-100 mt-2">
+                                    <button
+                                        onClick={() => { setViewTarget(null); setDeleteTarget(viewTarget); }}
+                                        className="text-[10px] px-3 py-1.5 font-bold uppercase tracking-widest border border-red-500 text-red-700 bg-red-50 hover:bg-red-100 transition-colors"
+                                    >
+                                        {t('delete', { defaultValue: 'Delete' })}
+                                    </button>
+                                    <button
+                                        onClick={() => setViewTarget(null)}
+                                        className="text-[10px] px-3 py-1.5 font-bold uppercase tracking-widest border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 transition-colors ml-auto"
+                                    >
+                                        {t('close', { defaultValue: 'Close' })}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

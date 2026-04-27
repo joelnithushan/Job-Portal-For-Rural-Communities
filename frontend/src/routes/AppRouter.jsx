@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { LoginPage, RegisterPage, RegisterEmployerPage, ForgotPasswordPage, ResetPasswordPage } from '../pages/auth/AuthPages';
 import { SeekerDashboard, MyApplicationsPage, SavedJobsPage } from '../pages/seeker/SeekerPages';
 import { EmployerDashboard, PostJobPage, MyJobsPage, JobApplicationsPage, CompanyProfilePage } from '../pages/employer/EmployerPages';
-import { AdminDashboard, AdminUsersPage, AdminCompaniesPage, AdminJobsPage, AdminReportsPage } from '../pages/admin/AdminPages';
+import { AdminDashboard, AdminUsersPage, AdminCompaniesPage, AdminJobsPage, AdminReportsPage, AdminPostersPage } from '../pages/admin/AdminPages';
 import { ProfilePage } from '../pages/profile/ProfilePage';
 
 const ProfileWrapper = () => {
@@ -299,6 +299,17 @@ export const AppRouter = () => {
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
                                 <Navbar />
                                 <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8"><AdminJobsPage /></main>
+                            </div>
+                        </div>
+                    </RoleRoute>
+                } />
+                <Route path="/admin/posters" element={
+                    <RoleRoute roles={['ADMIN']}>
+                        <div className="flex min-h-screen bg-brand-cream">
+                            <Sidebar />
+                            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+                                <Navbar />
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8"><AdminPostersPage /></main>
                             </div>
                         </div>
                     </RoleRoute>

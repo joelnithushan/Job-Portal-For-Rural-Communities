@@ -112,6 +112,15 @@ router.get('/mine', auth, requireRole('EMPLOYER'), posterController.getMyPosters
 
 /**
  * @swagger
+ * /api/posters/admin/all:
+ *   get:
+ *     summary: List all posters (admin)
+ *     tags: [Posters]
+ */
+router.get('/admin/all', auth, requireRole('ADMIN'), posterController.getAllPostersAdmin);
+
+/**
+ * @swagger
  * /api/posters/{id}:
  *   get:
  *     summary: Get a single poster by ID

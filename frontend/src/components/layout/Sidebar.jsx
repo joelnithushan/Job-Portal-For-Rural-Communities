@@ -47,6 +47,7 @@ export const Sidebar = () => {
             { label: t('nav_users'), path: '/admin/users', icon: Users },
             { label: t('nav_companies_admin'), path: '/admin/companies', icon: Building },
             { label: t('all_jobs'), path: '/admin/jobs', icon: Briefcase },
+            { label: t('manage_posters', { defaultValue: 'Manage Posters' }), path: '/admin/posters', icon: Sparkles },
             { label: t('nav_reports'), path: '/admin/reports', icon: BarChart2 },
         ]
     };
