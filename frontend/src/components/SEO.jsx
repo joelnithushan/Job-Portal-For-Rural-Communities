@@ -9,7 +9,7 @@ const SEO = ({
   url,
   image = '/favicon.png' 
 }) => {
-  const siteName = "NextEra - Job Portal for Rural Communities";
+  const siteName = "NextEra - Elevating Every Acre";
   const fullTitle = title ? `${title} | ${siteName}` : siteName;
   const defaultDescription = "NextEra - Connecting skilled rural workers with local and regional opportunities across Sri Lanka. Find jobs in agriculture, construction, manufacturing, and more.";
   

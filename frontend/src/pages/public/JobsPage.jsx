@@ -120,9 +120,8 @@ export const JobsPage = () => {
 
     return (
         <div className="min-h-screen bg-[#FAF7F2] pt-4 pb-8 md:pt-6 md:pb-12">
-            <SEO 
-                title={t('jobs_seo_title') || "Find Jobs"} 
-                description={t('jobs_seo_description') || "Browse and search for jobs in various sectors across Sri Lanka."}
+            <SEO
+                description={t('jobs_seo_description', { defaultValue: 'Browse and search for jobs in various sectors across Sri Lanka.' })}
             />
             <div className="max-w-7xl mx-auto px-4">
 

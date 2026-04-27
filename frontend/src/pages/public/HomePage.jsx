@@ -76,9 +76,8 @@ export const HomePage = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <SEO 
-                title={t('home_seo_title') || "Home"} 
-                description={t('home_seo_description') || "NextEra - Connecting skilled rural workers with local and regional opportunities across Sri Lanka."}
+            <SEO
+                description={t('home_seo_description', { defaultValue: 'NextEra - Connecting skilled rural workers with local and regional opportunities across Sri Lanka.' })}
                 keywords="rural jobs, agriculture jobs, construction jobs, sri lanka jobs"
             />
 
