@@ -76,7 +76,7 @@ const EmptyState = ({ message }) => {
 };
 
 const SectionCard = ({ children, className = '', title, subtitle }) => (
-    <div className={`bg-white border border-gray-200 border-l-4 border-l-[#8B1A1A] p-0 mb-6 overflow-hidden ${className}`}>
+    <div className={`bg-white border border-gray-200 border-l-4 border-l-[#8B1A1A] p-0 mb-4 overflow-hidden ${className}`}>
         {title && (
             <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between">
                 <h2 className="text-white font-semibold text-sm uppercase tracking-widest font-['DM_Sans']">
@@ -90,7 +90,7 @@ const SectionCard = ({ children, className = '', title, subtitle }) => (
 );
 
 const PageHeading = ({ title, subtitle, right }) => (
-    <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="mb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
             {/* Minimal heading */}
         </div>
@@ -272,7 +272,7 @@ export const AdminDashboard = () => {
 
             {/* Pending Verification Alert */}
             {pendingVerify > 0 && (
-                <div className="bg-[#E2B325] border-l-4 border-l-[#8B1A1A] px-5 py-3 mb-5 flex md:flex-row flex-col gap-3 items-center justify-between">
+                <div className="bg-[#E2B325] border-l-4 border-l-[#8B1A1A] px-5 py-3 mb-4 flex md:flex-row flex-col gap-3 items-center justify-between">
                     <div className="flex items-center gap-3">
                         <AlertTriangle className="text-[#8B1A1A] h-5 w-5" />
                         <p className="text-[#8B1A1A] text-sm font-semibold">
@@ -289,14 +289,14 @@ export const AdminDashboard = () => {
             )}
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 {statCards.map(s => (
                     <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} accent={s.accent} />
                 ))}
             </div>
 
             {/* Two Column: Recent Users + Recent Jobs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                 {/* Recent Users */}
                 <SectionCard
                     title={t('recent_registrations')}

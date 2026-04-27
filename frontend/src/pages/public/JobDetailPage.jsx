@@ -101,6 +101,7 @@ export const JobDetailPage = () => {
             setShowApplyModal(false);
         } catch (error) {
             console.error('Application submission error:', error);
+            toast.error(error.response?.data?.message || 'Failed to submit application.');
         } finally {
             setIsApplying(false);
         }
@@ -163,13 +164,13 @@ export const JobDetailPage = () => {
                 </nav>
 
                 {/* Hero Section */}
-                <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 p-6 md:p-10 mb-8 relative overflow-hidden">
+                <div className="bg-white shadow-sm border border-gray-100 p-6 md:p-10 mb-8 relative overflow-hidden rounded-xl">
                     {/* Decorative absolute element */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-brand-green/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-brand-green/5 blur-3xl -translate-y-1/2 translate-x-1/3" />
 
                     <div className="flex flex-col md:flex-row gap-8 relative z-10">
                         {/* Avatar */}
-                        <div className="w-20 h-20 md:w-24 md:h-24 shrink-0 rounded-2xl bg-brand-cream border border-gray-200 flex items-center justify-center overflow-hidden">
+                        <div className="w-20 h-20 md:w-24 md:h-24 shrink-0 bg-brand-cream border border-gray-200 flex items-center justify-center overflow-hidden">
                             {company.logoUrl ? (
                                 <img src={company.logoUrl} alt={company.name} className="w-full h-full object-cover" />
                             ) : (
@@ -198,7 +199,7 @@ export const JobDetailPage = () => {
                                 <div className="flex flex-col items-start md:items-end gap-2">
                                     <Badge status={job.status} />
                                     {job.deadline && (
-                                        <span className="text-xs font-semibold text-red-500 bg-red-50 px-2 py-1 rounded">
+                                        <span className="text-xs font-semibold text-red-500 bg-red-50 px-2 py-1">
                                             Closes: {formatDate(job.deadline, i18n)}
                                         </span>
                                     )}
@@ -207,11 +208,11 @@ export const JobDetailPage = () => {
 
                             {/* Tags Row */}
                             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-brand-muted mb-8">
-                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 border border-gray-100">
                                     <MapPin size={16} className="text-gray-400" />
                                     <span className="font-medium text-gray-700">{job.district}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 border border-gray-100">
                                     <Briefcase size={16} className="text-gray-400" />
                                     <span className="font-medium text-gray-700">{JOB_TYPE_LABELS[job.jobType] || job.jobType}</span>
                                 </div>
@@ -274,7 +275,7 @@ export const JobDetailPage = () => {
 
                     {/* Left: Job Description */}
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+                        <div className="bg-white p-6 md:p-8 shadow-sm border border-gray-100">
                             <h3 className="text-xl font-heading font-bold text-brand-dark mb-6">About This Role</h3>
 
                             <div className="prose prose-brand max-w-none text-brand-muted">
@@ -313,10 +314,10 @@ export const JobDetailPage = () => {
                     <div className="space-y-6">
 
                         {/* Company Info Card */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div className="bg-white p-6 shadow-sm border border-gray-100">
                             <h3 className="text-lg font-heading font-bold text-brand-dark mb-4">About the Company</h3>
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 shrink-0 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center">
+                                <div className="w-12 h-12 shrink-0 bg-gray-50 border border-gray-100 flex items-center justify-center">
                                     <span className="font-heading font-bold text-gray-500">
                                         {company.name ? company.name.charAt(0) : 'C'}
                                     </span>
@@ -335,7 +336,7 @@ export const JobDetailPage = () => {
                         </div>
 
                         {/* Job Overview Card */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div className="bg-white p-6 shadow-sm border border-gray-100">
                             <h3 className="text-lg font-heading font-bold text-brand-dark mb-4">Job Overview</h3>
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center py-2 border-b border-gray-50">
@@ -354,6 +355,14 @@ export const JobDetailPage = () => {
                                     <span className="text-sm text-gray-500">Location</span>
                                     <span className="text-sm font-medium">{job.district}</span>
                                 </div>
+                                <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                                    <span className="text-sm text-gray-500">Age Limit</span>
+                                    <span className="text-sm font-medium">{(job.ageLimitMin || job.ageLimitMax) ? `${job.ageLimitMin || 'Any'} - ${job.ageLimitMax || 'Any'}` : 'None'}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                                    <span className="text-sm text-gray-500">Gender</span>
+                                    <span className="text-sm font-medium">{job.genderRequirement && job.genderRequirement !== 'ANY' ? (job.genderRequirement === 'MALE' ? 'Male Only' : 'Female Only') : 'Any'}</span>
+                                </div>
                                 <div className="flex justify-between items-center py-2">
                                     <span className="text-sm text-gray-500">Applicants</span>
                                     <span className="text-sm font-medium">{job.applicationsCount || 0}</span>
@@ -362,7 +371,7 @@ export const JobDetailPage = () => {
                         </div>
 
                         {/* Warning / Trust Box */}
-                        <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100">
+                        <div className="bg-amber-50 p-5 border border-amber-100">
                             <h4 className="flex items-center gap-2 text-sm font-semibold text-amber-800 mb-2">
                                 <AlertCircle size={16} /> Safety Tips
                             </h4>
@@ -379,7 +388,7 @@ export const JobDetailPage = () => {
             {/* Application Modal */}
             {showApplyModal && (
                 <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full relative">
+                    <div className="bg-white p-6 md:p-8 max-w-md w-full relative">
                         <button 
                             onClick={() => setShowApplyModal(false)}
                             className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
@@ -390,7 +399,7 @@ export const JobDetailPage = () => {
                         <h3 className="text-xl font-heading font-bold text-brand-dark mb-2">Submit Application</h3>
                         <p className="text-brand-muted text-sm mb-6">Review your application before submitting to {company?.name}.</p>
 
-                        <div className="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-6">
+                        <div className="bg-gray-50 border border-gray-100 p-4 mb-6">
                             <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                                 <FileText size={16} className="text-[#8B1A1A]" /> 
                                 CV Attachment {job.cvRequired && <span className="text-[#8B1A1A] text-xs">*Required</span>}
@@ -404,14 +413,14 @@ export const JobDetailPage = () => {
                                     onChange={(e) => setCvFile(e.target.files[0])}
                                 />
                                 {cvFile ? (
-                                    <div className="flex items-center justify-between bg-white border border-[#E2B325] p-3 rounded-md">
+                                    <div className="flex items-center justify-between bg-white border border-[#E2B325] p-3">
                                         <span className="text-sm font-medium text-gray-800 truncate">{cvFile.name}</span>
                                         <button onClick={() => setCvFile(null)} className="text-red-500 hover:text-red-700">
                                             <X size={16} />
                                         </button>
                                     </div>
                                 ) : (
-                                    <label htmlFor="cvUpload" className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-white hover:bg-gray-50">
+                                    <label htmlFor="cvUpload" className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 cursor-pointer bg-white hover:bg-gray-50">
                                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                             <UploadCloud size={24} className="text-gray-400 mb-2" />
                                             <p className="text-sm text-gray-500"><span className="font-semibold text-brand-tera cursor-pointer">Click to upload</span> your CV.</p>

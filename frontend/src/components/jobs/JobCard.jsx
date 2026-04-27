@@ -77,6 +77,18 @@ export const JobCard = ({ job, isSaved, onSaveToggle }) => {
                 <div className="flex items-center gap-1.5 font-bold text-[#DAB82D]">
                     {formatSalary(job.salaryMin, job.salaryMax, t)}
                 </div>
+
+                {job.genderRequirement && job.genderRequirement !== 'ANY' && (
+                    <div className="flex items-center gap-1.5 font-medium text-[#8B1A1A]">
+                        <span>{job.genderRequirement === 'MALE' ? 'Male Only' : 'Female Only'}</span>
+                    </div>
+                )}
+
+                {(job.ageLimitMin || job.ageLimitMax) && (
+                    <div className="flex items-center gap-1.5 font-medium text-[#8B1A1A]">
+                        <span>Age: {job.ageLimitMin || 'Any'} - {job.ageLimitMax || 'Any'}</span>
+                    </div>
+                )}
                 
                 <div className="flex items-center gap-1.5 font-medium ml-auto">
                     <Clock size={14} className="text-gray-400" />

@@ -8,6 +8,7 @@ const applicationRoutes = require('./application.routes');
 const geoRoutes = require('./geo.routes');
 const profileRoutes = require('./profile.routes');
 const notificationRoutes = require('./notification.routes');
+const posterRoutes = require('./poster.routes');
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/admin', adminRoutes);
 router.use('/geo', geoRoutes);
 router.use('/profile', profileRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/posters', posterRoutes);
 
 module.exports = router;

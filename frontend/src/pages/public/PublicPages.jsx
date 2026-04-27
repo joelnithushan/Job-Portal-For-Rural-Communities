@@ -92,7 +92,7 @@ export const JobDetailPage = () => {
     }
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto px-4 pt-4 pb-8 md:pt-6 md:pb-12">
             {/* Back link */}
             <Link to="/jobs" className="inline-flex items-center gap-2 text-xs text-[#8B1A1A] font-bold uppercase tracking-widest hover:underline mb-8">
                 <ArrowLeft size={16} /> {t('job_back')}
@@ -254,7 +254,7 @@ export const CompaniesPage = () => {
     }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-6xl mx-auto px-4 pt-4 pb-8 md:pt-6 md:pb-12">
             <div className="bg-white border border-gray-200 overflow-hidden mb-6">
                 <div className="bg-[#8B1A1A] px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <h2 className="text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2">

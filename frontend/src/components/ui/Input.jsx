@@ -6,6 +6,7 @@ export const Input = forwardRef(({
     hint,
     leftIcon,
     rightIcon,
+    rightElement,
     className = '',
     id,
     ...props
@@ -43,6 +44,12 @@ export const Input = forwardRef(({
                 {rightIcon && (
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-brand-muted">
                         {rightIcon}
+                    </div>
+                )}
+
+                {rightElement && (
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        {rightElement}
                     </div>
                 )}
             </div>

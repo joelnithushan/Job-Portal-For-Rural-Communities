@@ -64,6 +64,16 @@ export const profileAPI = {
     deleteProfilePicture: () => api.delete('/profile/me/picture'),
 };
 
+export const postersAPI = {
+    generate: (data) => api.post('/posters/generate', data),
+    create: (data) => api.post('/posters', data),
+    getPublic: (params) => api.get('/posters', { params }),
+    getMine: () => api.get('/posters/mine'),
+    getById: (id) => api.get(`/posters/${id}`),
+    update: (id, data) => api.patch(`/posters/${id}`, data),
+    delete: (id) => api.delete(`/posters/${id}`),
+};
+
 export const notificationsAPI = {
     getMyNotifications: () => api.get('/notifications/me'),
     markAsRead: (id) => api.patch(`/notifications/${id}/read`),

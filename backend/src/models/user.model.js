@@ -77,10 +77,25 @@ const userSchema = mongoose.Schema(
             unique: true,
             sparse: true,
         },
+        gender: {
+            type: String,
+            enum: ['MALE', 'FEMALE'],
+            default: null,
+        },
+        dob: {
+            type: Date,
+            default: null,
+        },
         bio: {
             type: String,
             default: null,
             maxlength: 500,
+        },
+        address: {
+            type: String,
+            default: null,
+            trim: true,
+            maxlength: 255,
         },
     },
     {

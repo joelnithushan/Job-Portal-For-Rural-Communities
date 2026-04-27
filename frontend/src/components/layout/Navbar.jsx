@@ -85,6 +85,7 @@ export const Navbar = () => {
         ] : []),
         { label: t('nav_jobs'), path: '/jobs' },
         { label: t('nav_companies'), path: '/companies' },
+        { label: t('nav_posters', { defaultValue: 'Posters' }), path: '/posters' },
     ];
 
     const mobileNavItems = [
@@ -98,6 +99,7 @@ export const Navbar = () => {
             { label: t('dashboard'), path: '/employer' },
             { label: t('nav_post_job'), path: '/employer/post-job' },
             { label: t('my_jobs'), path: '/employer/jobs' },
+            { label: t('my_posters', { defaultValue: 'AI Posters' }), path: '/employer/posters' },
             { label: t('company'), path: '/employer/company' },
         ] : []),
         ...(user?.role === 'ADMIN' ? [
@@ -108,6 +110,7 @@ export const Navbar = () => {
         ] : []),
         { label: t('nav_jobs'), path: '/jobs' },
         { label: t('nav_companies'), path: '/companies' },
+        { label: t('nav_posters', { defaultValue: 'Posters' }), path: '/posters' },
     ];
 
     const LanguageSwitcher = () => (

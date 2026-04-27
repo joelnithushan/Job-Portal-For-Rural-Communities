@@ -41,7 +41,7 @@ export const ForgotPasswordPage = () => {
 
     return (
         <div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
-            <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-gray-100 p-8 sm:p-10 shadow-xl">
+            <div className="relative z-10 w-full max-w-md bg-white border border-gray-100 p-8 sm:p-10 shadow-xl rounded-xl">
                 {/* Logo */}
                 <div className="text-center mb-6">
                     <Link to="/">

@@ -5,6 +5,7 @@ const Application = require('../models/application.model');
 const Company = require('../models/company.model');
 const Notification = require('../models/notification.model');
 const { successResponse, errorResponse } = require('../utils/response');
+const { validateSriLankanNIC } = require('../utils/nicValidation');
 
 const VALID_DISTRICTS = [
     'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo',
@@ -28,7 +29,7 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
-        const { name, phone, district, bio, nic } = req.body;
+        const { name, phone, district, bio, nic, address } = req.body;
         const errors = [];
 
         if (name !== undefined) {
@@ -41,8 +42,11 @@ const updateProfile = async (req, res) => {
                 errors.push('Enter a valid phone number (7–20 digits).');
             }
         }
+        let parsedNicInfo = null;
         if (nic !== undefined && nic !== null && nic !== '') {
-            if (!/^(?:\d{9}[vVxX]|\d{12})$/.test(String(nic).trim())) {
+            const trimmedNic = String(nic).trim();
+            parsedNicInfo = validateSriLankanNIC(trimmedNic);
+            if (!parsedNicInfo) {
                 errors.push('Enter a valid Sri Lankan NIC.');
             }
         }
@@ -56,6 +60,11 @@ const updateProfile = async (req, res) => {
                 errors.push('Bio cannot exceed 500 characters.');
             }
         }
+        if (address !== undefined && address !== null) {
+            if (String(address).length > 255) {
+                errors.push('Address cannot exceed 255 characters.');
+            }
+        }
 
         if (errors.length > 0) {
             return errorResponse(res, errors.join(' '), 400);
@@ -66,7 +75,17 @@ const updateProfile = async (req, res) => {
         if (phone !== undefined) updates.phone = phone ? String(phone).trim() : null;
         if (district !== undefined) updates.district = district || null;
         if (bio !== undefined) updates.bio = bio ? String(bio).trim() : null;
-        if (nic !== undefined) updates.nic = nic ? String(nic).trim() : null;
+        if (address !== undefined) updates.address = address ? String(address).trim() : null;
+        if (nic !== undefined) {
+            updates.nic = nic ? String(nic).trim() : null;
+            if (parsedNicInfo) {
+                updates.dob = parsedNicInfo.dob;
+                updates.gender = parsedNicInfo.gender;
+            } else if (!nic) {
+                updates.dob = null;
+                updates.gender = null;
+            }
+        }
 
         const user = await User.findByIdAndUpdate(
             req.user._id,
