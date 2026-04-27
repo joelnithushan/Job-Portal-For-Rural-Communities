@@ -75,6 +75,13 @@ export const Navbar = () => {
     const isActive = (path) => location.pathname === path;
 
     const isSeeker = isAuthenticated && user?.role === 'JOB_SEEKER';
+    const isEmployer = isAuthenticated && user?.role === 'EMPLOYER';
+
+    const publicBrowseItems = isEmployer ? [] : [
+        { label: t('nav_jobs'), path: '/jobs' },
+        { label: t('nav_companies'), path: '/companies' },
+        { label: t('nav_posters', { defaultValue: 'Posters' }), path: '/posters' },
+    ];
 
     const navItems = [
         ...(!isAuthenticated ? [{ label: t('nav_home'), path: '/' }] : []),
@@ -83,9 +90,7 @@ export const Navbar = () => {
             { label: t('my_applications'), path: '/dashboard/applications' },
             { label: t('saved_jobs'), path: '/saved-jobs' }
         ] : []),
-        { label: t('nav_jobs'), path: '/jobs' },
-        { label: t('nav_companies'), path: '/companies' },
-        { label: t('nav_posters', { defaultValue: 'Posters' }), path: '/posters' },
+        ...publicBrowseItems,
     ];
 
     const mobileNavItems = [
@@ -95,7 +100,7 @@ export const Navbar = () => {
             { label: t('my_applications'), path: '/dashboard/applications' },
             { label: t('saved_jobs'), path: '/saved-jobs' }
         ] : []),
-        ...(user?.role === 'EMPLOYER' ? [
+        ...(isEmployer ? [
             { label: t('dashboard'), path: '/employer' },
             { label: t('nav_post_job'), path: '/employer/post-job' },
             { label: t('my_jobs'), path: '/employer/jobs' },
@@ -108,9 +113,7 @@ export const Navbar = () => {
             { label: t('nav_companies_admin'), path: '/admin/companies' },
             { label: t('all_jobs'), path: '/admin/jobs' },
         ] : []),
-        { label: t('nav_jobs'), path: '/jobs' },
-        { label: t('nav_companies'), path: '/companies' },
-        { label: t('nav_posters', { defaultValue: 'Posters' }), path: '/posters' },
+        ...publicBrowseItems,
     ];
 
     const LanguageSwitcher = () => (
