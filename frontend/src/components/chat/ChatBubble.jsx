@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { Bot, X, Send, Loader2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
+
+const ALLOWED_PATHS = ['/', '/dashboard'];
 
 export const ChatBubble = () => {
+    const { pathname } = useLocation();
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
@@ -28,6 +32,8 @@ export const ChatBubble = () => {
             }]);
         }
     }, [isOpen]);
+
+    if (!ALLOWED_PATHS.includes(pathname)) return null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -60,7 +66,7 @@ export const ChatBubble = () => {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div className="fixed bottom-24 right-6 z-50 flex flex-col items-end">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -73,11 +79,15 @@ export const ChatBubble = () => {
                         {/* Header */}
                         <div className="bg-brand-green text-white p-4 flex justify-between items-center shrink-0">
                             <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                                    <MessageCircle size={18} />
+                                <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center relative">
+                                    <Bot size={20} />
+                                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-brand-green rounded-full" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-sm">AI Assistant</h3>
+                                    <h3 className="font-semibold text-sm flex items-center gap-1">
+                                        AI Assistant
+                                        <Sparkles size={12} className="text-yellow-300" />
+                                    </h3>
                                     <p className="text-xs text-brand-cream opacity-90">Rural Job Portal Support</p>
                                 </div>
                             </div>
@@ -150,11 +160,23 @@ export const ChatBubble = () => {
                 onClick={() => setIsOpen(!isOpen)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                style={{
+                    boxShadow: '0 0 0 3px #E2B325, 0 8px 20px rgba(139, 26, 26, 0.35), 0 0 18px rgba(226, 179, 37, 0.45)',
+                }}
                 className={`${
                     isOpen ? 'bg-brand-terra' : 'bg-brand-green'
-                } text-white p-4 rounded-full shadow-lg flex items-center justify-center hover:bg-brand-terraLight transition-colors relative z-50 cursor-pointer`}
+                } text-white p-4 rounded-full flex items-center justify-center hover:bg-brand-terraLight transition-colors relative z-50 cursor-pointer ring-2 ring-offset-2 ring-offset-transparent ring-[#E2B325]`}
             >
-                {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+                {isOpen ? (
+                    <X size={24} />
+                ) : (
+                    <>
+                        <Bot size={26} />
+                        {!isOpen && (
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 border-2 border-white rounded-full animate-pulse" />
+                        )}
+                    </>
+                )}
             </motion.button>
         </div>
     );
