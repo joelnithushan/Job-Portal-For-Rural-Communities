@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, ImageIcon, Trash2, Plus, RefreshCw, Save, ArrowLeft, AlertTriangle, MapPin } from 'lucide-react';
+import { Sparkles, ImageIcon, Trash2, Plus, RefreshCw, Save, ArrowLeft, AlertTriangle, MapPin, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { postersAPI, companiesAPI } from '../../api/services';
@@ -41,6 +41,9 @@ export const MyPostersPage = () => {
     const [loading, setLoading] = useState(true);
     const [deleteId, setDeleteId] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const [editPoster, setEditPoster] = useState(null);
+    const [editDescription, setEditDescription] = useState('');
+    const [savingEdit, setSavingEdit] = useState(false);
 
     const fetchMine = async () => {
         setLoading(true);
@@ -55,6 +58,39 @@ export const MyPostersPage = () => {
     };
 
     useEffect(() => { fetchMine(); }, []);
+
+    const openEdit = (poster) => {
+        setEditPoster(poster);
+        setEditDescription(poster.description || '');
+    };
+
+    const closeEdit = () => {
+        if (savingEdit) return;
+        setEditPoster(null);
+        setEditDescription('');
+    };
+
+    const saveEdit = async () => {
+        if (!editPoster) return;
+        const trimmed = editDescription.trim();
+        if (trimmed.length < 10) {
+            toast.error(t('poster_description_required', { defaultValue: 'Description must be at least 10 characters' }));
+            return;
+        }
+        setSavingEdit(true);
+        try {
+            await postersAPI.update(editPoster._id, { description: trimmed });
+            toast.success(t('poster_updated', { defaultValue: 'Poster updated' }));
+            setPosters(prev => prev.map(p => (p._id === editPoster._id ? { ...p, description: trimmed } : p)));
+            setEditPoster(null);
+            setEditDescription('');
+        } catch (e) {
+            const msg = e?.response?.data?.message || t('poster_update_failed', { defaultValue: 'Failed to update poster' });
+            toast.error(msg);
+        } finally {
+            setSavingEdit(false);
+        }
+    };
 
     const confirmDelete = async () => {
         if (!deleteId) return;
@@ -142,6 +178,13 @@ export const MyPostersPage = () => {
                                             </Button>
                                         </Link>
                                         <button
+                                            onClick={() => openEdit(p)}
+                                            className="p-2 border border-gray-200 text-gray-500 hover:text-[#8B1A1A] hover:border-[#8B1A1A] transition-colors"
+                                            title={t('edit_description', { defaultValue: 'Edit description' })}
+                                        >
+                                            <Pencil size={14} />
+                                        </button>
+                                        <button
                                             onClick={() => setDeleteId(p._id)}
                                             className="p-2 border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-600 transition-colors"
                                             title={t('delete', { defaultValue: 'Delete' })}
@@ -155,6 +198,38 @@ export const MyPostersPage = () => {
                     </motion.div>
                 )}
             </SectionCard>
+
+            <Modal
+                isOpen={!!editPoster}
+                onClose={closeEdit}
+                title={t('edit_description', { defaultValue: 'Edit Description' })}
+                size="md"
+            >
+                <div className="flex flex-col py-1">
+                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-2">
+                        {editPoster?.title}
+                    </p>
+                    <textarea
+                        rows={6}
+                        className={inputCls}
+                        value={editDescription}
+                        onChange={(e) => setEditDescription(e.target.value)}
+                        placeholder={t('description_placeholder', { defaultValue: 'Describe the role, responsibilities, and any requirements...' })}
+                        disabled={savingEdit}
+                    />
+                    <p className="text-[10px] text-gray-400 mt-1">
+                        {editDescription.trim().length} / 5000
+                    </p>
+                    <div className="flex justify-end gap-3 mt-5">
+                        <Button variant="outline" onClick={closeEdit} disabled={savingEdit}>
+                            {t('cancel', { defaultValue: 'Cancel' })}
+                        </Button>
+                        <Button variant="primary" onClick={saveEdit} loading={savingEdit} className="bg-[#8B1A1A] border-[#8B1A1A] hover:bg-[#6e1515]">
+                            {t('save', { defaultValue: 'Save' })}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
 
             <Modal
                 isOpen={!!deleteId}

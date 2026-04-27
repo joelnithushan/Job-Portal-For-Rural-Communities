@@ -160,6 +160,11 @@ export const PostersPage = () => {
                                             <MapPin size={11} />
                                             <span className="truncate">{[p.town, p.district].filter(Boolean).join(', ') || '-'}</span>
                                         </div>
+                                        {p.description && (
+                                            <p className="mt-2 text-[11px] text-gray-600 line-clamp-2 leading-snug">
+                                                {p.description}
+                                            </p>
+                                        )}
                                         {p.jobType && (
                                             <span className="inline-block mt-2 text-[9px] font-bold uppercase tracking-widest bg-[#E2B325]/20 text-[#8B1A1A] px-2 py-0.5">
                                                 {JOB_TYPE_LABELS[p.jobType] || p.jobType}
