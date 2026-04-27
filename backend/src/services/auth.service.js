@@ -5,6 +5,7 @@ const { OAuth2Client } = require('google-auth-library');
 const Otp = require('../models/otp.model');
 const sendEmail = require('../utils/sendEmail');
 const { cloudinary } = require('../config/cloudinary');
+const { validateSriLankanNIC } = require('../utils/nicValidation');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID');
 
@@ -81,6 +82,36 @@ const register = async (userData) => {
     }
 
     userData.isEmailVerified = true;
+
+    if (userData.nic) {
+        const nicInfo = validateSriLankanNIC(userData.nic);
+        if (!nicInfo) {
+            throw { statusCode: 400, message: 'Invalid NIC format or date.' };
+        }
+        
+        // Validate that provided gender matches NIC-derived gender
+        if (userData.gender && userData.gender !== nicInfo.gender) {
+            throw { statusCode: 400, message: `Gender mismatch: Your NIC indicates ${nicInfo.gender}, but you selected ${userData.gender}. Please correct your gender.` };
+        }
+
+        // Validate that provided DOB matches NIC-derived DOB
+        if (userData.dob) {
+            const inputDob = new Date(userData.dob);
+            const nicDob = new Date(nicInfo.dob);
+            if (
+                inputDob.getFullYear() !== nicDob.getUTCFullYear() ||
+                inputDob.getMonth() !== nicDob.getUTCMonth() ||
+                inputDob.getDate() !== nicDob.getUTCDate()
+            ) {
+                const nicDobStr = nicDob.toISOString().split('T')[0];
+                throw { statusCode: 400, message: `Date of birth mismatch: Your NIC indicates DOB as ${nicDobStr}, but you entered a different date. Please correct your date of birth.` };
+            }
+        }
+
+        // Set from NIC to guarantee sync
+        userData.dob = nicInfo.dob;
+        userData.gender = nicInfo.gender;
+    }
 
     const user = await User.create(userData);
     

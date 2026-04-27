@@ -12,6 +12,11 @@ import {
     Mail, Shield, Calendar, Edit3, Save, X, CheckCircle, CreditCard, AlertTriangle
 } from 'lucide-react';
 import { formatDate } from '../../utils/formatters';
+import { parseSriLankanNIC } from '../../utils/nicValidation';
+
+const nameRegex = /^[a-zA-Z\s.-]+$/;
+const nicRegex = /^(?:\d{9}[vVxX]|\d{12})$/;
+const phoneRegex = /^(?:\+94|0)[0-9]{9}$/;
 
 const DISTRICTS = [
     'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo',
@@ -54,11 +59,45 @@ export const ProfilePage = () => {
     const fileInputRef = useRef(null);
 
     const profileSchema = yup.object({
-        name: yup.string().required(t('err_name_req', { defaultValue: 'Name is required' })).min(2, t('err_name_short', { defaultValue: 'Name must be at least 2 characters' })).max(60, t('err_name_long', { defaultValue: 'Name must be at most 60 characters' })).trim(),
-        phone: yup.string().nullable().transform(v => v === '' ? null : v).matches(/^[0-9+\-\s()]{7,20}$/, { message: t('err_phone_invalid', { defaultValue: 'Enter a valid phone number' }), excludeEmptyString: true }),
+        name: yup.string().required(t('auth_err_name_req')).min(2, t('auth_err_name_short')).matches(nameRegex, t('auth_err_name_invalid')).trim(),
+        phone: yup.string().required(t('auth_err_phone_req')).matches(phoneRegex, t('auth_err_phone_invalid')),
         district: yup.string().nullable().transform(v => v === '' ? null : v),
-        nic: yup.string().nullable().transform(v => v === '' ? null : v).matches(/^(?:\d{9}[vVxX]|\d{12})$/, { message: t('err_nic_invalid', { defaultValue: 'Enter a valid Sri Lankan NIC' }), excludeEmptyString: true }),
+        nic: yup.string().required(t('auth_err_nic_req')).matches(nicRegex, t('auth_err_nic_invalid')).test(
+            'nic-valid-date',
+            'NIC contains an invalid date. Please check your NIC number.',
+            (value) => {
+                if (!value || !nicRegex.test(value)) return true;
+                return parseSriLankanNIC(value) !== null;
+            }
+        ),
+        gender: yup.string().required('Gender is required').oneOf(['MALE', 'FEMALE'], 'Invalid gender').test(
+            'gender-matches-nic',
+            'Gender does not match your NIC.',
+            function (value) {
+                const { nic } = this.parent;
+                if (!nic || !nicRegex.test(nic) || !value) return true;
+                const nicInfo = parseSriLankanNIC(nic);
+                if (!nicInfo) return true;
+                return nicInfo.gender === value;
+            }
+        ),
+        dob: yup.date().required('Date of birth is required').max(new Date(), 'Date of birth cannot be in the future').test(
+            'dob-matches-nic',
+            'Date of birth does not match your NIC.',
+            function (value) {
+                const { nic } = this.parent;
+                if (!nic || !nicRegex.test(nic) || !value) return true;
+                const nicInfo = parseSriLankanNIC(nic);
+                if (!nicInfo) return true;
+                const nicDate = new Date(nicInfo.dob);
+                const inputDate = new Date(value);
+                return nicDate.getUTCFullYear() === inputDate.getFullYear() &&
+                       nicDate.getUTCMonth() === inputDate.getMonth() &&
+                       nicDate.getUTCDate() === inputDate.getDate();
+            }
+        ),
         bio: yup.string().nullable().transform(v => v === '' ? null : v).max(500, t('err_bio_long', { defaultValue: 'Bio cannot exceed 500 characters' })),
+        address: yup.string().nullable().transform(v => v === '' ? null : v).max(255, 'Address cannot exceed 255 characters'),
     });
 
     const { register, handleSubmit, reset, formState: { errors, isDirty }, watch } = useForm({
@@ -67,8 +106,11 @@ export const ProfilePage = () => {
             name: user?.name || '',
             phone: user?.phone || '',
             nic: user?.nic || '',
+            gender: user?.gender || '',
+            dob: user?.dob ? new Date(user.dob).toISOString().split('T')[0] : '',
             district: user?.district || '',
             bio: user?.bio || '',
+            address: user?.address || '',
         },
     });
 
@@ -153,8 +195,11 @@ export const ProfilePage = () => {
                 name: updated.name || '',
                 phone: updated.phone || '',
                 nic: updated.nic || '',
+                gender: updated.gender || '',
+                dob: updated.dob ? new Date(updated.dob).toISOString().split('T')[0] : '',
                 district: updated.district || '',
                 bio: updated.bio || '',
+                address: updated.address || '',
             });
             setIsEditing(false);
             toast.success('Profile updated successfully!');
@@ -170,8 +215,11 @@ export const ProfilePage = () => {
             name: user?.name || '',
             phone: user?.phone || '',
             nic: user?.nic || '',
+            gender: user?.gender || '',
+            dob: user?.dob ? new Date(user.dob).toISOString().split('T')[0] : '',
             district: user?.district || '',
             bio: user?.bio || '',
+            address: user?.address || '',
         });
         setIsEditing(false);
     };
@@ -211,14 +259,14 @@ export const ProfilePage = () => {
                         {/* Avatar */}
                         <div className="relative inline-block">
                             {(photoPreview || user?.profilePicture) ? (
-                                <img src={photoPreview || user.profilePicture} alt="Profile" className="h-32 w-32 object-cover rounded-full border-4 border-[#E2B325] bg-white shadow-md" />
+                                <img src={photoPreview || user.profilePicture} alt="Profile" className="h-32 w-32 object-cover border-4 border-[#E2B325] bg-white shadow-md" />
                             ) : (
-                                <img src={defaultAvatar} alt="Default Profile" className="h-32 w-32 object-cover rounded-full border-4 border-[#E2B325] bg-white shadow-md" />
+                                <img src={defaultAvatar} alt="Default Profile" className="h-32 w-32 object-cover border-4 border-[#E2B325] bg-white shadow-md" />
                             )}
                             <button onClick={() => fileInputRef.current?.click()} disabled={uploadingPhoto}
-                                className="absolute bottom-1 right-1 bg-[#E2B325] text-[#8B1A1A] p-2 rounded-full border-2 border-white hover:bg-[#d4a420] transition-colors" title="Change photo">
+                                className="absolute bottom-1 right-1 bg-[#E2B325] text-[#8B1A1A] p-2 border-2 border-white hover:bg-[#d4a420] transition-colors" title="Change photo">
                                 {uploadingPhoto ? (
-                                    <div className="animate-spin h-4 w-4 border-2 border-[#8B1A1A] border-t-transparent rounded-full" />
+                                    <div className="animate-spin h-4 w-4 border-2 border-[#8B1A1A] border-t-transparent" />
                                 ) : (
                                     <Camera className="h-4 w-4" />
                                 )}
@@ -286,7 +334,11 @@ export const ProfilePage = () => {
                                         { icon: User, label: t('full_name'), value: user?.name },
                                         { icon: Phone, label: t('job_contact_phone'), value: user?.phone },
                                         { icon: CreditCard, label: 'NIC', value: user?.nic },
+                                        { icon: User, label: 'Gender', value: user?.gender ? user.gender.charAt(0) + user.gender.slice(1).toLowerCase() : null },
+                                        { icon: Calendar, label: 'Date of Birth', value: user?.dob ? fmtDate(user.dob, i18n) : null },
+                                        { icon: Calendar, label: 'Age', value: user?.dob ? `${Math.abs(new Date(Date.now() - new Date(user.dob).getTime()).getUTCFullYear() - 1970)} years` : null },
                                         { icon: MapPin, label: t('district'), value: user?.district },
+                                        { icon: MapPin, label: 'Address', value: user?.address },
                                     ].map(field => (
                                         <div key={field.label} className="flex flex-col py-4 border-b border-gray-100">
                                             <span className="text-xs text-gray-400 uppercase tracking-wider mb-1">{field.label}</span>
@@ -349,6 +401,40 @@ export const ProfilePage = () => {
                                         {errors.district && <p className="text-xs text-[#8B1A1A] mt-0.5">{errors.district.message}</p>}
                                     </div>
 
+                                    {/* Gender */}
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-xs font-semibold uppercase tracking-wider text-gray-600">Gender <span className="text-[#8B1A1A]">*</span></label>
+                                        <div className="relative">
+                                            <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                            <select {...register('gender')} className={`${inputCls(errors.gender)} cursor-pointer appearance-none`}>
+                                                <option value="">Select Gender</option>
+                                                <option value="MALE">Male</option>
+                                                <option value="FEMALE">Female</option>
+                                            </select>
+                                        </div>
+                                        {errors.gender && <p className="text-xs text-[#8B1A1A] mt-0.5">{errors.gender.message}</p>}
+                                    </div>
+
+                                    {/* DOB */}
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-xs font-semibold uppercase tracking-wider text-gray-600">Date of Birth <span className="text-[#8B1A1A]">*</span></label>
+                                        <div className="relative">
+                                            <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                            <input {...register('dob')} type="date" className={inputCls(errors.dob)} />
+                                        </div>
+                                        {errors.dob && <p className="text-xs text-[#8B1A1A] mt-0.5">{errors.dob.message}</p>}
+                                    </div>
+
+                                    {/* Address */}
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-xs font-semibold uppercase tracking-wider text-gray-600">Address</label>
+                                        <div className="relative">
+                                            <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                            <input {...register('address')} type="text" placeholder="e.g. No. 45, Main Street, Colombo 07" className={inputCls(errors.address)} />
+                                        </div>
+                                        {errors.address && <p className="text-xs text-[#8B1A1A] mt-0.5">{errors.address.message}</p>}
+                                    </div>
+
                                     {/* Email (read-only) */}
                                     <div className="flex flex-col gap-1">
                                         <label className="text-xs font-semibold uppercase tracking-wider text-gray-600">
@@ -388,7 +474,7 @@ export const ProfilePage = () => {
                                         <button type="submit" disabled={saving || !isDirty}
                                             className="bg-[#8B1A1A] text-white text-sm uppercase tracking-wider px-6 py-2.5 hover:bg-[#6e1515] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                                             {saving ? (
-                                                <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> SAVING...</>
+                                                <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent" /> SAVING...</>
                                             ) : (
                                                 <><Save className="h-4 w-4" /> {t('save_changes')}</>
                                             )}
@@ -403,7 +489,7 @@ export const ProfilePage = () => {
 
             {/* DANGER ZONE - Hidden for Admin */}
             {user?.role !== 'ADMIN' && (
-                <div className="mt-12 border border-red-100 bg-[#FFF9F9] overflow-hidden rounded-sm">
+                <div className="mt-12 border border-red-100 bg-[#FFF9F9] overflow-hidden">
                     <div className="bg-[#FEE2E2]/50 px-5 py-3 flex items-center gap-2 border-b border-red-100">
                         <AlertTriangle className="h-4 w-4 text-red-500" />
                         <h2 className="text-red-800 text-xs font-bold uppercase tracking-widest">Danger Zone</h2>

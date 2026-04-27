@@ -11,9 +11,11 @@ import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useTranslation } from 'react-i18next';
+import { parseSriLankanNIC } from '../../utils/nicValidation';
 
 const nameRegex = /^[a-zA-Z\s.-]+$/;
 const pwdRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+const nicRegex = /^(?:\d{9}[vVxX]|\d{12})$/;
 
 
 export const RegisterEmployerPage = () => {
@@ -22,6 +24,41 @@ export const RegisterEmployerPage = () => {
     const registerSchema = yup.object({
         name: yup.string().required(t('auth_err_name_req')).min(2, t('auth_err_name_short')).matches(nameRegex, t('auth_err_name_invalid')),
         email: yup.string().email(t('auth_err_email_invalid')).required(t('auth_err_email_req')),
+        nic: yup.string().required('NIC is required').matches(nicRegex, 'Enter a valid Sri Lankan NIC').test(
+            'nic-valid-date',
+            'NIC contains an invalid date. Please check your NIC number.',
+            (value) => {
+                if (!value || !nicRegex.test(value)) return true;
+                return parseSriLankanNIC(value) !== null;
+            }
+        ),
+        gender: yup.string().required('Gender is required').oneOf(['MALE', 'FEMALE'], 'Invalid gender').test(
+            'gender-matches-nic',
+            'Gender does not match your NIC. Your NIC indicates a different gender.',
+            function (value) {
+                const { nic } = this.parent;
+                if (!nic || !nicRegex.test(nic) || !value) return true;
+                const nicInfo = parseSriLankanNIC(nic);
+                if (!nicInfo) return true;
+                return nicInfo.gender === value;
+            }
+        ),
+        dob: yup.date().required('Date of birth is required').max(new Date(), 'Date of birth cannot be in the future').test(
+            'dob-matches-nic',
+            'Date of birth does not match your NIC. Please verify your NIC and DOB.',
+            function (value) {
+                const { nic } = this.parent;
+                if (!nic || !nicRegex.test(nic) || !value) return true;
+                const nicInfo = parseSriLankanNIC(nic);
+                if (!nicInfo) return true;
+                const nicDate = new Date(nicInfo.dob);
+                const inputDate = new Date(value);
+                return nicDate.getUTCFullYear() === inputDate.getFullYear() &&
+                       nicDate.getUTCMonth() === inputDate.getMonth() &&
+                       nicDate.getUTCDate() === inputDate.getDate();
+            }
+        ),
+        phone: yup.string().required(t('auth_err_phone_req')).matches(/^(?:\+94|0)[0-9]{9}$/, t('auth_err_phone_invalid')),
         password: yup.string().required(t('auth_err_pass_req')).matches(pwdRegex, t('auth_err_pass_invalid')),
         confirmPassword: yup.string()
             .required(t('auth_err_confirm_pass_req'))
@@ -89,6 +126,7 @@ export const RegisterEmployerPage = () => {
             navigate('/employer', { replace: true });
         } catch (error) {
             console.error('Employer registration error:', error);
+            toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -111,7 +149,7 @@ export const RegisterEmployerPage = () => {
         <div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
 
             {/* Card */}
-            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 p-8 sm:p-10 shadow-lg rounded-2xl my-8">
+            <div className="relative z-10 w-full max-w-md bg-white border-2 border-brand-green/20 px-8 py-8 sm:px-10 sm:py-10 shadow-lg my-8 rounded-xl">
                 <div className="text-center mb-6">
                     <Link to="/">
                         <img src="/logo.png" alt="NextEra" className="h-20 w-auto object-contain mx-auto mb-4" />
@@ -120,11 +158,12 @@ export const RegisterEmployerPage = () => {
                     <p className="text-sm text-gray-400 mt-1">{t('auth_emp_desc')}</p>
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <Input
                         label={t('auth_emp_name')}
                         placeholder={t('auth_emp_name_ph')}
                         error={errors.name?.message}
+                        className="!mb-0"
                         {...register('name')}
                     />
 
@@ -133,31 +172,72 @@ export const RegisterEmployerPage = () => {
                         type="email"
                         placeholder={t('auth_emp_email_ph')}
                         error={errors.email?.message}
+                        className="!mb-0"
                         {...register('email')}
                     />
 
-                    <div className="relative">
+                    <Input
+                        label="NIC Number"
+                        placeholder="e.g. 199912345678 or 987654321V"
+                        error={errors.nic?.message}
+                        className="!mb-0"
+                        {...register('nic')}
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-brand-dark">Gender</label>
+                            <select 
+                                className={`w-full px-4 py-2.5 bg-gray-50 border focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-colors ${errors.gender ? 'border-red-400' : 'border-gray-200'}`}
+                                {...register('gender')}
+                            >
+                                <option value="">Select Gender</option>
+                                <option value="MALE">Male</option>
+                                <option value="FEMALE">Female</option>
+                            </select>
+                            {errors.gender && <p className="text-sm text-red-500">{errors.gender.message}</p>}
+                        </div>
                         <Input
-                            label={t('auth_password')}
-                            type={showPassword ? "text" : "password"}
-                            placeholder={t('auth_password_ph')}
-                            error={errors.password?.message}
-                            {...register('password')}
+                            label="Date of Birth"
+                            type="date"
+                            error={errors.dob?.message}
+                            className="!mb-0"
+                            {...register('dob')}
                         />
-                        <button
-                            type="button"
-                            className="absolute right-3 top-[38px] text-gray-400 hover:text-gray-600 focus:outline-none"
-                            onClick={() => setShowPassword(!showPassword)}
-                        >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
                     </div>
+
+                    <Input
+                        label={t('auth_phone')}
+                        placeholder={t('auth_phone_ph')}
+                        error={errors.phone?.message}
+                        className="!mb-0"
+                        {...register('phone')}
+                    />
+
+                    <Input
+                        label={t('auth_password')}
+                        type={showPassword ? "text" : "password"}
+                        placeholder={t('auth_password_ph')}
+                        error={errors.password?.message}
+                        className="!mb-0"
+                        rightElement={
+                            <button
+                                type="button"
+                                className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        }
+                        {...register('password')}
+                    />
 
                     <Input
                         label={t('auth_confirm_password')}
                         type={showPassword ? "text" : "password"}
                         placeholder={t('auth_confirm_pwd_ph')}
                         error={errors.confirmPassword?.message}
+                        className="!mb-0"
                         {...register('confirmPassword')}
                     />
 
@@ -183,13 +263,13 @@ export const RegisterEmployerPage = () => {
                 </form>
 
                 {/* Divider */}
-                <div className="flex items-center gap-4 my-6">
+                <div className="flex items-center gap-4 my-4">
                     <div className="flex-1 h-px bg-gray-200" />
                     <span className="text-xs text-gray-400 uppercase tracking-wider">{t('auth_or')}</span>
                     <div className="flex-1 h-px bg-gray-200" />
                 </div>
 
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-4">
                     <GoogleLogin
                         onSuccess={onGoogleSuccess}
                         onError={() => {
@@ -220,7 +300,7 @@ export const RegisterEmployerPage = () => {
             {/* OTP Verification Modal */}
             {showOtpModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative animate-fade-in-up">
+                    <div className="bg-white shadow-xl w-full max-w-sm p-6 relative animate-fade-in-up">
                         <div className="text-center mb-6">
                             <h3 className="text-xl font-bold font-heading text-brand-dark mb-2">Verify Email</h3>
                             <p className="text-sm text-gray-500">

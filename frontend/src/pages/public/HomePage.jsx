@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useTranslation } from 'react-i18next';
+import SEO from '../../components/SEO';
 
 const MOCK_FEATURED_JOBS = [
     { id: 1, title: 'Farm Supervisor', company: 'Green Valley Estates', location: 'Nuwara Eliya', type: 'Full Time', salary: 'LKR 45,000 – 60,000' },
@@ -75,6 +76,10 @@ export const HomePage = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
+            <SEO
+                description={t('home_seo_description', { defaultValue: 'NextEra - Connecting skilled rural workers with local and regional opportunities across Sri Lanka.' })}
+                keywords="rural jobs, agriculture jobs, construction jobs, sri lanka jobs"
+            />
 
             {/* ── HERO ── */}
             <section className="relative w-full overflow-hidden" style={{ aspectRatio: '16/6' }}>

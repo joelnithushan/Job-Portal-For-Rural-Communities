@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/formatters';
-import { LayoutDashboard, FileText, Heart, User, LogOut, PlusCircle, Briefcase, Users, Building, ClipboardList, Building2, Globe, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, FileText, Heart, User, LogOut, PlusCircle, Briefcase, Users, Building, ClipboardList, Building2, Globe, BarChart2, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -38,6 +38,7 @@ export const Sidebar = () => {
             { label: t('nav_post_job'), path: '/employer/post-job', icon: PlusCircle },
             { label: t('my_jobs'), path: '/employer/jobs', icon: Briefcase },
             { label: t('nav_applications'), path: '/employer/applications', icon: ClipboardList },
+            { label: t('ai_poster_maker', { defaultValue: 'AI Poster Maker' }), path: '/employer/posters', icon: Sparkles },
             { label: t('company'), path: '/employer/company', icon: Building2 },
             { label: t('my_profile'), path: '/profile', icon: User },
         ],
@@ -46,6 +47,7 @@ export const Sidebar = () => {
             { label: t('nav_users'), path: '/admin/users', icon: Users },
             { label: t('nav_companies_admin'), path: '/admin/companies', icon: Building },
             { label: t('all_jobs'), path: '/admin/jobs', icon: Briefcase },
+            { label: t('manage_posters', { defaultValue: 'Manage Posters' }), path: '/admin/posters', icon: Sparkles },
             { label: t('nav_reports'), path: '/admin/reports', icon: BarChart2 },
         ]
     };

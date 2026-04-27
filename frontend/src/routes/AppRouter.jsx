@@ -10,11 +10,13 @@ import { HomePage } from '../pages/public/HomePage';
 import { JobsPage } from '../pages/public/JobsPage';
 import { JobDetailPage, CompaniesPage } from '../pages/public/PublicPages';
 import { CompanyJobsPage } from '../pages/public/CompanyJobsPage';
+import { PostersPage, PosterDetailPage } from '../pages/public/PostersPage';
+import { MyPostersPage, CreatePosterPage } from '../pages/employer/EmployerPosterPages';
 import { useTranslation } from 'react-i18next';
 import { LoginPage, RegisterPage, RegisterEmployerPage, ForgotPasswordPage, ResetPasswordPage } from '../pages/auth/AuthPages';
 import { SeekerDashboard, MyApplicationsPage, SavedJobsPage } from '../pages/seeker/SeekerPages';
 import { EmployerDashboard, PostJobPage, MyJobsPage, JobApplicationsPage, CompanyProfilePage } from '../pages/employer/EmployerPages';
-import { AdminDashboard, AdminUsersPage, AdminCompaniesPage, AdminJobsPage, AdminReportsPage } from '../pages/admin/AdminPages';
+import { AdminDashboard, AdminUsersPage, AdminCompaniesPage, AdminJobsPage, AdminReportsPage, AdminPostersPage } from '../pages/admin/AdminPages';
 import { ProfilePage } from '../pages/profile/ProfilePage';
 
 const ProfileWrapper = () => {
@@ -23,7 +25,7 @@ const ProfileWrapper = () => {
         return (
             <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
                 <Navbar />
-                <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><ProfilePage /></main>
+                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 max-w-7xl mx-auto w-full"><ProfilePage /></main>
             </div>
         );
     }
@@ -32,7 +34,7 @@ const ProfileWrapper = () => {
             <Sidebar />
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
                 <Navbar />
-                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><ProfilePage /></main>
+                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 overflow-y-auto"><ProfilePage /></main>
             </div>
         </div>
     );
@@ -101,11 +103,26 @@ export const AppRouter = () => {
                     </>
                 } />
 
+                <Route path="/posters" element={
+                    <>
+                        <Navbar />
+                        <main className="flex-1"><PostersPage /></main>
+                        <Footer />
+                    </>
+                } />
+                <Route path="/posters/:id" element={
+                    <>
+                        <Navbar />
+                        <main className="flex-1"><PosterDetailPage /></main>
+                        <Footer />
+                    </>
+                } />
+
                 <Route path="/saved-jobs" element={
                     <RoleRoute roles={['JOB_SEEKER']}>
                         <>
                             <Navbar />
-                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><SavedJobsPage /></main>
+                            <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 max-w-7xl mx-auto w-full"><SavedJobsPage /></main>
                             <Footer />
                         </>
                     </RoleRoute>
@@ -120,7 +137,7 @@ export const AppRouter = () => {
                     <RoleRoute roles={['JOB_SEEKER']}>
                         <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
                             <Navbar />
-                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><SeekerDashboard /></main>
+                            <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 max-w-7xl mx-auto w-full"><SeekerDashboard /></main>
                             <Footer />
                         </div>
                     </RoleRoute>
@@ -129,7 +146,7 @@ export const AppRouter = () => {
                     <RoleRoute roles={['JOB_SEEKER']}>
                         <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
                             <Navbar />
-                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><MyApplicationsPage /></main>
+                            <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 max-w-7xl mx-auto w-full"><MyApplicationsPage /></main>
                             <Footer />
                         </div>
                     </RoleRoute>
@@ -138,7 +155,7 @@ export const AppRouter = () => {
                     <RoleRoute roles={['JOB_SEEKER']}>
                         <div className="flex flex-col min-h-screen bg-[#FAF7F2]">
                             <Navbar />
-                            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full"><SavedJobsPage /></main>
+                            <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 max-w-7xl mx-auto w-full"><SavedJobsPage /></main>
                             <Footer />
                         </div>
                     </RoleRoute>
@@ -158,7 +175,7 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
                                 <Navbar />
-                                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><EmployerDashboard /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 overflow-y-auto"><EmployerDashboard /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -169,7 +186,7 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
                                 <Navbar />
-                                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><PostJobPage /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 overflow-y-auto"><PostJobPage /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -180,7 +197,7 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
                                 <Navbar />
-                                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><MyJobsPage /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 overflow-y-auto"><MyJobsPage /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -191,7 +208,7 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
                                 <Navbar />
-                                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><JobApplicationsPage /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 overflow-y-auto"><JobApplicationsPage /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -202,7 +219,29 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
                                 <Navbar />
-                                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><JobApplicationsPage /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 overflow-y-auto"><JobApplicationsPage /></main>
+                            </div>
+                        </div>
+                    </RoleRoute>
+                } />
+                <Route path="/employer/posters" element={
+                    <RoleRoute roles={['EMPLOYER']}>
+                        <div className="flex min-h-screen bg-[#FAF7F2]">
+                            <Sidebar />
+                            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
+                                <Navbar />
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 overflow-y-auto"><MyPostersPage /></main>
+                            </div>
+                        </div>
+                    </RoleRoute>
+                } />
+                <Route path="/employer/posters/new" element={
+                    <RoleRoute roles={['EMPLOYER']}>
+                        <div className="flex min-h-screen bg-[#FAF7F2]">
+                            <Sidebar />
+                            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
+                                <Navbar />
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 overflow-y-auto"><CreatePosterPage /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -213,7 +252,7 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden">
                                 <Navbar />
-                                <main className="flex-1 p-6 md:p-8 overflow-y-auto"><CompanyProfilePage /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8 overflow-y-auto"><CompanyProfilePage /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -226,7 +265,7 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
                                 <Navbar />
-                                <main className="flex-1 p-4 md:p-8"><AdminDashboard /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8"><AdminDashboard /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -237,7 +276,7 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
                                 <Navbar />
-                                <main className="flex-1 p-4 md:p-8"><AdminUsersPage /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8"><AdminUsersPage /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -248,7 +287,7 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
                                 <Navbar />
-                                <main className="flex-1 p-4 md:p-8"><AdminCompaniesPage /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8"><AdminCompaniesPage /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -259,7 +298,18 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
                                 <Navbar />
-                                <main className="flex-1 p-4 md:p-8"><AdminJobsPage /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8"><AdminJobsPage /></main>
+                            </div>
+                        </div>
+                    </RoleRoute>
+                } />
+                <Route path="/admin/posters" element={
+                    <RoleRoute roles={['ADMIN']}>
+                        <div className="flex min-h-screen bg-brand-cream">
+                            <Sidebar />
+                            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+                                <Navbar />
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8"><AdminPostersPage /></main>
                             </div>
                         </div>
                     </RoleRoute>
@@ -270,7 +320,7 @@ export const AppRouter = () => {
                             <Sidebar />
                             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
                                 <Navbar />
-                                <main className="flex-1 p-4 md:p-8"><AdminReportsPage /></main>
+                                <main className="flex-1 p-4 md:pt-4 md:px-8 md:pb-8"><AdminReportsPage /></main>
                             </div>
                         </div>
                     </RoleRoute>

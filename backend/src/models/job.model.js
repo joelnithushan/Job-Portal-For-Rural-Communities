@@ -57,6 +57,19 @@ const jobSchema = mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        ageLimitMin: {
+            type: Number,
+            default: null,
+        },
+        ageLimitMax: {
+            type: Number,
+            default: null,
+        },
+        genderRequirement: {
+            type: String,
+            enum: ['MALE', 'FEMALE', 'ANY'],
+            default: 'ANY',
+        },
         location: {
             type: {
                 type: String,

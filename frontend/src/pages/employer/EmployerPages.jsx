@@ -127,15 +127,15 @@ const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
     return (
         <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center p-4">
             <div className="bg-white border-t-4 border-t-[#8B1A1A] w-full max-w-lg relative overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-[#8B1A1A] bg-white rounded-full">
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-[#8B1A1A] bg-white">
                     <XCircle className="h-6 w-6" />
                 </button>
                 <div className="p-6 overflow-y-auto">
                     <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
                         {applicant.profilePicture && !applicant.profilePicture.includes('default_avatar') ? (
-                            <img src={applicant.profilePicture} alt={applicant.name} className="h-16 w-16 object-cover rounded-full border-2 border-[#E2B325] shadow-sm shrink-0" />
+                            <img src={applicant.profilePicture} alt={applicant.name} className="h-16 w-16 object-cover border-2 border-[#E2B325] shadow-sm shrink-0" />
                         ) : (
-                            <div className="h-16 w-16 bg-[#8B1A1A] text-white text-xl font-bold rounded-full flex items-center justify-center shrink-0 shadow-inner">
+                            <div className="h-16 w-16 bg-[#8B1A1A] text-white text-xl font-bold flex items-center justify-center shrink-0 shadow-inner">
                                 {getInitials(applicant.name)}
                             </div>
                         )}
@@ -162,8 +162,24 @@ const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
                                 <p className="text-sm font-medium text-[#1A1A1A]">{applicant.nic || '—'}</p>
                             </div>
                             <div>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Gender</p>
+                                <p className="text-sm font-medium text-[#1A1A1A]">{applicant.gender ? applicant.gender.charAt(0) + applicant.gender.slice(1).toLowerCase() : '—'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Date of Birth</p>
+                                <p className="text-sm font-medium text-[#1A1A1A]">{applicant.dob ? fmtDate(applicant.dob, i18n) : '—'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Age</p>
+                                <p className="text-sm font-medium text-[#1A1A1A]">{applicant.dob ? `${Math.abs(new Date(Date.now() - new Date(applicant.dob).getTime()).getUTCFullYear() - 1970)} years` : '—'}</p>
+                            </div>
+                            <div>
                                 <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('district')}</p>
                                 <p className="text-sm font-medium text-[#1A1A1A]">{applicant.district || '—'}</p>
+                            </div>
+                            <div className="col-span-2">
+                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Address</p>
+                                <p className="text-sm font-medium text-[#1A1A1A]">{applicant.address || '—'}</p>
                             </div>
                         </div>
                         
@@ -339,6 +355,9 @@ export const PostJobPage = () => {
         contactPhone: yup.string().required(t('err_phone_req', { defaultValue: 'Contact phone is required' })).matches(phoneRegex, t('err_phone_invalid', { defaultValue: 'Must be a valid Sri Lankan mobile number' })),
         salaryMin: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
         salaryMax: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+        ageLimitMin: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+        ageLimitMax: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+        genderRequirement: yup.string().oneOf(['ANY', 'MALE', 'FEMALE']).default('ANY'),
         cvRequired: yup.boolean(),
     });
 
@@ -363,6 +382,9 @@ export const PostJobPage = () => {
                 contactPhone: data.contactPhone,
                 ...(data.salaryMin && { salaryMin: data.salaryMin }),
                 ...(data.salaryMax && { salaryMax: data.salaryMax }),
+                ...(data.ageLimitMin && { ageLimitMin: data.ageLimitMin }),
+                ...(data.ageLimitMax && { ageLimitMax: data.ageLimitMax }),
+                ...(data.genderRequirement && { genderRequirement: data.genderRequirement }),
                 cvRequired: data.cvRequired || false,
             };
             await jobsAPI.createJob(payload);
@@ -449,8 +471,23 @@ export const PostJobPage = () => {
                     </FieldWrap>
                     <p className="text-xs text-gray-400 md:col-span-2 -mt-3">{t('salary_neg_hint', { defaultValue: 'Leave blank if salary is negotiable' })}</p>
 
+                    <FieldWrap label="Minimum Age Limit">
+                        <input type="number" className={inputCls(errors.ageLimitMin)} placeholder="e.g. 18" {...register('ageLimitMin')} />
+                    </FieldWrap>
+                    <FieldWrap label="Maximum Age Limit">
+                        <input type="number" className={inputCls(errors.ageLimitMax)} placeholder="e.g. 35" {...register('ageLimitMax')} />
+                    </FieldWrap>
+                    
+                    <FieldWrap label="Gender Requirement" error={errors.genderRequirement?.message}>
+                        <select className={`${inputCls(errors.genderRequirement)} cursor-pointer`} {...register('genderRequirement')}>
+                            <option value="ANY">Any Gender</option>
+                            <option value="MALE">Male Only</option>
+                            <option value="FEMALE">Female Only</option>
+                        </select>
+                    </FieldWrap>
+
                     <div className="md:col-span-2 flex items-center gap-3 bg-[#FAF7F2] p-4 border border-gray-200">
-                        <input type="checkbox" id="cvRequired" {...register('cvRequired')} className="h-4 w-4 text-[#8B1A1A] focus:ring-[#8B1A1A] border-gray-300 rounded cursor-pointer" />
+                        <input type="checkbox" id="cvRequired" {...register('cvRequired')} className="h-4 w-4 text-[#8B1A1A] focus:ring-[#8B1A1A] border-gray-300 rounded-none cursor-pointer" />
                         <label htmlFor="cvRequired" className="text-sm font-semibold text-[#1A1A1A] cursor-pointer inline-flex flex-col">
                             {t('cv_required')}
                             <span className="text-xs text-gray-500 font-normal mt-0.5">{t('cv_hint', { defaultValue: 'Job seekers will be forced to upload a PDF/DOC document when applying.' })}</span>
@@ -726,7 +763,7 @@ export const JobApplicationsPage = () => {
                                         <td className="py-3 px-4 text-xs text-gray-400 font-mono border-b border-gray-100">{i + 1}</td>
                                         <td className="py-3 px-4 border-b border-gray-100">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 bg-[#8B1A1A] text-white text-xs font-bold rounded-full flex items-center justify-center shrink-0">
+                                                <div className="h-8 w-8 bg-[#8B1A1A] text-white text-xs font-bold flex items-center justify-center shrink-0">
                                                     {getInitials(app.seekerId?.name)}
                                                 </div>
                                                 <div>
@@ -765,7 +802,7 @@ export const JobApplicationsPage = () => {
                                                     <option value="ACCEPTED">{t('status_labels.ACCEPTED')}</option>
                                                     <option value="REJECTED">{t('status_labels.REJECTED')}</option>
                                                 </select>
-                                                <button onClick={() => setViewApplicant(app.seekerId)} className="text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider bg-[#FAF7F2] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white border border-[#8B1A1A] transition-colors rounded-sm">
+                                                <button onClick={() => setViewApplicant(app.seekerId)} className="text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider bg-[#FAF7F2] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white border border-[#8B1A1A] transition-colors">
                                                     {t('dash_my_profile').toUpperCase()}
                                                 </button>
                                             </div>
@@ -988,7 +1025,7 @@ export const CompanyProfilePage = () => {
                 {/* Left — Company Card */}
                 <SectionCard title={t('company').toUpperCase()}>
                     <div className="flex flex-col items-center">
-                        <div className="h-20 w-20 bg-[#8B1A1A] text-white text-3xl font-bold flex items-center justify-center mt-2 rounded-full">
+                        <div className="h-20 w-20 bg-[#8B1A1A] text-white text-3xl font-bold flex items-center justify-center mt-2">
                             {company.businessName?.charAt(0) || 'C'}
                         </div>
                         <h3 className="text-xl font-bold text-[#1A1A1A] text-center mt-3 font-['Playfair_Display']">{company.businessName}</h3>

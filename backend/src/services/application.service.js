@@ -47,6 +47,37 @@ exports.applyToJob = async (jobId, seekerId, cvUrl) => {
       throw error;
   }
 
+  let seekerAge = null;
+  if (seekerForCheck.dob) {
+      const diffMs = Date.now() - seekerForCheck.dob.getTime();
+      const ageDt = new Date(diffMs); 
+      seekerAge = Math.abs(ageDt.getUTCFullYear() - 1970);
+  }
+
+  if (job.genderRequirement && job.genderRequirement !== 'ANY') {
+      if (!seekerForCheck.gender || seekerForCheck.gender !== job.genderRequirement) {
+          const error = new Error(`This job requires a ${job.genderRequirement.toLowerCase()} applicant.`);
+          error.statusCode = 400;
+          throw error;
+      }
+  }
+
+  if (job.ageLimitMin !== null && job.ageLimitMin !== undefined) {
+      if (seekerAge === null || seekerAge < job.ageLimitMin) {
+          const error = new Error(`You must be at least ${job.ageLimitMin} years old to apply.`);
+          error.statusCode = 400;
+          throw error;
+      }
+  }
+
+  if (job.ageLimitMax !== null && job.ageLimitMax !== undefined) {
+      if (seekerAge === null || seekerAge > job.ageLimitMax) {
+          const error = new Error(`You must be at most ${job.ageLimitMax} years old to apply.`);
+          error.statusCode = 400;
+          throw error;
+      }
+  }
+
   const application = await Application.create({
     jobId,
     seekerId,
@@ -244,14 +275,14 @@ exports.getApplicantsByJob = async (jobId, employerId) => {
   }
 
   return await Application.find({ jobId })
-    .populate("seekerId", "name email phone nic district bio profilePicture")
+    .populate("seekerId", "name email phone nic district bio profilePicture gender dob")
     .populate("jobId", "title");
 };
 
 
 exports.getEmployerApplications = async (employerId) => {
   return await Application.find({ employerId })
-    .populate("seekerId", "name email phone nic district bio profilePicture")
+    .populate("seekerId", "name email phone nic district bio profilePicture gender dob")
     .populate("jobId", "title");
 };
 
