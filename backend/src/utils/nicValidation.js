@@ -29,9 +29,20 @@ const validateSriLankanNIC = (nic) => {
         return null; // Invalid days
     }
 
-    // Days offset
+    // Sri Lankan NICs encode day-of-year as if every year has 366 days
+    // (Feb 29 is always counted). For non-leap years, days after Feb 29
+    // are shifted by 1 and must be decremented to get the real date.
+    const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    if (!isLeapYear) {
+        if (days === 60) {
+            return null; // Feb 29 in a non-leap year is invalid
+        }
+        if (days > 60) {
+            days -= 1;
+        }
+    }
+
     // Jan 1 = 1. JS Date is 0-indexed for month, days are 1-indexed.
-    // Easiest is to set Date to Jan 1st of that year, and add (days - 1) days.
     const dob = new Date(Date.UTC(year, 0, 1));
     dob.setUTCDate(dob.getUTCDate() + days - 1);
 

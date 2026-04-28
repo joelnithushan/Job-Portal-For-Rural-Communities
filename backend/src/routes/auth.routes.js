@@ -29,6 +29,11 @@ const registerSchema = {
         phone: Joi.string().pattern(phoneRegex).messages({
             'string.pattern.base': 'Enter a valid Sri Lankan phone number'
         }).optional(),
+        gender: Joi.string().valid('MALE', 'FEMALE').optional(),
+        dob: Joi.date().max('now').optional().messages({
+            'date.max': 'Date of birth cannot be in the future',
+            'date.base': 'Enter a valid date of birth',
+        }),
         captchaToken: Joi.string().optional(),
         otp: Joi.string().length(6).required().messages({
             'string.length': 'OTP must be exactly 6 digits',

@@ -148,7 +148,7 @@ exports.withdrawApplication = async (applicationId, seekerId) => {
     throw new Error("Application not found");
   }
 
-  if (application.seekerId.toString() !== seekerId) {
+  if (application.seekerId.toString() !== seekerId.toString()) {
     throw new Error("Not authorized to withdraw this application");
   }
 
@@ -166,7 +166,7 @@ exports.updateStatus = async (applicationId, employerId, status, note) => {
     throw new Error("Application not found");
   }
 
-  if (application.employerId.toString() !== employerId) {
+  if (application.employerId.toString() !== employerId.toString()) {
     throw new Error("Not authorized to update this application");
   }
 
