@@ -79,7 +79,7 @@ const SectionCard = ({ children, className = '', title, subtitle }) => (
     <div className={`bg-white border border-gray-200 border-l-4 border-l-[#8B1A1A] p-0 mb-4 overflow-hidden ${className}`}>
         {title && (
             <div className="bg-[#8B1A1A] px-5 py-3 flex items-center justify-between">
-                <h2 className="text-white font-semibold text-sm uppercase tracking-widest font-['DM_Sans']">
+                <h2 className="text-white font-semibold text-base tracking-wide font-['DM_Sans']">
                     {title}
                 </h2>
                 {subtitle && <span className="text-[#E2B325] text-xs">{subtitle}</span>}
@@ -92,7 +92,8 @@ const SectionCard = ({ children, className = '', title, subtitle }) => (
 const PageHeading = ({ title, subtitle, right }) => (
     <div className="mb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-            {/* Minimal heading */}
+            {title && <h1 className="text-2xl font-bold text-[#1A1A1A] font-['DM_Sans']">{title}</h1>}
+            {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
         </div>
         {right && <div>{right}</div>}
     </div>
@@ -340,7 +341,7 @@ export const AdminDashboard = () => {
                 {/* Recent Jobs */}
                 <SectionCard
                     title={t('recent_job_posts')}
-                    subtitle={<Link to="/admin/jobs" className="bg-[#E2B325] text-[#8B1A1A] text-[10px] font-bold uppercase tracking-widest px-3 py-1 hover:bg-[#d1a620] transition-colors">{t('all_jobs').toUpperCase()}</Link>}
+                    subtitle={<Link to="/admin/jobs" className="bg-[#E2B325] text-[#8B1A1A] text-[10px] font-bold uppercase tracking-widest px-3 py-1 hover:bg-[#d1a620] transition-colors">{t('all_jobs')}</Link>}
                 >
                     {recentJobs.length === 0 ? (
                         <p className="text-gray-400 text-sm py-4 text-center pb-0">{t('no_jobs_posted_yet', { defaultValue: 'No jobs posted yet.' })}</p>
