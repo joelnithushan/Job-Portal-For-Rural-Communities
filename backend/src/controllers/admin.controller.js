@@ -86,7 +86,7 @@ const getAllCompanies = async (req, res, next) => {
 
 const getAdminNotifications = async (req, res, next) => {
     try {
-        const notifications = await adminService.getAdminNotifications();
+        const notifications = await adminService.getAdminNotifications(req.user._id);
         successResponse(res, 'Admin notifications retrieved', { notifications });
     } catch (error) {
         next(error);

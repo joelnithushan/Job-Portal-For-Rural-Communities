@@ -139,10 +139,8 @@ const suspendCompany = async (companyId, reason = null) => {
     return company;
 };
 
-const getAdminNotifications = async () => {
-    const admins = await User.find({ role: 'ADMIN' }).select('_id');
-    const adminIds = admins.map(a => a._id);
-    const notifications = await Notification.find({ userId: { $in: adminIds } })
+const getAdminNotifications = async (adminUserId) => {
+    const notifications = await Notification.find({ userId: adminUserId })
         .sort({ createdAt: -1 })
         .limit(50);
     return notifications;
