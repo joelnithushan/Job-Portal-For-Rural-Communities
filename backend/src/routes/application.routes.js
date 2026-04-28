@@ -19,7 +19,7 @@ const applySchema = {
         "string.hex": "jobId must be a valid hex string",
         "string.length": "jobId must be exactly 24 characters",
       }),
-    cvUrl: Joi.string().uri().optional(),
+    cvUrl: Joi.string().uri().allow(null, '').optional(),
     captchaToken: Joi.string().optional(),
   }),
 };

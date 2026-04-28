@@ -1,9 +1,12 @@
 const request = require('supertest');
 const app = require('../src/app');
+const User = require('../src/models/user.model');
+const Company = require('../src/models/company.model');
+const { generateToken } = require('../src/utils/jwt');
 
 describe('Company Endpoints', () => {
-    let token, employerId, companyId;
-    const employer = {
+    let token, employerId;
+    const employerData = {
         name: 'Employer Tester',
         email: 'employer@test.com',
         password: 'Password@123',
@@ -11,11 +14,9 @@ describe('Company Endpoints', () => {
     };
 
     beforeEach(async () => {
-        const res = await request(app)
-            .post('/api/auth/register')
-            .send(employer);
-        token = res.body.data.token;
-        employerId = res.body.data.user._id;
+        const employer = await User.create(employerData);
+        employerId = employer._id;
+        token = generateToken(employer._id.toString(), employer.role);
     });
 
     describe('POST /api/companies', () => {
@@ -29,15 +30,14 @@ describe('Company Endpoints', () => {
                     contactPhone: '0712345678'
                 })
                 .expect(201);
-            
+
             expect(res.body.success).toBe(true);
             expect(res.body.data.company.businessName).toBe('Test Company');
         });
     });
 
     describe('GET /api/companies/me', () => {
-        it('should return the employer\'s company', async () => {
-            // Setup: Create company first
+        it("should return the employer's company", async () => {
             await request(app)
                 .post('/api/companies')
                 .set('Authorization', `Bearer ${token}`)
@@ -51,7 +51,7 @@ describe('Company Endpoints', () => {
                 .get('/api/companies/me')
                 .set('Authorization', `Bearer ${token}`)
                 .expect(200);
-            
+
             expect(res.body.success).toBe(true);
             expect(res.body.data.company.businessName).toBe('My Company');
         });
@@ -59,7 +59,6 @@ describe('Company Endpoints', () => {
 
     describe('GET /api/companies/:id', () => {
         it('should return a company by ID', async () => {
-            // Setup
             const compRes = await request(app)
                 .post('/api/companies')
                 .set('Authorization', `Bearer ${token}`)
@@ -73,7 +72,7 @@ describe('Company Endpoints', () => {
             const res = await request(app)
                 .get(`/api/companies/${id}`)
                 .expect(200);
-            
+
             expect(res.body.success).toBe(true);
             expect(res.body.data.company.businessName).toBe('Specific Company');
         });
@@ -81,7 +80,6 @@ describe('Company Endpoints', () => {
 
     describe('PATCH /api/companies/me', () => {
         it('should reset verificationStatus to PENDING if businessName is updated', async () => {
-            // Setup: Create and artificially verify company 
             const compRes = await request(app)
                 .post('/api/companies')
                 .set('Authorization', `Bearer ${token}`)
@@ -90,18 +88,14 @@ describe('Company Endpoints', () => {
                     district: 'Kandy',
                     contactPhone: '0712345679'
                 });
-            const Company = require('../src/models/company.model');
             await Company.findByIdAndUpdate(compRes.body.data.company._id, { verificationStatus: 'VERIFIED' });
 
-            // Update
             const updateRes = await request(app)
                 .patch('/api/companies/me')
                 .set('Authorization', `Bearer ${token}`)
-                .send({
-                    businessName: 'New Legal Name'
-                })
+                .send({ businessName: 'New Legal Name' })
                 .expect(200);
-            
+
             expect(updateRes.body.success).toBe(true);
             expect(updateRes.body.data.company.businessName).toBe('New Legal Name');
             expect(updateRes.body.data.company.verificationStatus).toBe('PENDING');

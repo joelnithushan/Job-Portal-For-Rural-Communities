@@ -3,6 +3,8 @@ const app = require('../src/app');
 const User = require('../src/models/user.model');
 const Job = require('../src/models/job.model');
 const Company = require('../src/models/company.model');
+const Application = require('../src/models/application.model');
+const sendSms = require('../src/utils/sendSms');
 const { generateToken } = require('../src/utils/jwt');
 
 describe('Application Endpoints', () => {
@@ -98,15 +100,66 @@ describe('Application Endpoints', () => {
         const emp = await User.findById(employerId);
         emp.status = 'SUSPENDED';
         await emp.save();
-        
+
         const res = await request(app)
             .post('/api/applications')
             .set('Authorization', `Bearer ${seekerToken}`)
             .send({ jobId });
-        
+
         // Cannot apply
         expect(res.status).toBe(400); // Again, thrown as generic error
         expect(res.body.success).toBe(false);
         expect(res.body.message).toContain('currently unavailable');
+    });
+
+    describe('PATCH /api/applications/:id/status', () => {
+        let applicationId;
+
+        beforeEach(async () => {
+            const application = await Application.create({
+                jobId,
+                seekerId,
+                employerId,
+                status: 'APPLIED'
+            });
+            applicationId = application._id.toString();
+        });
+
+        it('triggers an SMS to the seeker when status is set to ACCEPTED', async () => {
+            const res = await request(app)
+                .patch(`/api/applications/${applicationId}/status`)
+                .set('Authorization', `Bearer ${employerToken}`)
+                .send({ status: 'ACCEPTED' })
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(sendSms).toHaveBeenCalledTimes(1);
+            expect(sendSms).toHaveBeenCalledWith(expect.objectContaining({
+                to: '0712345678',
+                body: expect.stringContaining('ACCEPTED')
+            }));
+        });
+
+        it('does not send an SMS when status is set to REJECTED', async () => {
+            await request(app)
+                .patch(`/api/applications/${applicationId}/status`)
+                .set('Authorization', `Bearer ${employerToken}`)
+                .send({ status: 'REJECTED' })
+                .expect(200);
+
+            expect(sendSms).not.toHaveBeenCalled();
+        });
+
+        it('does not send an SMS on ACCEPTED if the seeker has no phone', async () => {
+            await User.findByIdAndUpdate(seekerId, { $unset: { phone: '' } });
+
+            await request(app)
+                .patch(`/api/applications/${applicationId}/status`)
+                .set('Authorization', `Bearer ${employerToken}`)
+                .send({ status: 'ACCEPTED' })
+                .expect(200);
+
+            expect(sendSms).not.toHaveBeenCalled();
+        });
     });
 });

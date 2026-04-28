@@ -1,11 +1,8 @@
 const request = require('supertest');
 const app = require('../src/app');
-
-// Supertest allows testing express routes without starting the web server.
+const Otp = require('../src/models/otp.model');
 
 describe('Authentication API', () => {
-    
-    // We register a dummy user to be used in login
     const jobSeeker = {
         name: 'John Doe',
         email: 'johndoe@example.com',
@@ -14,13 +11,16 @@ describe('Authentication API', () => {
     };
 
     describe('POST /api/auth/register', () => {
-        it('should successfully register a new user', async () => {
+        it('should successfully register a new user when a valid OTP exists', async () => {
+            const otp = '123456';
+            await Otp.create({ email: jobSeeker.email, otp });
+
             const res = await request(app)
                 .post('/api/auth/register')
-                .send(jobSeeker)
+                .send({ ...jobSeeker, otp })
                 .expect('Content-Type', /json/)
                 .expect(201);
-            
+
             expect(res.body).toHaveProperty('data');
             expect(res.body.data).toHaveProperty('user');
             expect(res.body.data).toHaveProperty('token');
@@ -28,23 +28,34 @@ describe('Authentication API', () => {
         });
 
         it('should fail registration with an invalid email', async () => {
-            const invalidUser = { ...jobSeeker, email: 'not-an-email' };
+            const invalidUser = { ...jobSeeker, email: 'not-an-email', otp: '000000' };
             const res = await request(app)
                 .post('/api/auth/register')
                 .send(invalidUser)
                 .expect(400);
-            
+
             expect(res.body.success).toBe(false);
             expect(res.body.message).toBeDefined();
+        });
+
+        it('should fail registration when OTP is missing or invalid', async () => {
+            const res = await request(app)
+                .post('/api/auth/register')
+                .send({ ...jobSeeker, otp: '999999' })
+                .expect(400);
+
+            expect(res.body.success).toBe(false);
+            expect(res.body.message).toMatch(/otp/i);
         });
     });
 
     describe('POST /api/auth/login', () => {
-        // Register the user first before logging in
         beforeEach(async () => {
+            const otp = '123456';
+            await Otp.create({ email: jobSeeker.email, otp });
             await request(app)
                 .post('/api/auth/register')
-                .send(jobSeeker);
+                .send({ ...jobSeeker, otp });
         });
 
         it('should successfully log in and return tokens', async () => {
@@ -75,5 +86,4 @@ describe('Authentication API', () => {
             expect(res.body.message).toContain('Incorrect email');
         });
     });
-
 });

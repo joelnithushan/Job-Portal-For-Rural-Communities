@@ -2,6 +2,17 @@
 
 This is a Full-Stack Web Application developed for the SE3040 - Application Frameworks module, representing a localized Sri Lankan job portal for rural communities.
 
+## Project Overview
+
+NextEra (Job Portal for Rural Communities) connects job seekers in rural Sri Lanka with local employers. The system covers four core components: **Authentication & Profiles** (registration with NIC-derived gender/DOB, OTP email verification, Google OAuth, password reset), **Jobs** (employer posting, district/town/category filters, age and gender requirements), **Applications** (CV upload, employer review workflow with status notifications via Email + SMS), and **Companies & Posters** (company verification by admin and AI-assisted poster generation).
+
+### Architecture
+
+- **Backend**: Express.js (Node.js) with a layered architecture — `routes` → `controllers` → `services` → `models`. Joi for request validation, JWT for session handling, role-based middleware (`ADMIN` / `EMPLOYER` / `JOB_SEEKER`) for protected routes, and Mongoose for MongoDB persistence.
+- **Frontend**: React 19 (Vite) with React Router, Tailwind CSS v4, React Hook Form + Yup for client-side validation, Context API for global auth state, and i18next for English/Sinhala/Tamil localization.
+- **Third-party services**: Cloudinary (assets/CV), Nodemailer SMTP (OTP & status emails), notify.lk (SMS), Google OAuth 2.0, Google reCAPTCHA v3, OpenRouter (AI poster generation).
+- **Deployment**: Backend on Railway (Docker), frontend on Vercel.
+
 ## Setup Instructions
 
 ### Prerequisites
@@ -102,9 +113,11 @@ npm run test:load
 > Make sure your backend server is actively running before executing Artillery.
 
 ### Performance Testing Execution Results
-Load testing was executed to ensure the system can handle concurrent users (e.g., job seekers browsing and employers posting jobs simultaneously). 
+Load testing was executed to ensure the system can handle concurrent users (e.g., job seekers browsing and employers posting jobs simultaneously).
 - **Tool Used**: Artillery.io
-- **Outcome**: The backend successfully managed the simulated traffic with acceptable response times and minimal latency, affirming that the Node.js event representation and MongoDB connection pooling are configured correctly for moderate-to-high concurrent loads.
+- **Profile**: 20 s warm-up at 5 arrivals/s, 30 s sustained at 20 arrivals/s, 10 s spike at 50 arrivals/s.
+- **Result**: 1,789 / 1,794 requests succeeded with HTTP 200 (99.7% success). Mean response time ~1.94 s, p95 ~9.05 s, p99 ~9.61 s. Average request rate ~35 req/s during the run.
+- **Outcome**: The backend handled the simulated traffic without errors, confirming that the Node.js event loop and MongoDB connection pool tolerate moderate-to-high concurrent loads.
 
 ### Testing Environment Configuration Details
 To ensure consistent results during testing, the following environment was used:

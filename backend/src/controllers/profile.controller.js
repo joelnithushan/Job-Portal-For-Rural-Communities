@@ -198,7 +198,7 @@ const deleteAccount = async (req, res) => {
 
             await Job.deleteMany({ employerId: userId });
 
-            await Company.findOneAndDelete({ employerId: userId });
+            await Company.findOneAndDelete({ employerUserId: userId });
         }
 
         await Notification.deleteMany({ userId: userId });
