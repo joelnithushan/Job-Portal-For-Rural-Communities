@@ -270,7 +270,7 @@ exports.getApplicantsByJob = async (jobId, employerId) => {
     throw new Error("Job not found");
   }
 
-  if (job.employerId.toString() !== employerId) {
+  if (job.employerId.toString() !== employerId.toString()) {
     throw new Error("Not authorized to view applicants for this job");
   }
 
