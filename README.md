@@ -10,7 +10,7 @@ This is a Full-Stack Web Application developed for the SE3040 - Application Fram
 - Cloudinary Account (for Image/CV uploads)
 - Google Cloud Console Account (for OAuth and reCAPTCHA v3)
 - Email Provider with SMTP (e.g., Gmail App Password for OTPs)
-- Setup Twilio (for SMS)
+- notify.lk account (for SMS)
 
 ### 1. Clone the repository
 ```bash
@@ -35,7 +35,7 @@ cd Job Portal-AF
    - `MONGO_URI`, `JWT_SECRET`
    - **Cloudinary**: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
    - **Email/SMTP** (for OTP): `EMAIL_HOST`, `EMAIL_PORT` (587), `EMAIL_USER`, `EMAIL_PASS`
-   - **Twilio**: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
+   - **notify.lk**: `NOTIFY_LK_USER_ID`, `NOTIFY_LK_API_KEY`, `NOTIFY_LK_SENDER_ID`
    - **Google**: `GOOGLE_CLIENT_ID`, `RECAPTCHA_SECRET`
 4. Start the backend:
    ```bash
@@ -117,10 +117,26 @@ To ensure consistent results during testing, the following environment was used:
 ## Third-Party Integrations
 
 The project successfully integrates several external services to enhance functionality and security:
-1. **Twilio**: Implemented within the job application lifecycle to send automated SMS notifications to job seekers upon status changes (e.g., when an application is "ACCEPTED").
-2. **Google OAuth 2.0 (SSO)**: Integrated into the authentication flow to allow seamless and secure user sign-ups and logins without requiring custom credentials.
-3. **Google reCAPTCHA v3**: Added to critical frontend forms (like registration and login) to prevent bot attacks or automated spam.
-4. **Cloudinary**: Used to securely host and deliver static assets, such as employer profile pictures and related imagery.
+1. **Nodemailer (SMTP)**: Powers all transactional email — registration OTPs, password resets, application-submitted confirmations, and application status-change updates.
+2. **notify.lk**: Sends automated SMS to job seekers when an employer marks their application as `ACCEPTED` (and the seeker has a phone number on file).
+3. **Google OAuth 2.0 (SSO)**: Integrated into the authentication flow to allow seamless and secure user sign-ups and logins without requiring custom credentials.
+4. **Google reCAPTCHA v3**: Added to critical frontend forms (like registration and login) to prevent bot attacks or automated spam.
+5. **Cloudinary**: Used to securely host and deliver static assets, such as employer profile pictures and related imagery.
+
+### Notification Triggers
+
+The platform notifies users via **Email** and **SMS** at the following points:
+
+| Event | Email | SMS | Recipient |
+| --- | :---: | :---: | --- |
+| User registers (OTP verification) | Yes | No | New user |
+| User requests a password reset | Yes | No | User |
+| Job seeker submits an application | Yes | No | Job seeker |
+| Employer changes application status (any status) | Yes | No | Job seeker |
+| Application status set to `ACCEPTED` | Yes | Yes | Job seeker |
+
+> [!NOTE]
+> Email is the default channel for every user-facing event. SMS is an *additional* channel fired only on `ACCEPTED` application decisions, and only when the seeker has a phone number saved on their profile. If notify.lk credentials are missing, the SMS step is skipped silently and the email still goes through.
 
 ---
 
