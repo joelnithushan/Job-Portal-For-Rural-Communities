@@ -12,7 +12,8 @@ describe('Admin Endpoints', () => {
             name: 'Admin',
             email: 'admin@test.com',
             password: 'Password@123',
-            role: 'ADMIN'
+            role: 'ADMIN',
+            phone: '0710000001'
         });
         adminId = admin._id;
         adminToken = generateToken(admin._id.toString(), 'ADMIN');
@@ -24,7 +25,8 @@ describe('Admin Endpoints', () => {
                  name: 'Seeker',
                  email: 'seeker@test.com',
                  password: 'Password@123',
-                 role: 'JOB_SEEKER'
+                 role: 'JOB_SEEKER',
+                 phone: '0710000002'
              });
              const seekerToken = generateToken(seeker._id.toString(), 'JOB_SEEKER');
 

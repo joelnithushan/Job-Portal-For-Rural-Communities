@@ -2,17 +2,21 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+// Global mocks for external services so tests never hit Gmail SMTP or notify.lk.
+jest.mock('../src/utils/sendEmail', () => jest.fn());
+jest.mock('../src/utils/sendSms', () => jest.fn());
+
+const sendEmail = require('../src/utils/sendEmail');
+const sendSms = require('../src/utils/sendSms');
+
 let mongoServer;
 
 beforeAll(async () => {
-    // Start MongoMemoryServer
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
 
-    // Set Node env to test
     process.env.NODE_ENV = 'test';
-    
-    // Disconnect any existing connection and connect to the in-memory db
+
     await mongoose.disconnect();
     await mongoose.connect(uri);
 });
@@ -24,6 +28,13 @@ afterAll(async () => {
     if (mongoServer) {
         await mongoServer.stop();
     }
+});
+
+beforeEach(() => {
+    // jest config has resetMocks: true, which wipes implementations between tests.
+    // Re-apply the no-op resolved promise so any code path that awaits the mock works.
+    sendEmail.mockResolvedValue(undefined);
+    sendSms.mockResolvedValue(undefined);
 });
 
 afterEach(async () => {
