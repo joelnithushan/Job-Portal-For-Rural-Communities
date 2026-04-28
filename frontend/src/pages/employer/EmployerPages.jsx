@@ -881,13 +881,21 @@ export const CompanyProfilePage = () => {
     const onSubmit = async (data) => {
         setSubmitting(true);
         try {
+            const payload = {
+                businessName: data.businessName,
+                description: data.description ?? '',
+                district: data.district,
+                town: data.town ?? '',
+                contactPhone: data.contactPhone,
+                contactWhatsApp: data.contactWhatsApp ?? '',
+            };
             if (company) {
-                const res = await companiesAPI.updateMyCompany(data);
+                const res = await companiesAPI.updateMyCompany(payload);
                 setCompany(res.data?.company || res.data);
                 toast.success(t('profile_updated_success', { defaultValue: 'Profile updated!' }));
                 setEditing(false);
             } else {
-                const res = await companiesAPI.createCompany(data);
+                const res = await companiesAPI.createCompany(payload);
                 setCompany(res.data?.company || res.data);
                 toast.success(t('company_created_success', { defaultValue: 'Company profile created!' }));
                 setEditing(false);
@@ -1023,7 +1031,10 @@ export const CompanyProfilePage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Left — Company Card */}
-                <SectionCard title={t('company').toUpperCase()}>
+                <SectionCard
+                    title={t('company').toUpperCase()}
+                    rightSlot={<button onClick={() => setEditing(true)} className="text-[10px] font-bold uppercase tracking-widest text-white border border-white/30 px-3 py-1.5 hover:bg-white/10">{t('update_profile_btn', { defaultValue: 'Edit' })}</button>}
+                >
                     <div className="flex flex-col items-center">
                         <div className="h-20 w-20 bg-[#8B1A1A] text-white text-3xl font-bold flex items-center justify-center mt-2">
                             {company.businessName?.charAt(0) || 'C'}

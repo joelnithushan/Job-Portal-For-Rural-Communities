@@ -38,8 +38,19 @@ const updateCompany = async (userId, data) => {
     if (!company) {
         throw { statusCode: 404, message: 'Company profile not found' };
     }
-    
-    if (data.businessName && data.businessName !== company.businessName) {
+
+    const editableFields = ['businessName', 'description', 'district', 'town', 'contactPhone', 'contactWhatsApp'];
+    const hasChanged = editableFields.some((field) => {
+        if (data[field] === undefined) {
+            return false;
+        }
+
+        const currentValue = company[field] == null ? '' : String(company[field]).trim();
+        const nextValue = data[field] == null ? '' : String(data[field]).trim();
+        return currentValue !== nextValue;
+    });
+
+    if (hasChanged) {
         data.verificationStatus = 'PENDING';
     }
     
