@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, Phone, Briefcase, ArrowLeft, CheckCircle, Building, Search, Bookmark } from 'lucide-react';
+import { MapPin, Clock, DollarSign, Phone, Briefcase, ArrowLeft, CheckCircle, Building, Search, Bookmark, FileText, UploadCloud, X } from 'lucide-react';
 import { jobsAPI, applicationsAPI, companiesAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
@@ -8,6 +8,7 @@ import { formatSalary, formatDate, timeAgo } from '../../utils/formatters';
 import { JOB_TYPE_LABELS } from '../../utils/constants';
 import toast from 'react-hot-toast';
 import { useSavedJobs } from '../../hooks/useSavedJobs';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useTranslation } from 'react-i18next';
 
 export const JobDetailPage = () => {
@@ -15,11 +16,15 @@ export const JobDetailPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { t, i18n } = useTranslation();
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const { isJobSaved, toggleSaveJob } = useSavedJobs();
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [applying, setApplying] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
+    const [showApplyModal, setShowApplyModal] = useState(false);
+    const [cvFile, setCvFile] = useState(null);
+    const [cvError, setCvError] = useState('');
 
     useEffect(() => {
         const fetchJob = async () => {
@@ -47,15 +52,76 @@ export const JobDetailPage = () => {
         fetchJob();
     }, [id, user]);
 
-    const handleApply = async () => {
+    const openApplyModal = () => {
         if (!user) {
             navigate('/login', { state: { from: { pathname: `/jobs/${id}` } } });
             return;
         }
+        if (user.role !== 'JOB_SEEKER') {
+            toast.error(t('only_seekers_apply', { defaultValue: 'Only job seekers can apply for jobs.' }));
+            return;
+        }
+        if (!user.nic || !user.phone || !user.district) {
+            toast.error(t('complete_profile_msg', { defaultValue: 'Please complete your profile (NIC, Phone, District) first.' }));
+            navigate('/profile');
+            return;
+        }
+        setCvFile(null);
+        setCvError('');
+        setShowApplyModal(true);
+    };
+
+    const handleCvSelect = (file) => {
+        setCvError('');
+        if (!file) {
+            setCvFile(null);
+            return;
+        }
+        const allowed = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+        if (!allowed.includes(file.type)) {
+            setCvError(t('cv_invalid_type', { defaultValue: 'Only PDF or Word documents are allowed.' }));
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            setCvError(t('cv_too_large', { defaultValue: 'CV file must be under 5MB.' }));
+            return;
+        }
+        setCvFile(file);
+    };
+
+    const submitApplication = async () => {
+        if (job.cvRequired && !cvFile) {
+            setCvError(t('cv_required_err', { defaultValue: 'A CV is required to apply for this job.' }));
+            return;
+        }
+        if (!executeRecaptcha) {
+            toast.error(t('auth_security_err', { defaultValue: 'Security check not ready, please try again.' }));
+            return;
+        }
+
         setApplying(true);
         try {
-            await applicationsAPI.applyToJob({ jobId: id });
+            let cvUrl = null;
+            if (cvFile) {
+                const formData = new FormData();
+                formData.append('cv', cvFile);
+                const uploadRes = await applicationsAPI.uploadCV(formData);
+                cvUrl = uploadRes.data?.cvUrl || uploadRes.cvUrl || null;
+                if (!cvUrl) {
+                    toast.error(t('cv_upload_failed', { defaultValue: 'Failed to upload CV. Please try again.' }));
+                    setApplying(false);
+                    return;
+                }
+            }
+
+            const captchaToken = await executeRecaptcha('apply_job');
+            await applicationsAPI.applyToJob({ jobId: id, cvUrl, captchaToken });
             setHasApplied(true);
+            setShowApplyModal(false);
             toast.success(t('applied_success_msg'));
         } catch (error) {
             const msg = error.response?.data?.message || t('failed_apply_msg');
@@ -66,6 +132,7 @@ export const JobDetailPage = () => {
             }
             if (error.response?.status === 409 || msg.toLowerCase().includes('already')) {
                 setHasApplied(true);
+                setShowApplyModal(false);
             }
             toast.error(msg);
         } finally {
@@ -143,8 +210,8 @@ export const JobDetailPage = () => {
                                         <CheckCircle size={16} /> {t('job_applied_status')} ✓
                                     </span>
                                 ) : (
-                                    <button onClick={handleApply} className="bg-[#8B1A1A] text-white px-8 py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-[#6e1515] transition-colors disabled:opacity-50">
-                                        {applying ? t('job_apply_wait') : t('job_apply_now')}
+                                    <button onClick={openApplyModal} disabled={job.status !== 'OPEN'} className="bg-[#8B1A1A] text-white px-8 py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-[#6e1515] transition-colors disabled:opacity-50">
+                                        {t('job_apply_now')}
                                     </button>
                                 )
                             ) : !user ? (
@@ -200,6 +267,97 @@ export const JobDetailPage = () => {
                     </p>
                 </div>
             </div>
+
+            {showApplyModal && (
+                <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white border-t-4 border-t-[#8B1A1A] w-full max-w-md p-6 relative">
+                        <button
+                            onClick={() => !applying && setShowApplyModal(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-[#8B1A1A]"
+                            aria-label="Close"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <h3 className="text-lg font-bold text-[#1A1A1A] uppercase tracking-tight mb-1">
+                            {t('apply_modal_title', { defaultValue: 'Submit Application' })}
+                        </h3>
+                        <p className="text-sm text-gray-500 mb-5">
+                            {t('apply_modal_desc', { defaultValue: 'Review your application before submitting.' })}
+                        </p>
+
+                        <div className="bg-[#FAF7F2] border border-gray-100 p-4 mb-4">
+                            <h4 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <FileText size={14} className="text-[#8B1A1A]" />
+                                {t('cv_attachment', { defaultValue: 'CV / Resume' })}
+                                {job.cvRequired && (
+                                    <span className="text-[#8B1A1A] text-[10px] uppercase">
+                                        {t('required', { defaultValue: 'Required' })}
+                                    </span>
+                                )}
+                            </h4>
+
+                            <input
+                                type="file"
+                                id="cvUploadInput"
+                                className="hidden"
+                                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                onChange={(e) => handleCvSelect(e.target.files?.[0])}
+                            />
+
+                            {cvFile ? (
+                                <div className="flex items-center justify-between bg-white border border-[#E2B325] p-3">
+                                    <span className="text-sm font-medium text-gray-800 truncate">{cvFile.name}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setCvFile(null)}
+                                        className="text-red-500 hover:text-red-700 ml-3 flex-shrink-0"
+                                        aria-label="Remove CV"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <label htmlFor="cvUploadInput" className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 cursor-pointer bg-white hover:bg-gray-50">
+                                    <UploadCloud size={22} className="text-gray-400 mb-2" />
+                                    <p className="text-xs text-gray-500">
+                                        <span className="font-semibold text-[#8B1A1A]">{t('cv_click_upload', { defaultValue: 'Click to upload' })}</span>
+                                        {' '}{t('cv_format_hint', { defaultValue: 'PDF or Word, up to 5MB' })}
+                                    </p>
+                                </label>
+                            )}
+
+                            {cvError && (
+                                <p className="text-xs text-[#8B1A1A] mt-2">{cvError}</p>
+                            )}
+                            {!job.cvRequired && (
+                                <p className="text-[11px] text-gray-400 mt-2">
+                                    {t('cv_optional_hint', { defaultValue: 'CV is optional for this job.' })}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setShowApplyModal(false)}
+                                disabled={applying}
+                                className="border border-gray-300 px-4 py-2 text-sm uppercase tracking-wider text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                            >
+                                {t('cancel')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={submitApplication}
+                                disabled={applying}
+                                className="bg-[#8B1A1A] text-white px-5 py-2 text-sm uppercase tracking-wider hover:bg-[#6e1515] disabled:opacity-50"
+                            >
+                                {applying ? t('job_apply_wait') : t('confirm_apply', { defaultValue: 'Confirm Apply' })}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
