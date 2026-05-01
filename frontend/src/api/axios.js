@@ -20,7 +20,10 @@ api.interceptors.request.use(
 );
 
 const ERROR_MAP = {
-    'INCOMPLETE_PROFILE': 'Please complete your profile (NIC, Phone, District, Bio) to perform this action.',
+    'INCOMPLETE_PROFILE': 'Please complete your profile (NIC, Phone, District) to perform this action.',
+    'INCOMPLETE_COMPANY': 'Please complete your company profile (Name, District, Town, Phone) before posting a job.',
+    'COMPANY_NOT_VERIFIED': 'Your company is not verified yet. You can post jobs only after the admin verifies your company.',
+    'COMPANY_SUSPENDED': 'Your company is currently suspended. Please contact support to restore posting access.',
     'SUSPENDED': 'Your account has been suspended. Please contact support for more information.',
     'ALREADY_APPLIED': 'You have already applied for this job.',
     'CV_REQUIRED': 'A CV is required for this application.',
