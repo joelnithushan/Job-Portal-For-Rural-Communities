@@ -84,6 +84,9 @@ exports.updateStatus = async (req, res, next) => {
     if (err.message === "Not authorized to update this application") {
       return errorResponse(res, err.message, 403);
     }
+    if (err.statusCode === 400) {
+      return errorResponse(res, err.message, 400);
+    }
     next(err);
   }
 };
@@ -100,6 +103,9 @@ exports.withdrawApplication = async (req, res, next) => {
     }
     if (err.message === "Not authorized to withdraw this application") {
       return errorResponse(res, err.message, 403);
+    }
+    if (err.statusCode === 400) {
+      return errorResponse(res, err.message, 400);
     }
     next(err);
   }

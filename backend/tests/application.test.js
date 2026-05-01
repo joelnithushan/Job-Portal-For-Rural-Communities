@@ -140,14 +140,18 @@ describe('Application Endpoints', () => {
             }));
         });
 
-        it('does not send an SMS when status is set to REJECTED', async () => {
+        it('triggers an SMS to the seeker when status is set to REJECTED', async () => {
             await request(app)
                 .patch(`/api/applications/${applicationId}/status`)
                 .set('Authorization', `Bearer ${employerToken}`)
                 .send({ status: 'REJECTED' })
                 .expect(200);
 
-            expect(sendSms).not.toHaveBeenCalled();
+            expect(sendSms).toHaveBeenCalledTimes(1);
+            expect(sendSms).toHaveBeenCalledWith(expect.objectContaining({
+                to: '0712345678',
+                body: expect.stringContaining('REJECTED')
+            }));
         });
 
         it('does not send an SMS on ACCEPTED if the seeker has no phone', async () => {
@@ -160,6 +164,19 @@ describe('Application Endpoints', () => {
                 .expect(200);
 
             expect(sendSms).not.toHaveBeenCalled();
+        });
+
+        it('rejects illegal backwards transitions', async () => {
+            await Application.findByIdAndUpdate(applicationId, { status: 'ACCEPTED' });
+
+            const res = await request(app)
+                .patch(`/api/applications/${applicationId}/status`)
+                .set('Authorization', `Bearer ${employerToken}`)
+                .send({ status: 'APPLIED' })
+                .expect(400);
+
+            expect(res.body.success).toBe(false);
+            expect(res.body.message).toMatch(/Cannot change status/i);
         });
     });
 });

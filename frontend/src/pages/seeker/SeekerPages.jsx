@@ -355,7 +355,17 @@ export const MyApplicationsPage = () => {
                                                     <button onClick={() => navigate(`/jobs/${app.jobId?._id || app.jobId}`)} className="text-xs px-2.5 py-1 uppercase tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]">
                                                         {t('view_job')}
                                                     </button>
-                                                    {app.status === 'APPLIED' && (
+                                                    {app.cvUrl && (
+                                                        <a
+                                                            href={app.cvUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs px-2.5 py-1 uppercase tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#FAF7F2] inline-flex items-center gap-1"
+                                                        >
+                                                            <FileText size={12} /> {t('view_cv', { defaultValue: 'View CV' })}
+                                                        </a>
+                                                    )}
+                                                    {(app.status === 'APPLIED' || app.status === 'REVIEWED') && (
                                                         <button
                                                             onClick={() => setWithdrawTarget(app)}
                                                             className="text-xs px-2.5 py-1 uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50"

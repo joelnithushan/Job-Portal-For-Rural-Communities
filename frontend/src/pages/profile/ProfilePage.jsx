@@ -91,9 +91,9 @@ export const ProfilePage = () => {
                 if (!nicInfo) return true;
                 const nicDate = new Date(nicInfo.dob);
                 const inputDate = new Date(value);
-                return nicDate.getUTCFullYear() === inputDate.getFullYear() &&
-                       nicDate.getUTCMonth() === inputDate.getMonth() &&
-                       nicDate.getUTCDate() === inputDate.getDate();
+                  return nicDate.getUTCFullYear() === inputDate.getUTCFullYear() &&
+                      nicDate.getUTCMonth() === inputDate.getUTCMonth() &&
+                      nicDate.getUTCDate() === inputDate.getUTCDate();
             }
         ),
         bio: yup.string().nullable().transform(v => v === '' ? null : v).max(500, t('err_bio_long', { defaultValue: 'Bio cannot exceed 500 characters' })),

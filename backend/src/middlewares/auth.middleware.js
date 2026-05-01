@@ -22,6 +22,10 @@ const auth = async (req, res, next) => {
             return errorResponse(res, 'User not found', 401);
         }
 
+        if (user.status === 'SUSPENDED') {
+            return errorResponse(res, 'Your account is suspended', 403);
+        }
+
         req.user = user;
         next();
     } catch (error) {

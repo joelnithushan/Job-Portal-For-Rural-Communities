@@ -12,6 +12,16 @@ const createJob = async (jobData) => {
         error.statusCode = 403;
         throw error;
     }
+    if (company.verificationStatus !== 'VERIFIED') {
+        const error = new Error("COMPANY_NOT_VERIFIED");
+        error.statusCode = 403;
+        throw error;
+    }
+    if (company.isSuspended) {
+        const error = new Error("COMPANY_SUSPENDED");
+        error.statusCode = 403;
+        throw error;
+    }
 
     if (jobData.district && (!jobData.location || !jobData.location.coordinates)) {
         try {
@@ -59,7 +69,8 @@ const getJobs = async ({ district, category, jobType, search, sort, salaryMin, s
     const activeEmployerIds = activeEmployers.map(e => e._id);
 
     const filter = {
-        employerId: { $in: activeEmployerIds }
+        employerId: { $in: activeEmployerIds },
+        status: 'OPEN',
     };
     if (district) filter.district = district;
     if (category) filter.category = category;
@@ -188,6 +199,7 @@ const getNearbyJobs = async (lat, lng, radiusKm = 10) => {
 
     const jobs = await Job.find({
         employerId: { $in: activeEmployerIds },
+        status: 'OPEN',
         location: {
             $near: {
                 $geometry: {

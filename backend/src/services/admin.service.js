@@ -3,6 +3,46 @@ const Job = require('../models/job.model');
 const Application = require('../models/application.model');
 const Company = require('../models/company.model');
 const Notification = require('../models/notification.model');
+const { notifyUser, notifyMany } = require('../utils/notify');
+
+const notifyApplicantsOfEmployerSuspension = async (employerUserId, reason) => {
+    const company = await Company.findOne({ employerUserId }).select('businessName');
+    const businessName = company?.businessName || 'this employer';
+
+    const applications = await Application.find({
+        employerId: employerUserId,
+        status: { $in: ['APPLIED', 'REVIEWED'] },
+    }).populate('seekerId', 'name email phone').populate('jobId', 'title');
+
+    const seekerMap = new Map();
+    for (const app of applications) {
+        const seeker = app.seekerId;
+        if (!seeker || !seeker._id) continue;
+        const key = String(seeker._id);
+        if (!seekerMap.has(key)) {
+            seekerMap.set(key, { seeker, jobTitles: new Set() });
+        }
+        if (app.jobId?.title) seekerMap.get(key).jobTitles.add(app.jobId.title);
+    }
+
+    const tasks = [];
+    for (const { seeker, jobTitles } of seekerMap.values()) {
+        const jobsList = Array.from(jobTitles);
+        const jobsLine = jobsList.length
+            ? jobsList.map((tt) => `"${tt}"`).join(', ')
+            : 'a job at this company';
+        const reasonLine = reason ? ` Reason: ${reason}.` : '';
+        const message = `The employer "${businessName}" has been suspended by the administrator.${reasonLine} Your pending application(s) for ${jobsLine} will not move forward while the suspension is in effect. We will notify you if the employer is reinstated.`;
+
+        tasks.push(notifyUser(seeker, {
+            title: 'Employer Suspended',
+            message,
+            type: 'WARNING',
+            link: '/dashboard/applications',
+        }));
+    }
+    await Promise.all(tasks);
+};
 
 const getAllUsers = async () => {
     const users = await User.find().select('-password -__v');
@@ -27,17 +67,22 @@ const updateUserStatus = async (userId, status, reason = null) => {
         }
     }
 
-    try {
-        await Notification.create({
-            userId: user._id,
-            title: status === 'SUSPENDED' ? 'Account Suspended' : 'Account Activated',
-            message: status === 'SUSPENDED'
-                ? `Your account has been suspended by the administrator.${reason ? ` Reason: ${reason}` : ''}`
-                : 'Your account has been activated by the administrator.',
-            type: status === 'SUSPENDED' ? 'WARNING' : 'SUCCESS',
-            link: '/profile'
-        });
-    } catch(e) { console.error('Notification error:', e); }
+    await notifyUser(user, {
+        title: status === 'SUSPENDED' ? 'Account Suspended' : 'Account Activated',
+        message: status === 'SUSPENDED'
+            ? `Your account has been suspended by the administrator.${reason ? ` Reason: ${reason}` : ''}`
+            : 'Your account has been activated by the administrator.',
+        type: status === 'SUSPENDED' ? 'WARNING' : 'SUCCESS',
+        link: '/profile',
+    });
+
+    if (user.role === 'EMPLOYER' && status === 'SUSPENDED') {
+        try {
+            await notifyApplicantsOfEmployerSuspension(user._id, reason);
+        } catch (e) {
+            console.error('Failed to notify applicants of employer suspension:', e.message);
+        }
+    }
 
     return user;
 };
@@ -56,15 +101,15 @@ const deleteJob = async (jobId) => {
     const jobTitle = job.title;
     await job.deleteOne();
 
-    try {
-        await Notification.create({
-            userId: employerId,
+    const employer = await User.findById(employerId).select('name email phone');
+    if (employer) {
+        await notifyUser(employer, {
             title: 'Job Removed by Admin',
             message: `Your job listing "${jobTitle}" was removed by the administrator.`,
             type: 'WARNING',
-            link: '/employer/jobs'
+            link: '/employer/jobs',
         });
-    } catch(e) { console.error('Notification error:', e); }
+    }
 
     return job;
 };
@@ -94,15 +139,15 @@ const verifyCompany = async (companyId) => {
     company.verificationStatus = 'VERIFIED';
     await company.save();
 
-    try {
-        await Notification.create({
-            userId: company.employerUserId,
+    const employer = await User.findById(company.employerUserId).select('name email phone');
+    if (employer) {
+        await notifyUser(employer, {
             title: 'Company Verified',
-            message: `Your company "${company.businessName}" has been verified by the administrator.`,
+            message: `Your company "${company.businessName}" has been verified by the administrator. You can now post jobs.`,
             type: 'SUCCESS',
-            link: '/employer/company'
+            link: '/employer/company',
         });
-    } catch(e) { console.error('Notification error:', e); }
+    }
 
     return company;
 };
@@ -112,7 +157,7 @@ const suspendCompany = async (companyId, reason = null) => {
     if (!company) {
         throw { statusCode: 404, message: 'Company not found' };
     }
-    
+
     company.isSuspended = !company.isSuspended;
     company.suspensionReason = company.isSuspended ? reason : null;
     await company.save();
@@ -122,19 +167,24 @@ const suspendCompany = async (companyId, reason = null) => {
         employer.status = company.isSuspended ? 'SUSPENDED' : 'ACTIVE';
         employer.suspensionReason = company.isSuspended ? reason : null;
         await employer.save();
-    }
 
-    try {
-        await Notification.create({
-            userId: company.employerUserId,
+        await notifyUser(employer, {
             title: company.isSuspended ? 'Company Suspended' : 'Company Unsuspended',
             message: company.isSuspended
                 ? `Your company "${company.businessName}" has been suspended.${reason ? ` Reason: ${reason}` : ''}`
-                : `Your company "${company.businessName}" has been unsuspended.`,
+                : `Your company "${company.businessName}" has been unsuspended. You can resume posting jobs.`,
             type: company.isSuspended ? 'WARNING' : 'SUCCESS',
-            link: '/employer/company'
+            link: '/employer/company',
         });
-    } catch(e) { console.error('Notification error:', e); }
+
+        if (company.isSuspended) {
+            try {
+                await notifyApplicantsOfEmployerSuspension(employer._id, reason);
+            } catch (e) {
+                console.error('Failed to notify applicants of company suspension:', e.message);
+            }
+        }
+    }
 
     return company;
 };
@@ -182,9 +232,10 @@ const getSystemReport = async (startDate, endDate) => {
 
     const applicationStats = {
         total: applications.length,
+        applied: applications.filter(a => a.status === 'APPLIED').length,
+        reviewed: applications.filter(a => a.status === 'REVIEWED').length,
         accepted: applications.filter(a => a.status === 'ACCEPTED').length,
         rejected: applications.filter(a => a.status === 'REJECTED').length,
-        pending: applications.filter(a => a.status === 'PENDING').length + applications.filter(a => a.status === 'APPLIED').length,
     };
 
     const companyStats = {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Briefcase, AlertTriangle, CheckCircle, Trash2, Building2, Phone, MessageCircle,
     PlusCircle, ClipboardList, Archive, FileText, Clock, XCircle, Plus, ChevronRight,
@@ -121,8 +121,21 @@ const fmtDate = (d, i18n) => {
     return formatDate(d, i18n);
 };
 
+const computeAge = (dob) => {
+    if (!dob) return null;
+    const d = new Date(dob);
+    if (isNaN(d.getTime())) return null;
+    const today = new Date();
+    let age = today.getUTCFullYear() - d.getUTCFullYear();
+    const monthDiff = today.getUTCMonth() - d.getUTCMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getUTCDate() < d.getUTCDate())) {
+        age--;
+    }
+    return age;
+};
+
 const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     if (!isOpen || !applicant) return null;
     return (
         <div className="fixed inset-0 bg-[#1A1A1A]/70 z-50 flex items-center justify-center p-4">
@@ -171,7 +184,7 @@ const ApplicantProfileModal = ({ isOpen, applicant, onClose }) => {
                             </div>
                             <div>
                                 <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Age</p>
-                                <p className="text-sm font-medium text-[#1A1A1A]">{applicant.dob ? `${Math.abs(new Date(Date.now() - new Date(applicant.dob).getTime()).getUTCFullYear() - 1970)} years` : '—'}</p>
+                                <p className="text-sm font-medium text-[#1A1A1A]">{applicant.dob ? `${computeAge(applicant.dob)} years` : '—'}</p>
                             </div>
                             <div>
                                 <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('district')}</p>
@@ -362,12 +375,70 @@ export const PostJobPage = () => {
     });
 
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const editJobId = searchParams.get('edit');
+    const isEditMode = !!editJobId;
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isPrefillLoading, setIsPrefillLoading] = useState(isEditMode);
+    const [company, setCompany] = useState(null);
+    const [companyLoading, setCompanyLoading] = useState(true);
 
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
         resolver: yupResolver(postJobSchema),
         defaultValues: { jobType: 'FULL_TIME' }
     });
+
+    useEffect(() => {
+        const fetchCompany = async () => {
+            try {
+                const res = await companiesAPI.getMyCompany();
+                setCompany(res.data?.company || res.data || null);
+            } catch {
+                setCompany(null);
+            } finally {
+                setCompanyLoading(false);
+            }
+        };
+        fetchCompany();
+    }, []);
+
+    useEffect(() => {
+        if (!isEditMode) {
+            setIsPrefillLoading(false);
+            return;
+        }
+
+        const fetchJobForEdit = async () => {
+            try {
+                const res = await jobsAPI.getJobById(editJobId);
+                const job = res.data?.job || res.data || res;
+                reset({
+                    title: job.title || '',
+                    description: job.description || '',
+                    district: job.district || '',
+                    town: job.town || '',
+                    category: job.category || '',
+                    jobType: job.jobType || 'FULL_TIME',
+                    contactPhone: job.contactPhone || '',
+                    salaryMin: job.salaryMin ?? '',
+                    salaryMax: job.salaryMax ?? '',
+                    ageLimitMin: job.ageLimitMin ?? '',
+                    ageLimitMax: job.ageLimitMax ?? '',
+                    genderRequirement: job.genderRequirement || 'ANY',
+                    cvRequired: !!job.cvRequired,
+                });
+            } catch (error) {
+                toast.error(t('error_load_jobs', { defaultValue: 'Failed to load jobs' }));
+                navigate('/employer/jobs');
+            } finally {
+                setIsPrefillLoading(false);
+            }
+        };
+
+        fetchJobForEdit();
+    }, [isEditMode, editJobId, reset, navigate, t]);
+
+    const canPost = !!company && company.verificationStatus === 'VERIFIED' && !company.isSuspended;
 
     const onSubmit = async (data) => {
         setIsSubmitting(true);
@@ -387,13 +458,18 @@ export const PostJobPage = () => {
                 ...(data.genderRequirement && { genderRequirement: data.genderRequirement }),
                 cvRequired: data.cvRequired || false,
             };
-            await jobsAPI.createJob(payload);
-            toast.success(t('job_posted_success', { defaultValue: 'Job posted successfully!' }));
+
+            if (isEditMode) {
+                await jobsAPI.updateJob(editJobId, payload);
+                toast.success(t('profile_updated_success', { defaultValue: 'Job updated successfully!' }));
+            } else {
+                await jobsAPI.createJob(payload);
+                toast.success(t('job_posted_success', { defaultValue: 'Job posted successfully!' }));
+            }
             navigate('/employer/jobs');
         } catch (error) {
             const msg = error.response?.data?.message || t('error_generic');
-            if (msg.includes('INCOMPLETE_COMPANY')) {
-                toast.error(t('setup_profile_error', { defaultValue: 'Please set up your company profile before posting a job' }));
+            if (msg.includes('INCOMPLETE_COMPANY') || msg.includes('COMPANY_NOT_VERIFIED') || msg.includes('COMPANY_SUSPENDED')) {
                 navigate('/employer/company');
                 return;
             }
@@ -402,6 +478,47 @@ export const PostJobPage = () => {
             setIsSubmitting(false);
         }
     };
+
+    if (isPrefillLoading || companyLoading) return <Spinner />;
+
+    if (!isEditMode && !canPost) {
+        const status = company?.verificationStatus;
+        const suspended = company?.isSuspended;
+        const heading = !company
+            ? t('setup_company_profile', { defaultValue: 'Set up your company profile first' })
+            : suspended
+                ? t('company_suspended_title', { defaultValue: 'Your company is suspended' })
+                : status === 'PENDING'
+                    ? t('company_pending_title', { defaultValue: 'Your company is awaiting admin verification' })
+                    : status === 'REJECTED'
+                        ? t('company_rejected_title', { defaultValue: 'Your company verification was rejected' })
+                        : t('setup_company_profile', { defaultValue: 'Set up your company profile first' });
+        const body = !company
+            ? t('setup_company_profile_desc', { defaultValue: 'Create your company profile before posting jobs.' })
+            : suspended
+                ? t('company_suspended_desc', { defaultValue: 'Posting is disabled while your company is suspended. Please contact support.' })
+                : status === 'PENDING'
+                    ? t('company_pending_desc', { defaultValue: 'You can post jobs only after the admin verifies your company. We will notify you once verification is complete.' })
+                    : status === 'REJECTED'
+                        ? t('company_rejected_desc', { defaultValue: 'Update your company details to request verification again.' })
+                        : t('setup_company_profile_desc', { defaultValue: 'Create your company profile before posting jobs.' });
+
+        return (
+            <>
+                <PageHeader
+                    rightSlot={<button onClick={() => navigate('/employer/jobs')} className="text-[#8B1A1A] hover:bg-[#FAF7F2] border border-[#8B1A1A] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider">← MY JOBS</button>}
+                />
+                <div className="bg-white border border-gray-200 border-t-4 border-t-[#8B1A1A] p-8 text-center">
+                    <AlertTriangle className="h-10 w-10 text-[#8B1A1A] mx-auto mb-3" />
+                    <h2 className="text-lg font-bold text-[#1A1A1A] mb-2">{heading}</h2>
+                    <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">{body}</p>
+                    <button onClick={() => navigate('/employer/company')} className="bg-[#8B1A1A] text-white text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-[#6e1515]">
+                        {t('go_to_company', { defaultValue: 'Go to Company Profile' })}
+                    </button>
+                </div>
+            </>
+        );
+    }
 
     const inputCls = (err) => `border border-gray-300 px-3 py-2.5 text-sm w-full focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white ${err ? 'border-red-400' : ''}`;
 
@@ -423,7 +540,7 @@ export const PostJobPage = () => {
 
             <div className="bg-white border border-gray-200 border-t-4 border-t-[#8B1A1A]">
                 <div className="bg-[#FAF7F2] border-b border-gray-200 px-6 py-4">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-[#8B1A1A]">{t('job_details')}</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-[#8B1A1A]">{isEditMode ? t('edit_job_profile', { defaultValue: 'EDIT JOB' }) : t('job_details')}</h2>
                     <p className="text-xs text-gray-400 mt-0.5">{t('fields_required', { defaultValue: 'All fields marked * are required' })}</p>
                 </div>
 
@@ -503,7 +620,7 @@ export const PostJobPage = () => {
                         <div className="flex gap-3">
                             <button type="button" onClick={() => navigate('/employer/jobs')} className="border border-gray-300 text-gray-600 text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-gray-50">{t('cancel')}</button>
                             <button type="submit" disabled={isSubmitting} className="bg-[#8B1A1A] text-white text-sm uppercase tracking-wider px-6 py-2.5 hover:bg-[#6e1515] disabled:opacity-50">
-                                {isSubmitting ? t('posting_btn') : t('post_job_btn')}
+                                {isSubmitting ? t('posting_btn') : isEditMode ? t('save_changes', { defaultValue: 'SAVE CHANGES' }) : t('post_job_btn')}
                             </button>
                         </div>
                     </div>
@@ -637,13 +754,14 @@ export const MyJobsPage = () => {
                                             ) : <span className="text-xs text-gray-300">{t('negotiable', { defaultValue: 'Negotiable' })}</span>}
                                         </td>
                                         <td className="py-3 px-4 border-b border-gray-100"><StatusBadge status={job.status} /></td>
-                                        <td className="py-3 px-4 text-right border-b border-gray-100">
-                                            <div className="flex gap-1.5 flex-wrap justify-end">
-                                                <button onClick={() => navigate(`/employer/jobs/${job._id}/applications`)} className="text-xs px-2.5 py-1 uppercase tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]">{t('applications').toUpperCase()}</button>
-                                                <button onClick={() => handleToggleStatus(job._id, job.status)} disabled={actionLoading[job._id]} className="text-xs px-2.5 py-1 uppercase tracking-wider border border-gray-400 text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                        <td className="py-3 px-4 text-right border-b border-gray-100 whitespace-nowrap">
+                                            <div className="inline-flex items-center gap-1.5 justify-end w-full">
+                                                <button onClick={() => navigate(`/employer/jobs/${job._id}/applications`)} className="text-[11px] px-2 py-1 uppercase tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]">{t('applications').toUpperCase()}</button>
+                                                <button onClick={() => navigate(`/employer/post-job?edit=${job._id}`)} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#FAF7F2]">{t('edit', { defaultValue: 'EDIT' }).toUpperCase()}</button>
+                                                <button onClick={() => handleToggleStatus(job._id, job.status)} disabled={actionLoading[job._id]} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-gray-400 text-gray-500 hover:bg-gray-50 disabled:opacity-50">
                                                     {actionLoading[job._id] ? '...' : job.status === 'OPEN' ? t('close').toUpperCase() : t('reopen', { defaultValue: 'REOPEN' })}
                                                 </button>
-                                                <button onClick={() => setDeleteTarget(job)} className="text-xs px-2.5 py-1 uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50">{t('delete').toUpperCase()}</button>
+                                                <button onClick={() => setDeleteTarget(job)} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50">{t('delete').toUpperCase()}</button>
                                             </div>
                                         </td>
                                     </tr>
@@ -780,10 +898,15 @@ export const JobApplicationsPage = () => {
                                         <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100">{fmtDate(app.createdAt, i18n)}</td>
                                         <td className="py-3 px-4 border-b border-gray-100 text-center">
                                             {app.cvUrl ? (
-                                                <a href={app.cvUrl} target="_blank" rel="noopener noreferrer" 
-                                                   className="text-[#8B1A1A] hover:text-[#E2B325] inline-flex flex-col items-center group cursor-pointer" title="View CV">
-                                                    <FileText className="h-5 w-5 mb-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                                    <span className="text-[10px] uppercase font-bold tracking-widest hidden group-hover:block">CV</span>
+                                                <a
+                                                    href={app.cvUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 uppercase font-bold tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white transition-colors"
+                                                    title={t('view_cv', { defaultValue: 'View CV' })}
+                                                >
+                                                    <FileText className="h-3.5 w-3.5" />
+                                                    {t('view_cv', { defaultValue: 'View CV' })}
                                                 </a>
                                             ) : (
                                                 <span className="text-gray-300 text-xs">—</span>
@@ -795,13 +918,28 @@ export const JobApplicationsPage = () => {
                                         </td>
                                         <td className="py-3 px-4 border-b border-gray-100 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
-                                                <select value={app.status} onChange={e => handleStatusChange(app._id, e.target.value)}
-                                                    className="border border-gray-300 text-xs px-2 py-1 focus:border-[#8B1A1A] focus:outline-none bg-white">
-                                                    <option value="APPLIED">{t('status_labels.APPLIED')}</option>
-                                                    <option value="REVIEWED">{t('status_labels.REVIEWED')}</option>
-                                                    <option value="ACCEPTED">{t('status_labels.ACCEPTED')}</option>
-                                                    <option value="REJECTED">{t('status_labels.REJECTED')}</option>
-                                                </select>
+                                                {(() => {
+                                                    const transitions = {
+                                                        APPLIED: ['APPLIED', 'REVIEWED', 'ACCEPTED', 'REJECTED'],
+                                                        REVIEWED: ['REVIEWED', 'ACCEPTED', 'REJECTED'],
+                                                        ACCEPTED: ['ACCEPTED'],
+                                                        REJECTED: ['REJECTED'],
+                                                    };
+                                                    const options = transitions[app.status] || [app.status];
+                                                    const isTerminal = options.length === 1;
+                                                    return (
+                                                        <select
+                                                            value={app.status}
+                                                            disabled={isTerminal}
+                                                            onChange={e => handleStatusChange(app._id, e.target.value)}
+                                                            className="border border-gray-300 text-xs px-2 py-1 focus:border-[#8B1A1A] focus:outline-none bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                                        >
+                                                            {options.map(s => (
+                                                                <option key={s} value={s}>{t(`status_labels.${s}`)}</option>
+                                                            ))}
+                                                        </select>
+                                                    );
+                                                })()}
                                                 <button onClick={() => setViewApplicant(app.seekerId)} className="text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider bg-[#FAF7F2] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white border border-[#8B1A1A] transition-colors">
                                                     {t('dash_my_profile').toUpperCase()}
                                                 </button>
