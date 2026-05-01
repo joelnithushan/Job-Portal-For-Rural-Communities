@@ -53,9 +53,9 @@ export const RegisterPage = () => {
                 if (!nicInfo) return true;
                 const nicDate = new Date(nicInfo.dob);
                 const inputDate = new Date(value);
-                return nicDate.getUTCFullYear() === inputDate.getFullYear() &&
-                       nicDate.getUTCMonth() === inputDate.getMonth() &&
-                       nicDate.getUTCDate() === inputDate.getDate();
+                  return nicDate.getUTCFullYear() === inputDate.getUTCFullYear() &&
+                      nicDate.getUTCMonth() === inputDate.getUTCMonth() &&
+                      nicDate.getUTCDate() === inputDate.getUTCDate();
             }
         ),
         phone: yup.string().required(t('auth_err_phone_req')).matches(/^(?:\+94|0)[0-9]{9}$/, t('auth_err_phone_invalid')),

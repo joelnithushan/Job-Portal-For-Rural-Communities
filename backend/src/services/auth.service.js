@@ -98,16 +98,10 @@ const register = async (userData) => {
         if (userData.dob) {
             const inputDob = new Date(userData.dob);
             const nicDob = new Date(nicInfo.dob);
-
-            // Compare both dates in UTC to avoid timezone/local-time differences
-            const inputYearUTC = inputDob.getUTCFullYear();
-            const inputMonthUTC = inputDob.getUTCMonth();
-            const inputDateUTC = inputDob.getUTCDate();
-
             if (
-                inputYearUTC !== nicDob.getUTCFullYear() ||
-                inputMonthUTC !== nicDob.getUTCMonth() ||
-                inputDateUTC !== nicDob.getUTCDate()
+                inputDob.getUTCFullYear() !== nicDob.getUTCFullYear() ||
+                inputDob.getUTCMonth() !== nicDob.getUTCMonth() ||
+                inputDob.getUTCDate() !== nicDob.getUTCDate()
             ) {
                 const nicDobStr = nicDob.toISOString().split('T')[0];
                 throw { statusCode: 400, message: `Date of birth mismatch: Your NIC indicates DOB as ${nicDobStr}, but you entered a different date. Please correct your date of birth.` };
@@ -176,11 +170,6 @@ const googleLogin = async (idToken, role = 'JOB_SEEKER') => {
             }
         }
         
-        if (role === 'EMPLOYER' && user.role === 'JOB_SEEKER') {
-            user.role = 'EMPLOYER';
-            needsSave = true;
-        }
-
         if (needsSave) {
             await user.save();
         }

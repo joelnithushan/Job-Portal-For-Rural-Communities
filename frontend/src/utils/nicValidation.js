@@ -33,6 +33,19 @@ export const parseSriLankanNIC = (nic) => {
         return null;
     }
 
+    // Sri Lankan NICs encode day-of-year as if every year has 366 days
+    // (Feb 29 is always counted). For non-leap years, day 60 is invalid
+    // and days after Feb 29 must be shifted down by 1 to get the real date.
+    const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    if (!isLeapYear) {
+        if (days === 60) {
+            return null;
+        }
+        if (days > 60) {
+            days -= 1;
+        }
+    }
+
     const dob = new Date(Date.UTC(year, 0, 1));
     dob.setUTCDate(dob.getUTCDate() + days - 1);
 
