@@ -144,10 +144,10 @@ const deleteProfilePicture = async (req, res) => {
             return errorResponse(res, 'User not found', 404);
         }
 
-        const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
-        const isAlreadyDefault = user.profilePicture === defaultAvatar;
+        const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1775924857/ruralwork/defaults/default_avatar.png';
+        const isAlreadyDefault = !user.profilePicture || user.profilePicture.includes('/defaults/default_avatar');
 
-        if (isAlreadyDefault || !user.profilePicture) {
+        if (isAlreadyDefault) {
             return res.status(200).json({ success: true, message: 'Profile picture is already set to default.', user });
         }
 
@@ -203,8 +203,8 @@ const deleteAccount = async (req, res) => {
 
         await Notification.deleteMany({ userId: userId });
 
-        const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1774887841/ruralwork/defaults/default_avatar.png';
-        if (user.profilePicture && user.profilePicture !== defaultAvatar) {
+        const defaultAvatar = 'https://res.cloudinary.com/dedoxaqug/image/upload/v1775924857/ruralwork/defaults/default_avatar.png';
+        if (user.profilePicture && !user.profilePicture.includes('/defaults/default_avatar')) {
             try {
                 const oldPublicId = user.profilePicture.split('/').slice(-1)[0].split('.')[0];
                 if (oldPublicId && (oldPublicId.startsWith('user_') || user.profilePicture.includes('/profiles/'))) {
