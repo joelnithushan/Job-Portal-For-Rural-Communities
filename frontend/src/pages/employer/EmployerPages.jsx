@@ -1016,64 +1016,61 @@ export const MyJobsPage = () => {
                             return (
                                 <div
                                     key={job._id}
-                                    className="bg-white border border-gray-200 hover:border-[#8B1A1A]/40 hover:shadow-sm transition-all"
+                                    className="group bg-white border border-gray-200 hover:border-[#8B1A1A]/40 hover:shadow-md transition-all"
                                     style={{ borderLeft: `4px solid ${accent}` }}
                                 >
-                                    <div className="p-4 flex flex-col gap-3">
-                                        {/* Top row: # + title (left) | status badge (right) */}
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div className="flex items-start gap-3 min-w-0 flex-1">
-                                                <span className="text-xs text-gray-300 font-mono w-6 text-right shrink-0 pt-1">#{i + 1}</span>
+                                    <div className="grid grid-cols-12 gap-4 p-5">
+                                        {/* Info column (8/12 on desktop) */}
+                                        <div className="col-span-12 lg:col-span-8 flex flex-col gap-2 min-w-0">
+                                            <div className="flex items-center gap-3">
                                                 <button
                                                     type="button"
                                                     onClick={() => setViewJob(job)}
-                                                    className="text-left text-base font-bold text-[#1A1A1A] hover:text-[#8B1A1A] transition-colors break-words leading-snug"
+                                                    className="text-left text-lg font-bold text-[#1A1A1A] hover:text-[#8B1A1A] transition-colors break-words leading-tight"
+                                                    style={{ fontFamily: "'Playfair Display', serif" }}
                                                 >
                                                     {job.title}
                                                 </button>
-                                            </div>
-                                            <div className="shrink-0 pt-0.5">
                                                 <StatusBadge status={job.status} />
                                             </div>
-                                        </div>
-
-                                        {/* Meta line, indented under the title */}
-                                        <div className="pl-9 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-gray-500">
-                                            {job.category && (
-                                                <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-[#8B1A1A]">
-                                                    <Briefcase className="h-3 w-3" /> {job.category}
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-gray-600">
+                                                {job.category && (
+                                                    <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-wider text-[#8B1A1A]">
+                                                        <Briefcase className="h-3.5 w-3.5" /> {job.category}
+                                                    </span>
+                                                )}
+                                                <span className="inline-flex items-center gap-1.5">
+                                                    <MapPin className="h-3.5 w-3.5 text-gray-400" />
+                                                    <span>{job.district}{job.town ? `, ${job.town}` : ''}</span>
                                                 </span>
-                                            )}
-                                            <span className="inline-flex items-center gap-1">
-                                                <MapPin className="h-3 w-3 text-gray-400" />
-                                                {job.district}{job.town ? `, ${job.town}` : ''}
-                                            </span>
-                                            <StatusBadge status={job.jobType} />
-                                            <span className="inline-flex items-center gap-1 text-[#8B1A1A] font-semibold">
-                                                {salaryText}
-                                            </span>
+                                                <span className="text-gray-300">•</span>
+                                                <span className="font-semibold text-[#1A1A1A]">{JOB_TYPE_LABELS[job.jobType] || job.jobType}</span>
+                                                <span className="text-gray-300">•</span>
+                                                <span className="font-bold text-[#8B1A1A]">{salaryText}</span>
+                                            </div>
                                         </div>
 
-                                        {/* Action row: divider + buttons aligned right */}
-                                        <div className="pl-9 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-1.5 justify-end">
+                                        {/* Action column (4/12 on desktop) */}
+                                        <div className="col-span-12 lg:col-span-4 flex flex-wrap lg:flex-nowrap items-center gap-1.5 lg:justify-end">
                                             <button
                                                 type="button"
                                                 onClick={() => setViewJob(job)}
-                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border border-gray-400 text-gray-700 hover:bg-gray-100"
+                                                title={t('view')}
+                                                className="h-8 px-2.5 text-[10px] uppercase font-bold tracking-wider border border-gray-300 text-gray-700 hover:bg-gray-50"
                                             >
                                                 {t('view')}
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => navigate(`/employer/jobs/${job._id}/applications`)}
-                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]"
+                                                className="h-8 px-2.5 text-[10px] uppercase font-bold tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]"
                                             >
                                                 {t('applications')}
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setEditJob(job)}
-                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#FAF7F2]"
+                                                className="h-8 px-2.5 text-[10px] uppercase font-bold tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#FAF7F2]"
                                             >
                                                 {t('edit', { defaultValue: 'Edit' })}
                                             </button>
@@ -1081,16 +1078,17 @@ export const MyJobsPage = () => {
                                                 type="button"
                                                 onClick={() => handleToggleStatus(job._id, job.status)}
                                                 disabled={actionLoading[job._id]}
-                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border border-gray-400 text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                                                className="h-8 px-2.5 text-[10px] uppercase font-bold tracking-wider border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
                                             >
-                                                {actionLoading[job._id] ? '...' : job.status === 'OPEN' ? t('close') : t('reopen', { defaultValue: 'Reopen' })}
+                                                {actionLoading[job._id] ? '…' : job.status === 'OPEN' ? t('close') : t('reopen', { defaultValue: 'Reopen' })}
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setDeleteTarget(job)}
-                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border border-red-400 text-red-500 hover:bg-red-50"
+                                                title={t('delete')}
+                                                className="h-8 w-8 flex items-center justify-center border border-red-400 text-red-500 hover:bg-red-50"
                                             >
-                                                {t('delete')}
+                                                <Trash2 className="h-3.5 w-3.5" />
                                             </button>
                                         </div>
                                     </div>
