@@ -116,10 +116,10 @@ export const ChatBubble = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-sm flex items-center gap-1">
-                                        AI Assistant
+                                        {t('chat_title', { defaultValue: 'NextEra Assistant' })}
                                         <Sparkles size={12} className="text-yellow-300" />
                                     </h3>
-                                    <p className="text-xs text-brand-cream opacity-90">Rural Job Portal Support</p>
+                                    <p className="text-xs text-brand-cream opacity-90">{t('chat_subtitle', { defaultValue: 'Job Portal Support' })}</p>
                                 </div>
                             </div>
                             <button 
@@ -177,7 +177,7 @@ export const ChatBubble = () => {
                                     type="text"
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
-                                    placeholder="Type your message..."
+                                    placeholder={t('chat_placeholder', { defaultValue: 'Type your message...' })}
                                     className="flex-1 bg-brand-sand border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all"
                                     disabled={isLoading}
                                 />
