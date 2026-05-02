@@ -36,6 +36,9 @@ api.interceptors.response.use(
         return response.data;
     },
     (error) => {
+        // Pages that handle the error themselves can pass `silent: true` in the
+        // request config to suppress the global toast.
+        const silent = error.config?.silent === true;
         let message = 'Something went wrong. Please try again.';
 
         if (error.response) {
@@ -67,7 +70,9 @@ api.interceptors.response.use(
             message = 'Cannot connect to server. Please check your internet connection.';
         }
 
-        toast.error(message);
+        if (!silent && message) {
+            toast.error(message);
+        }
 
         return Promise.reject(error);
     }

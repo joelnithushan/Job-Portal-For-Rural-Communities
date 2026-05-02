@@ -3,6 +3,17 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
+
+// Default a stable id derived from the message so identical strings dedupe
+// instead of stacking when both the axios interceptor and a page catch
+// toast the same error.
+const stableId = (msg) => `auto:${String(msg ?? '').slice(0, 80)}`;
+['error', 'success'].forEach((kind) => {
+    const original = toast[kind];
+    toast[kind] = (message, opts = {}) =>
+        original(message, { id: opts.id ?? stableId(message), ...opts });
+});
 import { AuthProvider } from './context/AuthContext';
 import { AppRouter } from './routes/AppRouter';
 import { GoogleOAuthProvider } from '@react-oauth/google';
