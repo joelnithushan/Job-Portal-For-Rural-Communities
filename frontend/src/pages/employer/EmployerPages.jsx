@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import {
     Briefcase, AlertTriangle, CheckCircle, Trash2, Building2, Phone, MessageCircle,
     PlusCircle, ClipboardList, Archive, FileText, Clock, XCircle, Plus, ChevronRight,
-    Eye, UserPlus, UserCheck, Search
+    Eye, UserPlus, UserCheck, Search, MapPin
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { jobsAPI, applicationsAPI, companiesAPI } from '../../api/services';
@@ -1004,49 +1004,99 @@ export const MyJobsPage = () => {
                 </div>
             </div>
 
-            {/* Jobs Table */}
+            {/* Jobs List */}
             <SectionCard className="!p-0" title={t('all_jobs')} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{filtered.length}</span>}>
                 {filtered.length === 0 ? <EmptyState message={t('jobs_empty_title')} subtitle={t('jobs_empty_desc')} /> : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm border-collapse">
-                            <thead>
-                                <tr className="bg-[#8B1A1A]">
-                                    {['#', t('job').toUpperCase(), t('location').toUpperCase(), t('job_type_label').toUpperCase(), t('salary').toUpperCase(), t('status').toUpperCase(), t('actions').toUpperCase()].map((h, i) => (
-                                        <th key={h} className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap ${i < 6 ? 'border-r border-[#6e1515]' : ''} ${h === t('actions').toUpperCase() ? 'text-right' : 'text-left'}`}>{h}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filtered.map((job, i) => (
-                                    <tr key={job._id} className={`${i % 2 === 0 ? 'bg-white' : 'bg-[#FAF7F2]/50'} hover:bg-[#FAF7F2] ${i === filtered.length - 1 ? 'border-b-2 border-[#8B1A1A]' : ''}`}>
-                                        <td className="py-3 px-4 text-xs text-gray-400 font-mono border-b border-gray-100">{i + 1}</td>
-                                        <td className="py-3 px-4 border-b border-gray-100">
-                                            <p className="text-sm font-semibold text-[#1A1A1A]">{job.title}</p>
-                                            <p className="text-xs text-gray-400 mt-0.5">{job.category}</p>
-                                        </td>
-                                        <td className="py-3 px-4 text-sm text-gray-600 border-b border-gray-100">{job.district}{job.town ? `, ${job.town}` : ''}</td>
-                                        <td className="py-3 px-4 border-b border-gray-100"><StatusBadge status={job.jobType} /></td>
-                                        <td className="py-3 px-4 border-b border-gray-100">
-                                            {job.salaryMin || job.salaryMax ? (
-                                                <span className="text-sm font-semibold text-[#8B1A1A]">Rs. {job.salaryMin?.toLocaleString()} – {job.salaryMax?.toLocaleString()}</span>
-                                            ) : <span className="text-xs text-gray-300">{t('negotiable', { defaultValue: 'Negotiable' })}</span>}
-                                        </td>
-                                        <td className="py-3 px-4 border-b border-gray-100"><StatusBadge status={job.status} /></td>
-                                        <td className="py-3 px-4 text-right border-b border-gray-100 whitespace-nowrap">
-                                            <div className="inline-flex items-center gap-1.5 justify-end w-full">
-                                                <button onClick={() => setViewJob(job)} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-gray-400 text-gray-700 bg-gray-50 hover:bg-gray-100">{t('view').toUpperCase()}</button>
-                                                <button onClick={() => navigate(`/employer/jobs/${job._id}/applications`)} className="text-[11px] px-2 py-1 uppercase tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]">{t('applications').toUpperCase()}</button>
-                                                <button onClick={() => setEditJob(job)} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#FAF7F2]">{t('edit', { defaultValue: 'EDIT' }).toUpperCase()}</button>
-                                                <button onClick={() => handleToggleStatus(job._id, job.status)} disabled={actionLoading[job._id]} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-gray-400 text-gray-500 hover:bg-gray-50 disabled:opacity-50">
-                                                    {actionLoading[job._id] ? '...' : job.status === 'OPEN' ? t('close').toUpperCase() : t('reopen', { defaultValue: 'REOPEN' })}
+                    <div className="flex flex-col gap-3 p-4">
+                        {filtered.map((job, i) => {
+                            const accent = job.status === 'OPEN' ? '#16a34a' : '#9ca3af';
+                            const salaryText = (job.salaryMin || job.salaryMax)
+                                ? `Rs. ${job.salaryMin?.toLocaleString() || '-'} – ${job.salaryMax?.toLocaleString() || '-'}`
+                                : t('negotiable', { defaultValue: 'Negotiable' });
+                            return (
+                                <div
+                                    key={job._id}
+                                    className="bg-white border border-gray-200 hover:border-[#8B1A1A]/40 hover:shadow-sm transition-all"
+                                    style={{ borderLeft: `4px solid ${accent}` }}
+                                >
+                                    <div className="p-4 flex flex-col lg:flex-row lg:items-start gap-4">
+                                        {/* Identity + meta */}
+                                        <div className="flex items-start gap-3 lg:flex-1 min-w-0">
+                                            <span className="text-xs text-gray-300 font-mono w-6 text-right shrink-0 pt-0.5">#{i + 1}</span>
+                                            <div className="min-w-0 flex-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setViewJob(job)}
+                                                    className="text-left text-base font-bold text-[#1A1A1A] hover:text-[#8B1A1A] transition-colors break-words"
+                                                >
+                                                    {job.title}
                                                 </button>
-                                                <button onClick={() => setDeleteTarget(job)} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-red-400 text-red-500 hover:bg-red-50">{t('delete').toUpperCase()}</button>
+                                                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-gray-500">
+                                                    {job.category && (
+                                                        <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-[#8B1A1A]">
+                                                            <Briefcase className="h-3 w-3" /> {job.category}
+                                                        </span>
+                                                    )}
+                                                    <span className="inline-flex items-center gap-1">
+                                                        <MapPin className="h-3 w-3 text-gray-400" />
+                                                        {job.district}{job.town ? `, ${job.town}` : ''}
+                                                    </span>
+                                                    <StatusBadge status={job.jobType} />
+                                                    <span className="inline-flex items-center gap-1 text-[#8B1A1A] font-semibold">
+                                                        {salaryText}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </div>
+
+                                        {/* Status */}
+                                        <div className="lg:w-28 shrink-0 flex lg:justify-end">
+                                            <StatusBadge status={job.status} />
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex flex-wrap items-center gap-1.5 lg:justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => setViewJob(job)}
+                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border border-gray-400 text-gray-700 hover:bg-gray-100"
+                                            >
+                                                {t('view')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`/employer/jobs/${job._id}/applications`)}
+                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]"
+                                            >
+                                                {t('applications')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditJob(job)}
+                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#FAF7F2]"
+                                            >
+                                                {t('edit', { defaultValue: 'Edit' })}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleStatus(job._id, job.status)}
+                                                disabled={actionLoading[job._id]}
+                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border border-gray-400 text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                                            >
+                                                {actionLoading[job._id] ? '...' : job.status === 'OPEN' ? t('close') : t('reopen', { defaultValue: 'Reopen' })}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setDeleteTarget(job)}
+                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border border-red-400 text-red-500 hover:bg-red-50"
+                                            >
+                                                {t('delete')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </SectionCard>
