@@ -14,6 +14,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { Modal } from '../../components/ui/Modal';
 
 
 
@@ -632,6 +633,280 @@ export const PostJobPage = () => {
 
 
 
+const JobViewModal = ({ isOpen, job, onClose }) => {
+    const { t, i18n } = useTranslation();
+    if (!isOpen || !job) return null;
+
+    const fmt = (v) => (v === undefined || v === null || v === '' ? '—' : v);
+    const formatGender = (g) => {
+        if (!g || g === 'ANY') return t('any', { defaultValue: 'Any' });
+        if (g === 'MALE') return t('gender_male', { defaultValue: 'Male' });
+        if (g === 'FEMALE') return t('gender_female', { defaultValue: 'Female' });
+        return g;
+    };
+    const salary = (job.salaryMin || job.salaryMax)
+        ? `Rs. ${job.salaryMin?.toLocaleString() || '-'} – ${job.salaryMax?.toLocaleString() || '-'}`
+        : t('negotiable', { defaultValue: 'Negotiable' });
+    const ageRange = (job.ageLimitMin || job.ageLimitMax)
+        ? `${job.ageLimitMin ?? '—'} – ${job.ageLimitMax ?? '—'}`
+        : t('any', { defaultValue: 'Any' });
+
+    const Section = ({ title, children }) => (
+        <div className="border border-gray-100 mb-3">
+            <div className="bg-[#FAF7F2] px-4 py-2 border-b border-gray-100">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#8B1A1A]">{title}</h4>
+            </div>
+            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">{children}</div>
+        </div>
+    );
+    const Row = ({ label, value, full = false, mono = false }) => (
+        <div className={`flex flex-col gap-0.5 ${full ? 'sm:col-span-2' : ''}`}>
+            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{label}</span>
+            <span className={`text-sm text-[#1A1A1A] break-words whitespace-pre-line ${mono ? 'font-mono text-xs' : 'font-medium'}`}>{value}</span>
+        </div>
+    );
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={t('job_details_title', { defaultValue: 'Job Details' })} size="lg">
+            <div className="flex flex-col py-2 max-h-[70vh] overflow-y-auto">
+                <div className="flex flex-col gap-2 mb-4">
+                    <h3 className="text-xl font-bold text-[#1A1A1A] break-words">{job.title}</h3>
+                    <div className="flex flex-wrap gap-2">
+                        <StatusBadge status={job.status} />
+                        <StatusBadge status={job.jobType} />
+                        {job.cvRequired && (
+                            <span className="bg-[#8B1A1A]/10 border border-[#8B1A1A]/20 text-[#8B1A1A] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
+                                {t('cv_required', { defaultValue: 'CV Required' })}
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                <Section title={t('section_overview', { defaultValue: 'Overview' })}>
+                    <Row label={t('category', { defaultValue: 'Category' })} value={fmt(job.category)} />
+                    <Row label={t('job_type_label', { defaultValue: 'Job Type' })} value={JOB_TYPE_LABELS[job.jobType] || fmt(job.jobType)} />
+                    <Row label={t('district', { defaultValue: 'District' })} value={fmt(job.district)} />
+                    <Row label={t('town', { defaultValue: 'Town' })} value={fmt(job.town)} />
+                </Section>
+
+                <Section title={t('section_compensation', { defaultValue: 'Compensation & Requirements' })}>
+                    <Row label={t('salary', { defaultValue: 'Salary' })} value={salary} />
+                    <Row label={t('age_range', { defaultValue: 'Age Range' })} value={ageRange} />
+                    <Row label={t('gender_requirement', { defaultValue: 'Gender Requirement' })} value={formatGender(job.genderRequirement)} />
+                    <Row label={t('cv_required', { defaultValue: 'CV Required' })} value={job.cvRequired ? t('yes', { defaultValue: 'Yes' }) : t('no', { defaultValue: 'No' })} />
+                </Section>
+
+                <Section title={t('section_contact', { defaultValue: 'Contact' })}>
+                    <Row label={t('job_contact_phone', { defaultValue: 'Contact Phone' })} value={fmt(job.contactPhone)} full />
+                </Section>
+
+                <Section title={t('section_description', { defaultValue: 'Description' })}>
+                    <Row label={t('job_desc_title', { defaultValue: 'Description' })} value={fmt(job.description)} full />
+                </Section>
+
+                <Section title={t('section_meta', { defaultValue: 'Meta' })}>
+                    <Row label={t('job_id_label', { defaultValue: 'Job ID' })} value={job._id} mono />
+                    <Row label={t('posted_date', { defaultValue: 'Posted' })} value={job.createdAt ? formatDate(job.createdAt, i18n) : '—'} />
+                </Section>
+
+                <div className="mt-2 flex justify-end">
+                    <button
+                        onClick={onClose}
+                        className="bg-gray-100 border border-gray-300 text-gray-700 text-xs px-6 py-2 uppercase tracking-widest hover:bg-gray-200 transition-colors font-bold shadow-sm"
+                    >
+                        {t('close').toUpperCase()}
+                    </button>
+                </div>
+            </div>
+        </Modal>
+    );
+};
+
+const JobEditModal = ({ isOpen, job, onClose, onSaved }) => {
+    const { t } = useTranslation();
+    const [submitting, setSubmitting] = useState(false);
+
+    const editJobSchema = yup.object({
+        title: yup.string().required(t('err_title_req', { defaultValue: 'Job title is required' })).min(5, t('err_title_short', { defaultValue: 'Title is too short' })),
+        description: yup.string().required(t('err_desc_req', { defaultValue: 'Description is required' })).min(20, t('err_desc_short', { defaultValue: 'Provide more details' })),
+        district: yup.string().required(t('err_district_req', { defaultValue: 'District is required' })),
+        town: yup.string().required(t('err_town_req', { defaultValue: 'Town is required' })),
+        category: yup.string().required(t('err_cat_req', { defaultValue: 'Category is required' })),
+        jobType: yup.string().required(t('err_type_req', { defaultValue: 'Job type is required' })),
+        contactPhone: yup.string().required(t('err_phone_req', { defaultValue: 'Contact phone is required' })).matches(phoneRegex, t('err_phone_invalid', { defaultValue: 'Must be a valid Sri Lankan mobile number' })),
+        salaryMin: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+        salaryMax: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+        ageLimitMin: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+        ageLimitMax: yup.number().transform((v) => (isNaN(v) ? undefined : v)).nullable(),
+        genderRequirement: yup.string().oneOf(['ANY', 'MALE', 'FEMALE']),
+        cvRequired: yup.boolean(),
+    });
+
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+        resolver: yupResolver(editJobSchema),
+    });
+
+    useEffect(() => {
+        if (job) {
+            reset({
+                title: job.title || '',
+                description: job.description || '',
+                district: job.district || '',
+                town: job.town || '',
+                category: job.category || '',
+                jobType: job.jobType || 'FULL_TIME',
+                contactPhone: job.contactPhone || '',
+                salaryMin: job.salaryMin ?? '',
+                salaryMax: job.salaryMax ?? '',
+                ageLimitMin: job.ageLimitMin ?? '',
+                ageLimitMax: job.ageLimitMax ?? '',
+                genderRequirement: job.genderRequirement || 'ANY',
+                cvRequired: !!job.cvRequired,
+            });
+        }
+    }, [job, reset]);
+
+    const onSubmit = async (data) => {
+        if (!job) return;
+        setSubmitting(true);
+        try {
+            const payload = {
+                title: data.title,
+                description: data.description,
+                district: data.district,
+                town: data.town,
+                category: data.category,
+                jobType: data.jobType,
+                contactPhone: data.contactPhone,
+                ...(data.salaryMin && { salaryMin: data.salaryMin }),
+                ...(data.salaryMax && { salaryMax: data.salaryMax }),
+                ...(data.ageLimitMin && { ageLimitMin: data.ageLimitMin }),
+                ...(data.ageLimitMax && { ageLimitMax: data.ageLimitMax }),
+                ...(data.genderRequirement && { genderRequirement: data.genderRequirement }),
+                cvRequired: data.cvRequired || false,
+            };
+            const res = await jobsAPI.updateJob(job._id, payload);
+            const updated = res.data?.job || { ...job, ...payload };
+            toast.success(t('job_updated_success', { defaultValue: 'Job updated successfully' }));
+            onSaved && onSaved(updated);
+            onClose();
+        } catch (error) {
+            const msg = error.response?.data?.message || t('error_generic');
+            toast.error(msg);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (!isOpen || !job) return null;
+
+    const inputCls = (err) => `border border-gray-300 px-3 py-2 text-sm w-full focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white ${err ? 'border-red-400' : ''}`;
+    const FieldWrap = ({ label, required, error, children, className = '' }) => (
+        <div className={`flex flex-col gap-1 ${className}`}>
+            <label className="text-[10px] font-semibold uppercase tracking-wider text-gray-600">
+                {label} {required && <span className="text-[#8B1A1A]">*</span>}
+            </label>
+            {children}
+            {error && <p className="text-xs text-[#8B1A1A] mt-0.5">{error}</p>}
+        </div>
+    );
+
+    return (
+        <Modal isOpen={isOpen} onClose={submitting ? () => {} : onClose} title={t('edit_job_profile', { defaultValue: 'Edit Job' })} size="lg">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col py-2 max-h-[70vh] overflow-y-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-1">
+                    <FieldWrap label={t('job_title_label')} required error={errors.title?.message} className="sm:col-span-2">
+                        <input className={inputCls(errors.title)} {...register('title')} />
+                    </FieldWrap>
+
+                    <FieldWrap label={t('district')} required error={errors.district?.message}>
+                        <select className={`${inputCls(errors.district)} cursor-pointer`} {...register('district')}>
+                            <option value="">{t('select_district', { defaultValue: 'Select District' })}</option>
+                            {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                    </FieldWrap>
+
+                    <FieldWrap label={t('town')} required error={errors.town?.message}>
+                        <input className={inputCls(errors.town)} {...register('town')} />
+                    </FieldWrap>
+
+                    <FieldWrap label={t('category')} required error={errors.category?.message}>
+                        <select className={`${inputCls(errors.category)} cursor-pointer`} {...register('category')}>
+                            <option value="">{t('select_category', { defaultValue: 'Select Category' })}</option>
+                            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </FieldWrap>
+
+                    <FieldWrap label={t('job_type_label')} required error={errors.jobType?.message}>
+                        <select className={`${inputCls(errors.jobType)} cursor-pointer`} {...register('jobType')}>
+                            {JOB_TYPES.filter(jt => ['FULL_TIME', 'PART_TIME', 'CONTRACT'].includes(jt)).map(type => (
+                                <option key={type} value={type}>{JOB_TYPE_LABELS[type]}</option>
+                            ))}
+                        </select>
+                    </FieldWrap>
+
+                    <FieldWrap label={t('job_contact_phone')} required error={errors.contactPhone?.message}>
+                        <input className={inputCls(errors.contactPhone)} {...register('contactPhone')} />
+                    </FieldWrap>
+
+                    <FieldWrap label={t('salary_min', { defaultValue: 'Minimum Salary (LKR)' })}>
+                        <input type="number" className={inputCls()} {...register('salaryMin')} />
+                    </FieldWrap>
+
+                    <FieldWrap label={t('salary_max', { defaultValue: 'Maximum Salary (LKR)' })}>
+                        <input type="number" className={inputCls()} {...register('salaryMax')} />
+                    </FieldWrap>
+
+                    <FieldWrap label={t('age_min', { defaultValue: 'Minimum Age' })}>
+                        <input type="number" className={inputCls(errors.ageLimitMin)} {...register('ageLimitMin')} />
+                    </FieldWrap>
+
+                    <FieldWrap label={t('age_max', { defaultValue: 'Maximum Age' })}>
+                        <input type="number" className={inputCls(errors.ageLimitMax)} {...register('ageLimitMax')} />
+                    </FieldWrap>
+
+                    <FieldWrap label={t('gender_requirement', { defaultValue: 'Gender Requirement' })} className="sm:col-span-2">
+                        <select className={`${inputCls(errors.genderRequirement)} cursor-pointer`} {...register('genderRequirement')}>
+                            <option value="ANY">{t('any', { defaultValue: 'Any' })}</option>
+                            <option value="MALE">{t('gender_male', { defaultValue: 'Male' })}</option>
+                            <option value="FEMALE">{t('gender_female', { defaultValue: 'Female' })}</option>
+                        </select>
+                    </FieldWrap>
+
+                    <div className="sm:col-span-2 flex items-center gap-3 bg-[#FAF7F2] p-3 border border-gray-200">
+                        <input type="checkbox" id="editCvRequired" {...register('cvRequired')} className="h-4 w-4 text-[#8B1A1A] cursor-pointer" />
+                        <label htmlFor="editCvRequired" className="text-xs font-semibold text-[#1A1A1A] cursor-pointer">
+                            {t('cv_required', { defaultValue: 'CV Required' })}
+                        </label>
+                    </div>
+
+                    <FieldWrap label={t('job_desc_title')} required error={errors.description?.message} className="sm:col-span-2">
+                        <textarea className={`${inputCls(errors.description)} min-h-[100px] resize-y`} {...register('description')} />
+                    </FieldWrap>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-gray-100 flex justify-end gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={submitting}
+                        className="border border-gray-300 text-gray-600 text-xs uppercase tracking-wider px-5 py-2 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        {t('cancel')}
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={submitting}
+                        className="bg-[#8B1A1A] text-white text-xs uppercase tracking-wider px-6 py-2 hover:bg-[#6e1515] disabled:opacity-50"
+                    >
+                        {submitting ? t('saving', { defaultValue: 'SAVING...' }) : t('save_changes', { defaultValue: 'SAVE CHANGES' })}
+                    </button>
+                </div>
+            </form>
+        </Modal>
+    );
+};
+
 export const MyJobsPage = () => {
     const { t } = useTranslation();
     const { user } = useAuth();
@@ -643,6 +918,8 @@ export const MyJobsPage = () => {
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState({});
+    const [viewJob, setViewJob] = useState(null);
+    const [editJob, setEditJob] = useState(null);
 
     const fetchJobs = async () => {
         try {
@@ -756,8 +1033,9 @@ export const MyJobsPage = () => {
                                         <td className="py-3 px-4 border-b border-gray-100"><StatusBadge status={job.status} /></td>
                                         <td className="py-3 px-4 text-right border-b border-gray-100 whitespace-nowrap">
                                             <div className="inline-flex items-center gap-1.5 justify-end w-full">
+                                                <button onClick={() => setViewJob(job)} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-gray-400 text-gray-700 bg-gray-50 hover:bg-gray-100">{t('view').toUpperCase()}</button>
                                                 <button onClick={() => navigate(`/employer/jobs/${job._id}/applications`)} className="text-[11px] px-2 py-1 uppercase tracking-wider bg-[#8B1A1A] text-white hover:bg-[#6e1515]">{t('applications').toUpperCase()}</button>
-                                                <button onClick={() => navigate(`/employer/post-job?edit=${job._id}`)} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#FAF7F2]">{t('edit', { defaultValue: 'EDIT' }).toUpperCase()}</button>
+                                                <button onClick={() => setEditJob(job)} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#FAF7F2]">{t('edit', { defaultValue: 'EDIT' }).toUpperCase()}</button>
                                                 <button onClick={() => handleToggleStatus(job._id, job.status)} disabled={actionLoading[job._id]} className="text-[11px] px-2 py-1 uppercase tracking-wider border border-gray-400 text-gray-500 hover:bg-gray-50 disabled:opacity-50">
                                                     {actionLoading[job._id] ? '...' : job.status === 'OPEN' ? t('close').toUpperCase() : t('reopen', { defaultValue: 'REOPEN' })}
                                                 </button>
@@ -781,6 +1059,19 @@ export const MyJobsPage = () => {
 
             <ConfirmModal isOpen={!!deleteTarget} title={t('delete_job', { defaultValue: 'Delete Job' })} message={t('delete_job_msg', { defaultValue: `Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.` })}
                 onConfirm={() => handleDelete(deleteTarget?._id)} onCancel={() => setDeleteTarget(null)} loading={deleteLoading} />
+
+            <JobViewModal
+                isOpen={!!viewJob}
+                job={viewJob}
+                onClose={() => setViewJob(null)}
+            />
+
+            <JobEditModal
+                isOpen={!!editJob}
+                job={editJob}
+                onClose={() => setEditJob(null)}
+                onSaved={(updated) => setJobs(prev => prev.map(j => j._id === updated._id ? { ...j, ...updated } : j))}
+            />
         </>
     );
 };
