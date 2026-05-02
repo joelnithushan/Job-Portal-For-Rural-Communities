@@ -33,11 +33,20 @@ const upload = multer({
 
 const cvStorage = new CloudinaryStorage({
     cloudinary,
-    params: {
-        folder: 'ruralwork/cvs',
-        allowed_formats: ['pdf', 'doc', 'docx'],
-        resource_type: 'raw',
-        public_id: (req, file) => `cv_${req.user._id}_${Date.now()}`,
+    params: (req, file) => {
+        const original = (file.originalname || '').toLowerCase();
+        const dot = original.lastIndexOf('.');
+        const rawExt = dot >= 0 ? original.substring(dot + 1) : '';
+        const ext = ['pdf', 'doc', 'docx'].includes(rawExt) ? rawExt : 'pdf';
+        return {
+            folder: 'ruralwork/cvs',
+            allowed_formats: ['pdf', 'doc', 'docx'],
+            resource_type: 'raw',
+            // Append the extension to the public_id so the resulting URL ends
+            // in .pdf/.doc/.docx — required by Cloudinary's raw delivery and
+            // by browsers / preview viewers that key off file extension.
+            public_id: `cv_${req.user._id}_${Date.now()}.${ext}`,
+        };
     },
 });
 

@@ -28,11 +28,12 @@ export const CvPreviewModal = ({ isOpen, cvUrl, applicantName, onClose }) => {
     const isPdf = ext === 'pdf';
     const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
     const isDoc = ['doc', 'docx'].includes(ext);
+    const isUnknown = !ext;
 
-    // Google Docs Viewer for Word documents
-    const docViewerSrc = isDoc
-        ? `https://docs.google.com/gview?url=${encodeURIComponent(cvUrl)}&embedded=true`
-        : null;
+    // Google Docs Viewer renders both Word docs and PDFs. We use it when we
+    // don't know the file type (e.g. legacy CV URLs without an extension)
+    // so the user still gets an inline preview instead of a dead-end notice.
+    const gviewSrc = `https://docs.google.com/gview?url=${encodeURIComponent(cvUrl)}&embedded=true`;
 
     return (
         <Modal
@@ -93,9 +94,9 @@ export const CvPreviewModal = ({ isOpen, cvUrl, applicantName, onClose }) => {
                                 onError={() => setLoadFailed(true)}
                             />
                         </div>
-                    ) : isDoc ? (
+                    ) : (isDoc || isUnknown) ? (
                         <iframe
-                            src={docViewerSrc}
+                            src={gviewSrc}
                             title="CV Preview"
                             className="w-full h-full border-0"
                             onError={() => setLoadFailed(true)}
