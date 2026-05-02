@@ -1307,7 +1307,7 @@ export const CompanyProfilePage = () => {
     const navigate = useNavigate();
     const [company, setCompany] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [editing, setEditing] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
@@ -1324,13 +1324,24 @@ export const CompanyProfilePage = () => {
                 setCompany(comp);
                 reset(comp);
             } catch {
-                setEditing(true);
+                // No company yet — inline create form is shown
             } finally {
                 setLoading(false);
             }
         };
         fetchCompany();
     }, [reset]);
+
+    const openEdit = () => {
+        if (company) reset(company);
+        setEditModalOpen(true);
+    };
+
+    const closeEdit = () => {
+        if (submitting) return;
+        setEditModalOpen(false);
+        if (company) reset(company);
+    };
 
     const onSubmit = async (data) => {
         setSubmitting(true);
@@ -1347,12 +1358,11 @@ export const CompanyProfilePage = () => {
                 const res = await companiesAPI.updateMyCompany(payload);
                 setCompany(res.data?.company || res.data);
                 toast.success(t('profile_updated_success', { defaultValue: 'Profile updated!' }));
-                setEditing(false);
+                setEditModalOpen(false);
             } else {
                 const res = await companiesAPI.createCompany(payload);
                 setCompany(res.data?.company || res.data);
                 toast.success(t('company_created_success', { defaultValue: 'Company profile created!' }));
-                setEditing(false);
             }
         } catch (error) {
             console.error('Company save error:', error);
@@ -1366,7 +1376,6 @@ export const CompanyProfilePage = () => {
         try {
             await companiesAPI.deleteMyCompany();
             setCompany(null);
-            setEditing(true);
             reset({});
             toast.success(t('company_deleted_success', { defaultValue: 'Company profile deleted' }));
             setDeleteModalOpen(false);
@@ -1419,54 +1428,62 @@ export const CompanyProfilePage = () => {
         return null;
     };
 
-    if (editing || !company) {
+    const CompanyForm = ({ inModal = false }) => (
+        <form onSubmit={handleSubmit(onSubmit)} className={`grid grid-cols-1 md:grid-cols-2 gap-5 ${inModal ? '' : 'p-6'}`}>
+            <FieldWrap label={t('business_name_label')} required error={errors.businessName?.message} className="md:col-span-2">
+                <input className={inputCls(errors.businessName)} placeholder={t('business_name_ph', { defaultValue: 'e.g. Green Valley Farms' })} {...register('businessName')} />
+            </FieldWrap>
+            <FieldWrap label={t('description_label')} className="md:col-span-2">
+                <textarea className={`${inputCls()} min-h-[100px] resize-y`} placeholder={t('company_desc_ph', { defaultValue: 'Tell us about your company...' })} {...register('description')} />
+            </FieldWrap>
+            <FieldWrap label={t('district')} required error={errors.district?.message}>
+                <select className={`${inputCls(errors.district)} cursor-pointer`} {...register('district')}>
+                    <option value="">{t('select_district')}</option>
+                    {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+            </FieldWrap>
+            <FieldWrap label={t('town')}><input className={inputCls()} placeholder={t('town_ph')} {...register('town')} /></FieldWrap>
+            <FieldWrap label={t('job_contact_phone')} required error={errors.contactPhone?.message}>
+                <input className={inputCls(errors.contactPhone)} placeholder={t('phone_ph', { defaultValue: '077 123 4567' })} {...register('contactPhone')} />
+            </FieldWrap>
+            <FieldWrap label="WhatsApp"><input className={inputCls()} placeholder={t('phone_ph', { defaultValue: '077 123 4567' })} {...register('contactWhatsApp')} /></FieldWrap>
+            <div className="md:col-span-2 border-t border-gray-200 pt-5 flex items-center justify-between mt-2 flex-wrap gap-3">
+                <div className="flex flex-col gap-1">
+                    <span className="text-xs text-gray-400">* {t('fields_required_label')}</span>
+                    <span className="text-xs text-gray-500 mt-1">
+                        {t('company_logo_hint', { defaultValue: 'Looking to add your Company Logo? Upload it on your' })} <Link to="/profile" className="text-[#8B1A1A] underline font-semibold hover:text-[#6e1515]">{t('dash_my_profile')}</Link>
+                    </span>
+                </div>
+                <div className="flex gap-3">
+                    {inModal && (
+                        <button type="button" onClick={closeEdit} disabled={submitting} className="border border-gray-300 text-gray-600 text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-gray-50 disabled:opacity-50">
+                            {t('cancel')}
+                        </button>
+                    )}
+                    <button type="submit" disabled={submitting} className="bg-[#8B1A1A] text-white text-sm uppercase tracking-wider px-6 py-2.5 hover:bg-[#6e1515] disabled:opacity-50">
+                        {submitting ? t('wait') : company ? t('save_changes').toUpperCase() : t('create_profile_btn').toUpperCase()}
+                    </button>
+                </div>
+            </div>
+        </form>
+    );
+
+    // No company yet → inline create form (no popup since there's nothing to view)
+    if (!company) {
         return (
             <>
                 <PageHeader
                     title={t('company').toUpperCase()}
                     subtitle={t('manage_business_desc', { defaultValue: 'Manage your business information' })}
-                    rightSlot={company ? <button onClick={() => { setEditing(false); reset(company); }} className="border border-white/40 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-white/10">{t('cancel')}</button> : null}
                 />
                 <VerificationBanner />
                 <div className="bg-white border border-gray-200 border-t-4 border-t-[#8B1A1A]">
                     <div className="bg-[#FAF7F2] border-b border-gray-200 px-6 py-4">
                         <h2 className="text-sm font-bold uppercase tracking-widest text-[#8B1A1A]">
-                            {company ? t('edit_company_profile', { defaultValue: 'EDIT COMPANY PROFILE' }) : t('create_company_profile', { defaultValue: 'CREATE COMPANY PROFILE' })}
+                            {t('create_company_profile', { defaultValue: 'CREATE COMPANY PROFILE' })}
                         </h2>
                     </div>
-                    <form onSubmit={handleSubmit(onSubmit)} className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <FieldWrap label={t('business_name_label')} required error={errors.businessName?.message} className="md:col-span-2">
-                            <input className={inputCls(errors.businessName)} placeholder={t('business_name_ph', { defaultValue: 'e.g. Green Valley Farms' })} {...register('businessName')} />
-                        </FieldWrap>
-                        <FieldWrap label={t('description_label')} className="md:col-span-2">
-                            <textarea className={`${inputCls()} min-h-[100px] resize-y`} placeholder={t('company_desc_ph', { defaultValue: 'Tell us about your company...' })} {...register('description')} />
-                        </FieldWrap>
-                        <FieldWrap label={t('district')} required error={errors.district?.message}>
-                            <select className={`${inputCls(errors.district)} cursor-pointer`} {...register('district')}>
-                                <option value="">{t('select_district')}</option>
-                                {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-                            </select>
-                        </FieldWrap>
-                        <FieldWrap label={t('town')}><input className={inputCls()} placeholder={t('town_ph')} {...register('town')} /></FieldWrap>
-                        <FieldWrap label={t('job_contact_phone')} required error={errors.contactPhone?.message}>
-                            <input className={inputCls(errors.contactPhone)} placeholder="077 123 4567" {...register('contactPhone')} />
-                        </FieldWrap>
-                        <FieldWrap label="WhatsApp"><input className={inputCls()} placeholder="077 123 4567" {...register('contactWhatsApp')} /></FieldWrap>
-                        <div className="md:col-span-2 border-t border-gray-200 pt-5 flex items-center justify-between mt-2">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-xs text-gray-400">* {t('fields_required_label')}</span>
-                                <span className="text-xs text-gray-500 mt-1">
-                                    {t('company_logo_hint', { defaultValue: 'Looking to add your Company Logo? Upload it on your' })} <Link to="/profile" className="text-[#8B1A1A] underline font-semibold hover:text-[#6e1515]">{t('dash_my_profile')}</Link>
-                                </span>
-                            </div>
-                            <div className="flex gap-3">
-                                {company && <button type="button" onClick={() => { setEditing(false); reset(company); }} className="border border-gray-300 text-gray-600 text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-gray-50">{t('cancel')}</button>}
-                                <button type="submit" disabled={submitting} className="bg-[#8B1A1A] text-white text-sm uppercase tracking-wider px-6 py-2.5 hover:bg-[#6e1515] disabled:opacity-50">
-                                    {submitting ? t('wait') : company ? t('save_changes').toUpperCase() : t('create_profile_btn').toUpperCase()}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <CompanyForm />
                 </div>
             </>
         );
@@ -1479,7 +1496,7 @@ export const CompanyProfilePage = () => {
             <PageHeader
                 title={t('company').toUpperCase()}
                 subtitle={t('manage_business_desc')}
-                rightSlot={<button onClick={() => setEditing(true)} className="border border-white/40 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-white/10">{t('update_profile_btn').toUpperCase()}</button>}
+                rightSlot={<button onClick={openEdit} className="border border-white/40 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-white/10">{t('update_profile_btn').toUpperCase()}</button>}
             />
             <VerificationBanner />
 
@@ -1487,7 +1504,7 @@ export const CompanyProfilePage = () => {
                 {/* Left — Company Card */}
                 <SectionCard
                     title={t('company').toUpperCase()}
-                    rightSlot={<button onClick={() => setEditing(true)} className="text-[10px] font-bold uppercase tracking-widest text-white border border-white/30 px-3 py-1.5 hover:bg-white/10">{t('update_profile_btn', { defaultValue: 'Edit' })}</button>}
+                    rightSlot={<button onClick={openEdit} className="text-[10px] font-bold uppercase tracking-widest text-white border border-white/30 px-3 py-1.5 hover:bg-white/10">{t('update_profile_btn', { defaultValue: 'Edit' })}</button>}
                 >
                     <div className="flex flex-col items-center">
                         <div className="h-20 w-20 bg-[#8B1A1A] text-white text-3xl font-bold flex items-center justify-center mt-2">
@@ -1528,6 +1545,17 @@ export const CompanyProfilePage = () => {
                     </SectionCard>
                 </div>
             </div>
+
+            <Modal
+                isOpen={editModalOpen}
+                onClose={closeEdit}
+                title={t('edit_company_profile', { defaultValue: 'Edit Company Profile' })}
+                size="lg"
+            >
+                <div className="max-h-[75vh] overflow-y-auto">
+                    <CompanyForm inModal />
+                </div>
+            </Modal>
 
             <ConfirmModal isOpen={deleteModalOpen} title={t('delete_company', { defaultValue: 'Delete Company' })} message={t('delete_company_msg', { defaultValue: 'Are you sure you want to delete your company profile? This action cannot be undone.' })}
                 onConfirm={handleDelete} onCancel={() => setDeleteModalOpen(false)} loading={deleteLoading} />
