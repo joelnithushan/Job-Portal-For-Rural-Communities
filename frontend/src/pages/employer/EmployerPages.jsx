@@ -1019,43 +1019,43 @@ export const MyJobsPage = () => {
                                     className="bg-white border border-gray-200 hover:border-[#8B1A1A]/40 hover:shadow-sm transition-all"
                                     style={{ borderLeft: `4px solid ${accent}` }}
                                 >
-                                    <div className="p-4 flex flex-col lg:flex-row lg:items-start gap-4">
-                                        {/* Identity + meta */}
-                                        <div className="flex items-start gap-3 lg:flex-1 min-w-0">
-                                            <span className="text-xs text-gray-300 font-mono w-6 text-right shrink-0 pt-0.5">#{i + 1}</span>
-                                            <div className="min-w-0 flex-1">
+                                    <div className="p-4 flex flex-col gap-3">
+                                        {/* Top row: # + title (left) | status badge (right) */}
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="flex items-start gap-3 min-w-0 flex-1">
+                                                <span className="text-xs text-gray-300 font-mono w-6 text-right shrink-0 pt-1">#{i + 1}</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => setViewJob(job)}
-                                                    className="text-left text-base font-bold text-[#1A1A1A] hover:text-[#8B1A1A] transition-colors break-words"
+                                                    className="text-left text-base font-bold text-[#1A1A1A] hover:text-[#8B1A1A] transition-colors break-words leading-snug"
                                                 >
                                                     {job.title}
                                                 </button>
-                                                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-gray-500">
-                                                    {job.category && (
-                                                        <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-[#8B1A1A]">
-                                                            <Briefcase className="h-3 w-3" /> {job.category}
-                                                        </span>
-                                                    )}
-                                                    <span className="inline-flex items-center gap-1">
-                                                        <MapPin className="h-3 w-3 text-gray-400" />
-                                                        {job.district}{job.town ? `, ${job.town}` : ''}
-                                                    </span>
-                                                    <StatusBadge status={job.jobType} />
-                                                    <span className="inline-flex items-center gap-1 text-[#8B1A1A] font-semibold">
-                                                        {salaryText}
-                                                    </span>
-                                                </div>
+                                            </div>
+                                            <div className="shrink-0 pt-0.5">
+                                                <StatusBadge status={job.status} />
                                             </div>
                                         </div>
 
-                                        {/* Status */}
-                                        <div className="lg:w-28 shrink-0 flex lg:justify-end">
-                                            <StatusBadge status={job.status} />
+                                        {/* Meta line, indented under the title */}
+                                        <div className="pl-9 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-gray-500">
+                                            {job.category && (
+                                                <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-[#8B1A1A]">
+                                                    <Briefcase className="h-3 w-3" /> {job.category}
+                                                </span>
+                                            )}
+                                            <span className="inline-flex items-center gap-1">
+                                                <MapPin className="h-3 w-3 text-gray-400" />
+                                                {job.district}{job.town ? `, ${job.town}` : ''}
+                                            </span>
+                                            <StatusBadge status={job.jobType} />
+                                            <span className="inline-flex items-center gap-1 text-[#8B1A1A] font-semibold">
+                                                {salaryText}
+                                            </span>
                                         </div>
 
-                                        {/* Actions */}
-                                        <div className="flex flex-wrap items-center gap-1.5 lg:justify-end">
+                                        {/* Action row: divider + buttons aligned right */}
+                                        <div className="pl-9 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-1.5 justify-end">
                                             <button
                                                 type="button"
                                                 onClick={() => setViewJob(job)}
