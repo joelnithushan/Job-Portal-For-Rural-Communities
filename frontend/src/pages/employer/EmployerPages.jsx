@@ -1233,28 +1233,37 @@ export const JobApplicationsPage = () => {
                                             </div>
                                         </td>
                                         <td className="py-3 px-4 border-b border-gray-100 align-middle whitespace-nowrap text-right">
-                                            <div className="inline-flex items-center gap-2 justify-end">
+                                            <div className="inline-flex items-center gap-1.5 justify-end flex-wrap">
                                                 {(() => {
                                                     const transitions = {
-                                                        APPLIED: ['APPLIED', 'REVIEWED', 'ACCEPTED', 'REJECTED'],
-                                                        REVIEWED: ['REVIEWED', 'ACCEPTED', 'REJECTED'],
-                                                        ACCEPTED: ['ACCEPTED'],
-                                                        REJECTED: ['REJECTED'],
+                                                        APPLIED: ['REVIEWED', 'ACCEPTED', 'REJECTED'],
+                                                        REVIEWED: ['ACCEPTED', 'REJECTED'],
+                                                        ACCEPTED: [],
+                                                        REJECTED: [],
                                                     };
-                                                    const options = transitions[app.status] || [app.status];
-                                                    const isTerminal = options.length === 1;
-                                                    return (
-                                                        <select
-                                                            value={app.status}
-                                                            disabled={isTerminal}
-                                                            onChange={e => handleStatusChange(app._id, e.target.value)}
-                                                            className="border border-gray-300 text-xs px-2 py-1 focus:border-[#8B1A1A] focus:outline-none bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                                    const styles = {
+                                                        REVIEWED: 'border-[#E2B325] text-[#8B1A1A] hover:bg-[#E2B325]',
+                                                        ACCEPTED: 'border-green-600 text-green-700 hover:bg-green-600 hover:text-white',
+                                                        REJECTED: 'border-red-500 text-red-600 hover:bg-red-500 hover:text-white',
+                                                    };
+                                                    const next = transitions[app.status] || [];
+                                                    if (next.length === 0) {
+                                                        return (
+                                                            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold px-2">
+                                                                {t('final', { defaultValue: 'Final' })}
+                                                            </span>
+                                                        );
+                                                    }
+                                                    return next.map((s) => (
+                                                        <button
+                                                            key={s}
+                                                            type="button"
+                                                            onClick={() => handleStatusChange(app._id, s)}
+                                                            className={`text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider border transition-colors ${styles[s] || 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
                                                         >
-                                                            {options.map(s => (
-                                                                <option key={s} value={s}>{t(`status_labels.${s}`)}</option>
-                                                            ))}
-                                                        </select>
-                                                    );
+                                                            {t(`status_labels.${s}`)}
+                                                        </button>
+                                                    ));
                                                 })()}
                                                 <button
                                                     onClick={() => setViewApplicant(app.seekerId)}
