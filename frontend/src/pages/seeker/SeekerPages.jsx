@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { applicationsAPI, jobsAPI } from '../../api/services';
 import { timeAgo, formatDate } from '../../utils/formatters';
 import toast from 'react-hot-toast';
+import { CvPreviewModal } from '../../components/ui/CvPreviewModal';
 
 
 const StatusBadge = ({ status }) => {
@@ -230,6 +231,7 @@ export const MyApplicationsPage = () => {
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [withdrawTarget, setWithdrawTarget] = useState(null);
     const [withdrawLoading, setWithdrawLoading] = useState(false);
+    const [previewCv, setPreviewCv] = useState(null);
 
     const fetchApps = async () => {
         try {
@@ -356,14 +358,13 @@ export const MyApplicationsPage = () => {
                                                         {t('view_job')}
                                                     </button>
                                                     {app.cvUrl && (
-                                                        <a
-                                                            href={app.cvUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setPreviewCv({ url: app.cvUrl, name: t('your_cv', { defaultValue: 'Your CV' }) })}
                                                             className="text-xs px-2.5 py-1 uppercase tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#FAF7F2] inline-flex items-center gap-1"
                                                         >
                                                             <FileText size={12} /> {t('view_cv', { defaultValue: 'View CV' })}
-                                                        </a>
+                                                        </button>
                                                     )}
                                                     {(app.status === 'APPLIED' || app.status === 'REVIEWED') && (
                                                         <button
@@ -412,6 +413,13 @@ export const MyApplicationsPage = () => {
                 onCancel={() => setWithdrawTarget(null)}
                 loading={withdrawLoading}
                 confirmText={t('withdraw').toUpperCase()}
+            />
+
+            <CvPreviewModal
+                isOpen={!!previewCv}
+                cvUrl={previewCv?.url}
+                applicantName={previewCv?.name}
+                onClose={() => setPreviewCv(null)}
             />
         </>
     );

@@ -15,6 +15,7 @@ import * as yup from 'yup';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '../../components/ui/Modal';
+import { CvPreviewModal } from '../../components/ui/CvPreviewModal';
 
 
 
@@ -1086,6 +1087,7 @@ export const JobApplicationsPage = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewApplicant, setViewApplicant] = useState(null);
+    const [previewCv, setPreviewCv] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -1160,55 +1162,78 @@ export const JobApplicationsPage = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
-                                <tr className="bg-[#8B1A1A]">
-                                    {['#', t('applicant'), !job ? t('job_title_label') : null, t('applied_date'), t('cv'), t('status'), t('actions')].filter(Boolean).map((h, i) => (
-                                        <th key={h} className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap ${i < (!job ? 6 : 5) ? 'border-r border-[#6e1515]' : ''} text-left`}>{h}</th>
-                                    ))}
-                                </tr>
+                                {(() => {
+                                    const headers = [
+                                        '#',
+                                        t('applicant'),
+                                        !job ? t('job_title_label') : null,
+                                        t('applied_date'),
+                                        t('cv'),
+                                        t('status'),
+                                        t('actions'),
+                                    ].filter(Boolean);
+                                    return (
+                                        <tr className="bg-[#8B1A1A]">
+                                            {headers.map((h, i) => (
+                                                <th
+                                                    key={h}
+                                                    className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap text-left ${i < headers.length - 1 ? 'border-r border-[#6e1515]' : ''} ${h === t('actions') ? 'text-right' : ''}`}
+                                                >
+                                                    {h}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    );
+                                })()}
                             </thead>
                             <tbody>
                                 {applications.map((app, i) => (
-                                    <tr key={app._id} className={`${i % 2 === 0 ? 'bg-white' : 'bg-[#FAF7F2]/50'} hover:bg-[#FAF7F2] ${i === applications.length - 1 ? 'border-b-2 border-[#8B1A1A]' : ''}`}>
-                                        <td className="py-3 px-4 text-xs text-gray-400 font-mono border-b border-gray-100">{i + 1}</td>
-                                        <td className="py-3 px-4 border-b border-gray-100">
+                                    <tr key={app._id} className={`${i % 2 === 0 ? 'bg-white' : 'bg-[#FAF7F2]/50'} hover:bg-[#FAF7F2] align-top ${i === applications.length - 1 ? 'border-b-2 border-[#8B1A1A]' : ''}`}>
+                                        <td className="py-3 px-4 text-xs text-gray-400 font-mono border-b border-gray-100 align-middle">{i + 1}</td>
+                                        <td className="py-3 px-4 border-b border-gray-100 align-middle min-w-[200px]">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 bg-[#8B1A1A] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                                <div className="h-9 w-9 bg-[#8B1A1A] text-white text-xs font-bold flex items-center justify-center shrink-0 rounded-full">
                                                     {getInitials(app.seekerId?.name)}
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-[#1A1A1A]">{app.seekerId?.name || t('applicant')}</p>
-                                                    <p className="text-xs text-gray-400">{app.seekerId?.email || '-'}</p>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-[#1A1A1A] truncate">{app.seekerId?.name || t('applicant')}</p>
+                                                    <p className="text-xs text-gray-400 truncate">{app.seekerId?.email || '-'}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         {!job && (
-                                            <td className="py-3 px-4 border-b border-gray-100">
+                                            <td className="py-3 px-4 border-b border-gray-100 align-middle">
                                                 <p className="text-xs font-bold text-[#8B1A1A] uppercase tracking-wider">{app.jobId?.title || t('unknown_job', { defaultValue: 'Unknown Job' })}</p>
                                             </td>
                                         )}
-                                        <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100">{fmtDate(app.createdAt, i18n)}</td>
-                                        <td className="py-3 px-4 border-b border-gray-100 text-center">
+                                        <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100 align-middle whitespace-nowrap">{fmtDate(app.createdAt, i18n)}</td>
+                                        <td className="py-3 px-4 border-b border-gray-100 align-middle">
                                             {app.cvUrl ? (
-                                                <a
-                                                    href={app.cvUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPreviewCv({ url: app.cvUrl, name: app.seekerId?.name })}
                                                     className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 uppercase font-bold tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white transition-colors"
                                                     title={t('view_cv', { defaultValue: 'View CV' })}
                                                 >
                                                     <FileText className="h-3.5 w-3.5" />
                                                     {t('view_cv', { defaultValue: 'View CV' })}
-                                                </a>
+                                                </button>
                                             ) : (
                                                 <span className="text-gray-300 text-xs">—</span>
                                             )}
                                         </td>
-                                        <td className="py-3 px-4 border-b border-gray-100"><StatusBadge status={app.status} /></td>
-                                        <td className="py-3 px-4 border-b border-gray-100">
-                                            {app.note ? <span className="text-xs text-gray-500 italic truncate max-w-[150px] block">{app.note}</span> : <span className="text-gray-200 text-xs">—</span>}
+                                        <td className="py-3 px-4 border-b border-gray-100 align-middle">
+                                            <div className="flex flex-col gap-1">
+                                                <StatusBadge status={app.status} />
+                                                {app.note && (
+                                                    <span className="text-[11px] text-gray-500 italic max-w-[200px] truncate" title={app.note}>
+                                                        “{app.note}”
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
-                                        <td className="py-3 px-4 border-b border-gray-100 whitespace-nowrap">
-                                            <div className="flex items-center gap-2">
+                                        <td className="py-3 px-4 border-b border-gray-100 align-middle whitespace-nowrap text-right">
+                                            <div className="inline-flex items-center gap-2 justify-end">
                                                 {(() => {
                                                     const transitions = {
                                                         APPLIED: ['APPLIED', 'REVIEWED', 'ACCEPTED', 'REJECTED'],
@@ -1231,8 +1256,11 @@ export const JobApplicationsPage = () => {
                                                         </select>
                                                     );
                                                 })()}
-                                                <button onClick={() => setViewApplicant(app.seekerId)} className="text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider bg-[#FAF7F2] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white border border-[#8B1A1A] transition-colors">
-                                                    {t('dash_my_profile').toUpperCase()}
+                                                <button
+                                                    onClick={() => setViewApplicant(app.seekerId)}
+                                                    className="text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider bg-[#FAF7F2] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white border border-[#8B1A1A] transition-colors"
+                                                >
+                                                    {t('view_profile', { defaultValue: 'PROFILE' })}
                                                 </button>
                                             </div>
                                         </td>
@@ -1257,6 +1285,13 @@ export const JobApplicationsPage = () => {
                 isOpen={!!viewApplicant}
                 applicant={viewApplicant}
                 onClose={() => setViewApplicant(null)}
+            />
+
+            <CvPreviewModal
+                isOpen={!!previewCv}
+                cvUrl={previewCv?.url}
+                applicantName={previewCv?.name}
+                onClose={() => setPreviewCv(null)}
             />
         </>
     );
