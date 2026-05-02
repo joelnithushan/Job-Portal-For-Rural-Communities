@@ -640,64 +640,108 @@ export const AdminUsersPage = () => {
                 isOpen={viewUserModal.isOpen}
                 onClose={() => setViewUserModal({ isOpen: false, user: null })}
                 title={t('user_profile_details', { defaultValue: 'User Profile Details' })}
-                size="md"
+                size="lg"
             >
-                {viewUserModal.user && (
-                    <div className="flex flex-col py-2">
-                        <div className="flex items-start gap-4 mb-6">
-                            {viewUserModal.user.profilePicture ? (
-                                <img src={viewUserModal.user.profilePicture} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200" />
-                            ) : (
-                                <img src={defaultAvatar} alt="Default Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 bg-white" />
+                {viewUserModal.user && (() => {
+                    const u = viewUserModal.user;
+                    const fmt = (v) => (v === undefined || v === null || v === '' ? '—' : v);
+                    const dobStr = u.dob ? fmtDate(u.dob, i18n) : '—';
+                    const formatGender = (g) => {
+                        if (!g) return '—';
+                        const k = `gender_${g.toLowerCase()}`;
+                        const def = g.charAt(0) + g.slice(1).toLowerCase();
+                        return t(k, { defaultValue: def });
+                    };
+                    const Section = ({ title, children }) => (
+                        <div className="border border-gray-100 mb-3">
+                            <div className="bg-[#FAF7F2] px-4 py-2 border-b border-gray-100">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#8B1A1A]">{title}</h4>
+                            </div>
+                            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                                {children}
+                            </div>
+                        </div>
+                    );
+                    const Row = ({ label, value, mono = false, full = false }) => (
+                        <div className={`flex flex-col gap-0.5 ${full ? 'sm:col-span-2' : ''}`}>
+                            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{label}</span>
+                            <span className={`text-sm text-[#1A1A1A] break-words ${mono ? 'font-mono text-xs' : 'font-medium'}`}>{value}</span>
+                        </div>
+                    );
+                    return (
+                        <div className="flex flex-col py-2 max-h-[70vh] overflow-y-auto">
+                            <div className="flex items-start gap-4 mb-5">
+                                {u.profilePicture ? (
+                                    <img src={u.profilePicture} alt="Profile" className="w-20 h-20 rounded-full object-cover border-2 border-gray-200" />
+                                ) : (
+                                    <img src={defaultAvatar} alt="Default Avatar" className="w-20 h-20 rounded-full object-cover border-2 border-gray-200 bg-white" />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-lg font-bold text-[#1A1A1A] break-words">{u.name}</h3>
+                                    <p className="text-sm text-gray-500 mb-2 break-all">{u.email}</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        <RoleBadge role={u.role} />
+                                        <StatusBadge status={u.status} />
+                                        {u.isEmailVerified ? (
+                                            <span className="bg-green-50 border border-green-200 text-green-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
+                                                {t('email_verified', { defaultValue: 'Email Verified' })}
+                                            </span>
+                                        ) : (
+                                            <span className="bg-orange-50 border border-orange-200 text-orange-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
+                                                {t('email_unverified', { defaultValue: 'Email Unverified' })}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {u.status === 'SUSPENDED' && u.suspensionReason && (
+                                <div className="mb-4 p-4 border border-red-200 bg-red-50 flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 text-[#8B1A1A]">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <span className="font-bold text-xs uppercase tracking-wider">{t('reason_suspension')}</span>
+                                    </div>
+                                    <p className="text-sm text-red-900 leading-relaxed font-medium">
+                                        {u.suspensionReason}
+                                    </p>
+                                </div>
                             )}
-                            <div>
-                                <h3 className="text-lg font-bold text-[#1A1A1A]">{viewUserModal.user.name}</h3>
-                                <p className="text-sm text-gray-500 mb-2">{viewUserModal.user.email}</p>
-                                <div className="flex gap-2">
-                                    <RoleBadge role={viewUserModal.user.role} />
-                                    <StatusBadge status={viewUserModal.user.status} />
-                                </div>
+
+                            <Section title={t('section_contact', { defaultValue: 'Contact' })}>
+                                <Row label={t('auth_email_address', { defaultValue: 'Email' })} value={fmt(u.email)} />
+                                <Row label={t('job_contact_phone', { defaultValue: 'Phone' })} value={fmt(u.phone)} />
+                                <Row label={t('district', { defaultValue: 'District' })} value={fmt(u.district)} />
+                                <Row label={t('address', { defaultValue: 'Address' })} value={fmt(u.address)} full />
+                            </Section>
+
+                            <Section title={t('section_personal', { defaultValue: 'Personal' })}>
+                                <Row label={t('nic_label', { defaultValue: 'NIC' })} value={fmt(u.nic)} />
+                                <Row label={t('gender_label', { defaultValue: 'Gender' })} value={formatGender(u.gender)} />
+                                <Row label={t('dob_label', { defaultValue: 'Date of Birth' })} value={dobStr} />
+                                <Row label={t('bio_label', { defaultValue: 'Bio' })} value={fmt(u.bio)} full />
+                            </Section>
+
+                            <Section title={t('section_account', { defaultValue: 'Account' })}>
+                                <Row label={t('user_id', { defaultValue: 'User ID' })} value={u._id} mono />
+                                <Row
+                                    label={t('authentication', { defaultValue: 'Authentication' })}
+                                    value={u.googleId ? t('google_account', { defaultValue: 'Google Account' }) : t('email_password', { defaultValue: 'Email / Password' })}
+                                />
+                                <Row label={t('joined_date', { defaultValue: 'Joined' })} value={fmtDate(u.createdAt, i18n)} />
+                                <Row label={t('last_updated', { defaultValue: 'Last Updated' })} value={u.updatedAt ? fmtDate(u.updatedAt, i18n) : '—'} />
+                            </Section>
+
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    onClick={() => setViewUserModal({ isOpen: false, user: null })}
+                                    className="bg-gray-100 border border-gray-300 text-gray-700 text-xs px-6 py-2 uppercase tracking-widest hover:bg-gray-200 transition-colors font-bold shadow-sm"
+                                >
+                                    {t('close').toUpperCase()}
+                                </button>
                             </div>
                         </div>
-                        
-                        {viewUserModal.user.status === 'SUSPENDED' && viewUserModal.user.suspensionReason && (
-                            <div className="mb-4 p-4 border border-red-200 bg-red-50 flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-[#8B1A1A]">
-                                    <AlertTriangle className="h-4 w-4" />
-                                    <span className="font-bold text-xs uppercase tracking-wider">{t('reason_suspension')}</span>
-                                </div>
-                                <p className="text-sm text-red-900 leading-relaxed font-medium">
-                                    {viewUserModal.user.suspensionReason}
-                                </p>
-                            </div>
-                        )}
-                        
-                        <div className="border-t border-gray-100 pt-4 space-y-3">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">{t('joined_date')}</span>
-                                <span className="font-medium text-[#1A1A1A]">{fmtDate(viewUserModal.user.createdAt, i18n)}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">{t('user_id', { defaultValue: 'User ID' })}</span>
-                                <span className="font-mono text-xs text-gray-400">{viewUserModal.user._id}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">{t('authentication', { defaultValue: 'Authentication' })}</span>
-                                <span className="font-medium text-[#1A1A1A]">
-                                    {viewUserModal.user.googleId ? t('google_account', { defaultValue: 'Google Account' }) : t('email_password', { defaultValue: 'Email / Password' })}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="mt-8 flex justify-end">
-                            <button 
-                                onClick={() => setViewUserModal({ isOpen: false, user: null })}
-                                className="bg-gray-100 border border-gray-300 text-gray-700 text-xs px-6 py-2 uppercase tracking-widest hover:bg-gray-200 transition-colors font-bold shadow-sm"
-                            >
-                                {t('close').toUpperCase()}
-                            </button>
-                        </div>
-                    </div>
-                )}
+                    );
+                })()}
             </Modal>
         </div>
     );
