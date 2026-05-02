@@ -244,6 +244,41 @@ export const JobDetailPage = () => {
                         </div>
                     </div>
 
+                    {/* Requirements */}
+                    <div className="mb-8">
+                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">{t('section_requirements', { defaultValue: 'Requirements' })}</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div className="bg-white border border-gray-100 p-4">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-bold">{t('age_range', { defaultValue: 'Age Range' })}</p>
+                                <p className="font-bold text-[#1A1A1A] text-[11px] uppercase">
+                                    {(job.ageLimitMin || job.ageLimitMax)
+                                        ? `${job.ageLimitMin ?? '—'} – ${job.ageLimitMax ?? '—'}`
+                                        : t('any', { defaultValue: 'Any' })}
+                                </p>
+                            </div>
+                            <div className="bg-white border border-gray-100 p-4">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-bold">{t('gender_requirement', { defaultValue: 'Gender' })}</p>
+                                <p className="font-bold text-[#1A1A1A] text-[11px] uppercase">
+                                    {!job.genderRequirement || job.genderRequirement === 'ANY'
+                                        ? t('any', { defaultValue: 'Any' })
+                                        : job.genderRequirement === 'MALE'
+                                            ? t('gender_male', { defaultValue: 'Male' })
+                                            : t('gender_female', { defaultValue: 'Female' })}
+                                </p>
+                            </div>
+                            <div className="bg-white border border-gray-100 p-4">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-bold">{t('cv_required', { defaultValue: 'CV Required' })}</p>
+                                <p className={`font-bold text-[11px] uppercase ${job.cvRequired ? 'text-[#8B1A1A]' : 'text-[#1A1A1A]'}`}>
+                                    {job.cvRequired ? t('yes', { defaultValue: 'Yes' }) : t('no', { defaultValue: 'No' })}
+                                </p>
+                            </div>
+                            <div className="bg-white border border-gray-100 p-4">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-bold">{t('town', { defaultValue: 'Town' })}</p>
+                                <p className="font-bold text-[#1A1A1A] text-[11px] uppercase">{job.town || '—'}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Description */}
                     <div className="mb-8">
                         <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">{t('job_desc_title')}</h2>
