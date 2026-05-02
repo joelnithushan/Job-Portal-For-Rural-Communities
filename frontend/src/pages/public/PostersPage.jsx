@@ -228,7 +228,7 @@ export const PosterDetailPage = () => {
     }, [id]);
 
     if (loading) {
-        return <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center text-gray-500">Loading...</div>;
+        return <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center text-gray-500">{t('loading', { defaultValue: 'Loading...' })}</div>;
     }
     if (!poster) {
         return (

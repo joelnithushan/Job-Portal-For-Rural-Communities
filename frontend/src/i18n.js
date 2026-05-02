@@ -791,6 +791,11 @@ const resources = {
             poster_deleted: "Poster deleted",
             poster_update_failed: "Failed to update poster",
             poster_delete_failed: "Failed to delete poster",
+            poster_generate_failed: "Failed to generate poster",
+            poster_save_failed: "Failed to save poster",
+            poster_title_ph: "e.g. Farm Helper",
+            email_ph: "hr@company.lk",
+            highlights_ph: "meals provided, transport, weekly pay",
             poster_ai_disclaimer: "Powered by Google Nano Banana Pro. Generated posters are stored on our media CDN once you publish."
         }
     },
@@ -1546,6 +1551,11 @@ const resources = {
             poster_deleted: "போஸ்டர் அழிக்கப்பட்டது",
             poster_update_failed: "போஸ்டரை புதுப்பிக்க முடியவில்லை",
             poster_delete_failed: "போஸ்டரை அழிக்க முடியவில்லை",
+            poster_generate_failed: "போஸ்டரை உருவாக்க முடியவில்லை",
+            poster_save_failed: "போஸ்டரை சேமிக்க முடியவில்லை",
+            poster_title_ph: "உதா: விவசாய உதவியாளர்",
+            email_ph: "hr@company.lk",
+            highlights_ph: "உணவு வழங்கப்படும், போக்குவரத்து, வாராந்திர சம்பளம்",
             poster_ai_disclaimer: "Google Nano Banana Pro ஆல் இயக்கப்படுகிறது. நீங்கள் வெளியிட்டவுடன் உருவாக்கப்பட்ட போஸ்டர்கள் எங்கள் மீடியா CDN இல் சேமிக்கப்படுகின்றன."
         }
     },
@@ -2302,6 +2312,11 @@ const resources = {
             poster_deleted: "පෝස්ටරය මකන ලදී",
             poster_update_failed: "පෝස්ටරය යාවත්කාලීන කිරීමට අසමත් විය",
             poster_delete_failed: "පෝස්ටරය මැකීමට අසමත් විය",
+            poster_generate_failed: "පෝස්ටරය ජනනය කිරීමට අසමත් විය",
+            poster_save_failed: "පෝස්ටරය සුරැකීමට අසමත් විය",
+            poster_title_ph: "උදා: ගොවිතැන් සහායක",
+            email_ph: "hr@company.lk",
+            highlights_ph: "ආහාර සපයයි, ප්‍රවාහනය, සතිපතා වැටුප",
             poster_ai_disclaimer: "Google Nano Banana Pro මගින් බල ගැන්වේ. ඔබ ප්‍රකාශයට පත් කළ පසු ජනනය කළ පෝස්ටර් අපගේ මාධ්‍ය CDN හි ගබඩා වේ."
         }
     }

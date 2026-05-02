@@ -350,7 +350,7 @@ export const CreatePosterPage = () => {
             setGenerated({ imageUrl: data.imageUrl, imagePublicId: data.imagePublicId, prompt: data.prompt });
             toast.success(t('poster_generated', { defaultValue: 'Poster generated!' }));
         } catch (e) {
-            const msg = e?.response?.data?.message || e.message || 'Failed to generate poster';
+            const msg = e?.response?.data?.message || e.message || t('poster_generate_failed', { defaultValue: 'Failed to generate poster' });
             toast.error(msg);
         } finally {
             setGenerating(false);
@@ -384,7 +384,7 @@ export const CreatePosterPage = () => {
             toast.success(t('poster_published', { defaultValue: 'Poster published!' }));
             navigate('/employer/posters');
         } catch (e) {
-            const msg = e?.response?.data?.message || 'Failed to save poster';
+            const msg = e?.response?.data?.message || t('poster_save_failed', { defaultValue: 'Failed to save poster' });
             toast.error(msg);
         } finally {
             setSaving(false);
@@ -405,7 +405,7 @@ export const CreatePosterPage = () => {
                 <SectionCard title={t('create_poster', { defaultValue: 'Create AI Poster' })}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Field label={t('job_title', { defaultValue: 'Job Title' })}>
-                            <input className={inputCls} value={form.title} onChange={handleChange('title')} placeholder="e.g. Farm Helper" />
+                            <input className={inputCls} value={form.title} onChange={handleChange('title')} placeholder={t('poster_title_ph', { defaultValue: 'e.g. Farm Helper' })} />
                         </Field>
 
                         <Field label={t('category', { defaultValue: 'Category' })}>
@@ -423,7 +423,7 @@ export const CreatePosterPage = () => {
                         </Field>
 
                         <Field label={t('town', { defaultValue: 'Town' })}>
-                            <input className={inputCls} value={form.town} onChange={handleChange('town')} placeholder="e.g. Negombo" />
+                            <input className={inputCls} value={form.town} onChange={handleChange('town')} placeholder={t('town_ph', { defaultValue: 'e.g. Negombo' })} />
                         </Field>
 
                         <Field label={t('job_type', { defaultValue: 'Job Type' })}>
@@ -451,15 +451,15 @@ export const CreatePosterPage = () => {
                         </Field>
 
                         <Field label={t('contact_phone', { defaultValue: 'Contact Phone' })}>
-                            <input className={inputCls} value={form.contactPhone} onChange={handleChange('contactPhone')} placeholder="+94 7XXXXXXXX" />
+                            <input className={inputCls} value={form.contactPhone} onChange={handleChange('contactPhone')} placeholder={t('phone_ph', { defaultValue: '+94 7XXXXXXXX' })} />
                         </Field>
 
                         <Field label={t('contact_email', { defaultValue: 'Contact Email (optional)' })}>
-                            <input type="email" className={inputCls} value={form.contactEmail} onChange={handleChange('contactEmail')} placeholder="hr@company.lk" />
+                            <input type="email" className={inputCls} value={form.contactEmail} onChange={handleChange('contactEmail')} placeholder={t('email_ph', { defaultValue: 'hr@company.lk' })} />
                         </Field>
 
                         <Field label={t('highlight_tags', { defaultValue: 'Highlights (comma-separated)' })}>
-                            <input className={inputCls} value={form.tags} onChange={handleChange('tags')} placeholder="meals provided, transport, weekly pay" />
+                            <input className={inputCls} value={form.tags} onChange={handleChange('tags')} placeholder={t('highlights_ph', { defaultValue: 'meals provided, transport, weekly pay' })} />
                         </Field>
 
                         <div className="sm:col-span-2">
