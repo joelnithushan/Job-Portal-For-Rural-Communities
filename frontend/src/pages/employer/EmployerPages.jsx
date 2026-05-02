@@ -1156,127 +1156,108 @@ export const JobApplicationsPage = () => {
                 <StatCard label={t('status_labels.ACCEPTED')} value={acceptedCount} icon={UserCheck} accentColor="#16a34a" />
             </div>
 
-            {/* Applications Table */}
+            {/* Applications List */}
             <SectionCard className="!p-0" title={job ? t('applicants_for_job', { defaultValue: "APPLICANTS FOR THIS JOB" }) : t('all_applicants', { defaultValue: "ALL APPLICANTS" })} rightSlot={<span className="bg-[#E2B325] text-[#8B1A1A] text-xs font-bold px-2 py-0.5">{totalApps}</span>}>
                 {applications.length === 0 ? <EmptyState message={t('no_applications_yet')} subtitle={t('attract_candidates_desc', { defaultValue: "Share the job listing to attract candidates" })} /> : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm border-collapse">
-                            <thead>
-                                {(() => {
-                                    const headers = [
-                                        '#',
-                                        t('applicant'),
-                                        !job ? t('job_title_label') : null,
-                                        t('applied_date'),
-                                        t('cv'),
-                                        t('status'),
-                                        t('actions'),
-                                    ].filter(Boolean);
-                                    return (
-                                        <tr className="bg-[#8B1A1A]">
-                                            {headers.map((h, i) => (
-                                                <th
-                                                    key={h}
-                                                    className={`py-3 px-4 text-xs font-bold text-white uppercase tracking-widest whitespace-nowrap text-left ${i < headers.length - 1 ? 'border-r border-[#6e1515]' : ''} ${h === t('actions') ? 'text-right' : ''}`}
-                                                >
-                                                    {h}
-                                                </th>
-                                            ))}
-                                        </tr>
-                                    );
-                                })()}
-                            </thead>
-                            <tbody>
-                                {applications.map((app, i) => (
-                                    <tr key={app._id} className={`${i % 2 === 0 ? 'bg-white' : 'bg-[#FAF7F2]/50'} hover:bg-[#FAF7F2] align-top ${i === applications.length - 1 ? 'border-b-2 border-[#8B1A1A]' : ''}`}>
-                                        <td className="py-3 px-4 text-xs text-gray-400 font-mono border-b border-gray-100 align-middle">{i + 1}</td>
-                                        <td className="py-3 px-4 border-b border-gray-100 align-middle min-w-[200px]">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-9 w-9 bg-[#8B1A1A] text-white text-xs font-bold flex items-center justify-center shrink-0 rounded-full">
-                                                    {getInitials(app.seekerId?.name)}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-[#1A1A1A] truncate">{app.seekerId?.name || t('applicant')}</p>
-                                                    <p className="text-xs text-gray-400 truncate">{app.seekerId?.email || '-'}</p>
+                    <div className="flex flex-col gap-3 p-4">
+                        {applications.map((app, i) => {
+                            const transitions = {
+                                APPLIED: ['REVIEWED', 'ACCEPTED', 'REJECTED'],
+                                REVIEWED: ['ACCEPTED', 'REJECTED'],
+                                ACCEPTED: [],
+                                REJECTED: [],
+                            };
+                            const stepStyles = {
+                                REVIEWED: 'border-[#E2B325] text-[#8B1A1A] hover:bg-[#E2B325]',
+                                ACCEPTED: 'border-green-600 text-green-700 hover:bg-green-600 hover:text-white',
+                                REJECTED: 'border-red-500 text-red-600 hover:bg-red-500 hover:text-white',
+                            };
+                            const accent = app.status === 'ACCEPTED' ? '#16a34a'
+                                : app.status === 'REJECTED' ? '#8B1A1A'
+                                : app.status === 'REVIEWED' ? '#E2B325'
+                                : '#3b82f6';
+                            const next = transitions[app.status] || [];
+                            return (
+                                <div
+                                    key={app._id}
+                                    className="bg-white border border-gray-200 hover:border-[#8B1A1A]/40 hover:shadow-sm transition-all"
+                                    style={{ borderLeft: `4px solid ${accent}` }}
+                                >
+                                    <div className="p-4 flex flex-col lg:flex-row lg:items-center gap-4">
+                                        {/* Identity */}
+                                        <div className="flex items-center gap-3 lg:flex-1 min-w-0">
+                                            <span className="text-xs text-gray-300 font-mono w-6 text-right shrink-0">#{i + 1}</span>
+                                            <div className="h-11 w-11 bg-[#8B1A1A] text-white text-sm font-bold flex items-center justify-center shrink-0 rounded-full">
+                                                {getInitials(app.seekerId?.name)}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-bold text-[#1A1A1A] truncate">{app.seekerId?.name || t('applicant')}</p>
+                                                <p className="text-xs text-gray-400 truncate">{app.seekerId?.email || '-'}</p>
+                                                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-500">
+                                                    {!job && app.jobId?.title && (
+                                                        <span className="inline-flex items-center gap-1 font-bold text-[#8B1A1A] uppercase tracking-wider">
+                                                            <Briefcase className="h-3 w-3" /> {app.jobId.title}
+                                                        </span>
+                                                    )}
+                                                    <span className="inline-flex items-center gap-1 font-mono">
+                                                        <Clock className="h-3 w-3" /> {fmtDate(app.createdAt, i18n)}
+                                                    </span>
                                                 </div>
                                             </div>
-                                        </td>
-                                        {!job && (
-                                            <td className="py-3 px-4 border-b border-gray-100 align-middle">
-                                                <p className="text-xs font-bold text-[#8B1A1A] uppercase tracking-wider">{app.jobId?.title || t('unknown_job', { defaultValue: 'Unknown Job' })}</p>
-                                            </td>
-                                        )}
-                                        <td className="py-3 px-4 text-xs text-gray-500 font-mono border-b border-gray-100 align-middle whitespace-nowrap">{fmtDate(app.createdAt, i18n)}</td>
-                                        <td className="py-3 px-4 border-b border-gray-100 align-middle">
+                                        </div>
+
+                                        {/* Status + note */}
+                                        <div className="flex flex-col gap-1.5 lg:w-44 shrink-0">
+                                            <StatusBadge status={app.status} />
+                                            {app.note && (
+                                                <span className="text-[11px] text-gray-500 italic line-clamp-2" title={app.note}>
+                                                    "{app.note}"
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex flex-wrap items-center gap-1.5 lg:justify-end">
                                             {app.cvUrl ? (
                                                 <button
                                                     type="button"
                                                     onClick={() => setPreviewCv({ url: app.cvUrl, name: app.seekerId?.name })}
-                                                    className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 uppercase font-bold tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white transition-colors"
-                                                    title={t('view_cv', { defaultValue: 'View CV' })}
+                                                    className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border border-[#8B1A1A] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white transition-colors"
                                                 >
-                                                    <FileText className="h-3.5 w-3.5" />
-                                                    {t('view_cv', { defaultValue: 'View CV' })}
+                                                    <FileText className="h-3 w-3" /> {t('view_cv', { defaultValue: 'View CV' })}
                                                 </button>
                                             ) : (
-                                                <span className="text-gray-300 text-xs">—</span>
+                                                <span className="text-[10px] text-gray-300 px-2 uppercase tracking-wider">{t('no_cv', { defaultValue: 'No CV' })}</span>
                                             )}
-                                        </td>
-                                        <td className="py-3 px-4 border-b border-gray-100 align-middle">
-                                            <div className="flex flex-col gap-1">
-                                                <StatusBadge status={app.status} />
-                                                {app.note && (
-                                                    <span className="text-[11px] text-gray-500 italic max-w-[200px] truncate" title={app.note}>
-                                                        “{app.note}”
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-4 border-b border-gray-100 align-middle whitespace-nowrap text-right">
-                                            <div className="inline-flex items-center gap-1.5 justify-end flex-wrap">
-                                                {(() => {
-                                                    const transitions = {
-                                                        APPLIED: ['REVIEWED', 'ACCEPTED', 'REJECTED'],
-                                                        REVIEWED: ['ACCEPTED', 'REJECTED'],
-                                                        ACCEPTED: [],
-                                                        REJECTED: [],
-                                                    };
-                                                    const styles = {
-                                                        REVIEWED: 'border-[#E2B325] text-[#8B1A1A] hover:bg-[#E2B325]',
-                                                        ACCEPTED: 'border-green-600 text-green-700 hover:bg-green-600 hover:text-white',
-                                                        REJECTED: 'border-red-500 text-red-600 hover:bg-red-500 hover:text-white',
-                                                    };
-                                                    const next = transitions[app.status] || [];
-                                                    if (next.length === 0) {
-                                                        return (
-                                                            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold px-2">
-                                                                {t('final', { defaultValue: 'Final' })}
-                                                            </span>
-                                                        );
-                                                    }
-                                                    return next.map((s) => (
-                                                        <button
-                                                            key={s}
-                                                            type="button"
-                                                            onClick={() => handleStatusChange(app._id, s)}
-                                                            className={`text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider border transition-colors ${styles[s] || 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
-                                                        >
-                                                            {t(`status_labels.${s}`)}
-                                                        </button>
-                                                    ));
-                                                })()}
-                                                <button
-                                                    onClick={() => setViewApplicant(app.seekerId)}
-                                                    className="text-[10px] px-2 py-1.5 uppercase font-bold tracking-wider bg-[#FAF7F2] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white border border-[#8B1A1A] transition-colors"
-                                                >
-                                                    {t('view_profile', { defaultValue: 'PROFILE' })}
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                            <button
+                                                type="button"
+                                                onClick={() => setViewApplicant(app.seekerId)}
+                                                className="text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider bg-[#FAF7F2] text-[#8B1A1A] hover:bg-[#8B1A1A] hover:text-white border border-[#8B1A1A] transition-colors"
+                                            >
+                                                {t('view_profile', { defaultValue: 'Profile' })}
+                                            </button>
+                                            <span className="hidden sm:inline-block w-px h-6 bg-gray-200" />
+                                            {next.length === 0 ? (
+                                                <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold px-2 py-1.5 border border-gray-200 bg-gray-50">
+                                                    {t('final', { defaultValue: 'Final' })}
+                                                </span>
+                                            ) : (
+                                                next.map((s) => (
+                                                    <button
+                                                        key={s}
+                                                        type="button"
+                                                        onClick={() => handleStatusChange(app._id, s)}
+                                                        className={`text-[10px] px-2.5 py-1.5 uppercase font-bold tracking-wider border transition-colors ${stepStyles[s] || 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+                                                    >
+                                                        {t(`status_labels.${s}`)}
+                                                    </button>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </SectionCard>
