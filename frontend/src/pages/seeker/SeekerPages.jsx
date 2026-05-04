@@ -296,7 +296,7 @@ export const MyApplicationsPage = () => {
                         placeholder={t('search_placeholder')}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
+                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-full sm:w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
                     />
                 </div>
                 <select

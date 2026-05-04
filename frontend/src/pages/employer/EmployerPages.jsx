@@ -992,7 +992,7 @@ export const MyJobsPage = () => {
                 <div className="relative">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <input type="text" placeholder={t('search_jobs_ph', { defaultValue: 'Search by title or location...' })} value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white" />
+                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-full sm:w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white" />
                 </div>
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-[#8B1A1A] bg-white cursor-pointer">
                     <option value="ALL">{t('filter_all')}</option>

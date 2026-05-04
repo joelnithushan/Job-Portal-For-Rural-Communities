@@ -82,21 +82,21 @@ export const HomePage = () => {
             />
 
             {/* ── HERO ── */}
-            <section className="relative w-full overflow-hidden" style={{ aspectRatio: '16/6' }}>
+            <section className="relative w-full overflow-hidden aspect-[4/5] sm:aspect-[16/9] md:aspect-[16/6]">
                 <img
                     src="/hero-bg.png"
                     alt="NextEra - Find Work. Build Community."
                     className="absolute inset-0 w-full h-full object-cover"
                 />
                 {/* Overlay Buttons */}
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex gap-4">
-                    <Link to="/jobs">
-                        <button className="px-10 py-3.5 bg-white text-brand-dark text-xs tracking-[0.2em] font-medium border border-white hover:bg-gray-100 transition-colors">
+                <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col sm:flex-row gap-3 sm:gap-4 w-[calc(100%-2rem)] max-w-xs sm:max-w-none sm:w-auto">
+                    <Link to="/jobs" className="w-full sm:w-auto">
+                        <button className="w-full sm:w-auto px-6 sm:px-10 py-3 sm:py-3.5 bg-white text-brand-dark text-[11px] sm:text-xs tracking-[0.2em] font-medium border border-white hover:bg-gray-100 transition-colors">
                             {t('home_hero_explore')}
                         </button>
                     </Link>
-                    <Link to="/register/employer">
-                        <button className="px-10 py-3.5 bg-transparent text-white text-xs tracking-[0.2em] font-medium border border-white hover:bg-brand-amber hover:border-brand-amber hover:text-brand-dark transition-colors">
+                    <Link to="/register/employer" className="w-full sm:w-auto">
+                        <button className="w-full sm:w-auto px-6 sm:px-10 py-3 sm:py-3.5 bg-transparent text-white text-[11px] sm:text-xs tracking-[0.2em] font-medium border border-white hover:bg-brand-amber hover:border-brand-amber hover:text-brand-dark transition-colors">
                             {t('home_hero_post')}
                         </button>
                     </Link>
