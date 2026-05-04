@@ -489,7 +489,7 @@ export const AdminUsersPage = () => {
                         placeholder={t('search_users_ph', { defaultValue: 'Search by name or email...' })}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
+                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-full sm:w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
                     />
                 </div>
                 <select
@@ -851,7 +851,7 @@ export const AdminCompaniesPage = () => {
                         placeholder={t('search_companies_ph', { defaultValue: 'Search by name or owner...' })}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
+                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-full sm:w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
                     />
                 </div>
                 <select
@@ -1200,7 +1200,7 @@ export const AdminJobsPage = () => {
                         placeholder={t('search_jobs_ph')}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
+                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-full sm:w-72 focus:outline-none focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#8B1A1A] bg-white transition-colors"
                     />
                 </div>
                 <select
@@ -1592,7 +1592,7 @@ export const AdminPostersPage = () => {
                         placeholder={t('search_posters', { defaultValue: 'Search title, district, employer...' })}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-80 focus:outline-none focus:border-[#8B1A1A] bg-white"
+                        className="border border-gray-300 pl-9 pr-4 py-2 text-sm w-full sm:w-80 focus:outline-none focus:border-[#8B1A1A] bg-white"
                     />
                 </div>
                 <select
